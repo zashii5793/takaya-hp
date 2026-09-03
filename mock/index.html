@@ -54,6 +54,8 @@
     white-space:nowrap;
   }
   .on-red .todo{color:#fff;background:rgba(0,0,0,.22);border-color:rgba(255,255,255,.75)}
+  .on-red .promise .todo{color:var(--c-brand-dark);background:var(--c-brand-tint);border-color:var(--c-brand)}
+  .mockbar .todo{color:#fff;background:rgba(230,0,18,.55);border-color:#FF6B75}
 
   /* ---- モック注記バー ---- */
   .mockbar{
@@ -72,9 +74,9 @@
     font-family:var(--f-num);font-weight:700;font-size:30px;letter-spacing:.06em;
     color:var(--c-brand);line-height:1;
   }
-  .logo small{font-size:12px;color:var(--c-text-sub);line-height:1}
-  nav ul{display:flex;gap:28px;list-style:none;margin:0;padding:0;font-size:15px;font-weight:500}
-  nav a{color:var(--c-text);text-decoration:none;padding:4px 0;display:inline-block;border-bottom:2px solid transparent}
+  .logo small{font-size:12px;color:var(--c-text-sub);line-height:1;white-space:nowrap}
+  nav ul{display:flex;gap:24px;list-style:none;margin:0;padding:0;font-size:15px;font-weight:500}
+  nav a{color:var(--c-text);text-decoration:none;padding:4px 0;display:inline-block;border-bottom:2px solid transparent;white-space:nowrap}
   nav a:hover{color:var(--c-brand);border-bottom-color:var(--c-brand)}
   .btn-tel{
     display:flex;flex-direction:column;justify-content:center;
@@ -83,7 +85,7 @@
   }
   .btn-tel:hover{background:var(--c-brand-dark)}
   .btn-tel em{font-style:normal;font-size:11px;letter-spacing:.08em;opacity:.9}
-  .btn-tel .num{font-family:var(--f-num);font-weight:700;font-size:24px;line-height:1.1;letter-spacing:.02em}
+  .btn-tel .num{font-family:var(--f-num);font-weight:700;font-size:24px;line-height:1.1;letter-spacing:.02em;white-space:nowrap}
   @media (max-width:900px){ nav,.btn-tel{display:none} }
 
   /* ---- ヒーロー（赤ベタ 1/3） ---- */
@@ -157,6 +159,7 @@
   .card .no{font-family:var(--f-num);font-size:13px;font-weight:600;letter-spacing:.16em;color:var(--c-text-sub)}
   .card h3{font-size:20px}
   .card p{font-size:14px;color:var(--c-text-sub);line-height:1.7}
+  .card p strong{color:var(--c-text);font-weight:700}
   .card .more{margin-top:auto;padding-top:12px;font-size:14px;color:var(--c-brand);font-weight:500}
   @media (max-width:900px){ .cards{grid-template-columns:1fr 1fr} }
   @media (max-width:560px){ .cards{grid-template-columns:1fr} }
@@ -175,16 +178,11 @@
   @media (max-width:900px){ .reason-grid{grid-template-columns:1fr;gap:36px} .reason h2{font-size:28px} }
 
   /* ---- ごあいさつ ---- */
-  .greet-grid{display:grid;grid-template-columns:320px 1fr;gap:48px;align-items:start}
-  .photo{
-    aspect-ratio:4/5;background:var(--c-bg-alt);border:1px dashed var(--c-border);
-    border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-    color:var(--c-text-sub);font-size:13px;text-align:center;padding:16px;
-  }
-  .greet-grid p+p{margin-top:20px}
-  .sign{margin-top:28px;font-size:15px;color:var(--c-text-sub)}
+  .greet{max-width:40em}
+  .greet p+p{margin-top:20px}
+  .sign{margin-top:28px;font-size:15px;color:var(--c-text-sub);
+    border-top:1px solid var(--c-border);padding-top:20px}
   .sign b{font-size:20px;color:var(--c-text);margin-left:10px}
-  @media (max-width:900px){ .greet-grid{grid-template-columns:1fr;gap:28px} .photo{max-width:260px} }
 
   /* ---- 経営理念 ---- */
   .philosophy{background:var(--c-bg-alt)}
@@ -261,6 +259,30 @@
   }
   @media (max-width:900px){ .foot-grid{grid-template-columns:1fr;gap:28px} }
 
+  /* ---- スマホ下部固定の電話バー ---- */
+  .callbar{display:none}
+  @media (max-width:900px){
+    .callbar{
+      display:grid;grid-template-columns:1.4fr 1fr;gap:1px;
+      position:fixed;left:0;right:0;bottom:0;z-index:20;
+      background:var(--c-border);
+      box-shadow:0 -2px 12px rgba(0,0,0,.15);
+      padding-bottom:env(safe-area-inset-bottom);
+    }
+    .callbar a{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:60px;text-decoration:none;padding:8px 4px;
+    }
+    .callbar .c-tel{background:var(--c-brand);color:#fff}
+    .callbar .c-tel:active{background:var(--c-brand-dark)}
+    .callbar .c-form{background:#fff;color:var(--c-brand)}
+    .callbar em{font-style:normal;font-size:11px;letter-spacing:.06em;opacity:.9}
+    .callbar .num{font-family:var(--f-num);font-weight:700;font-size:22px;line-height:1.1;white-space:nowrap}
+    .callbar .lbl{font-size:15px;font-weight:700}
+    body{padding-bottom:72px}
+    footer{padding-bottom:24px}
+  }
+
   @media (prefers-reduced-motion:reduce){
     *{transition:none !important;animation:none !important}
   }
@@ -277,7 +299,7 @@
   <div class="wrap head">
     <div class="logo">
       <b>TAKAYA</b>
-      <small>株式会社タカヤ<span class="todo">正式社名 要確認</span></small>
+      <small>株式会社タカヤ</small>
     </div>
     <nav aria-label="メインメニュー">
       <ul>
@@ -344,7 +366,7 @@
       <a class="card" href="#contact">
         <span class="no">01</span>
         <h3>車検・法定点検</h3>
-        <p>見積りは無料。作業前に費用をご説明し、了解をいただいてから着手します。</p>
+        <p><strong>どんな車種・どんなメーカーにも対応します。</strong>見積りは無料。作業前に費用をご説明し、了解をいただいてから着手します。</p>
         <span class="more">詳しく見る →</span>
       </a>
       <a class="card" href="#contact">
@@ -361,8 +383,8 @@
       </a>
       <a class="card" href="#contact">
         <span class="no">04</span>
-        <h3>中古車販売・買取</h3>
-        <p>販売後の整備まで同じ工場で。乗り換えのご相談も承ります。<span class="todo">許可番号 要確認</span></p>
+        <h3>クルマを探す（販売・買取）</h3>
+        <p><strong>どんなメーカーでもお探しできます。</strong>販売後の整備まで同じ工場で。乗り換えのご相談も承ります。<span class="todo">許可番号 要確認</span></p>
         <span class="more">詳しく見る →</span>
       </a>
     </div>
@@ -398,11 +420,7 @@
       <span class="en">MESSAGE</span>
       <h2>ごあいさつ</h2>
     </div>
-    <div class="greet-grid">
-      <div class="photo">
-        <span>代表 顔写真</span>
-        <span class="todo">撮影・手配 要</span>
-      </div>
+    <div class="greet">
       <div>
         <p><span class="todo">あいさつ本文 要記入</span></p>
         <p>1965年の創業以来、私たちは地域のお客様のお車をお預かりしてきました。
@@ -510,7 +528,7 @@
           <li><a href="#service">車検・法定点検</a></li>
           <li><a href="#service">一般整備・修理</a></li>
           <li><a href="#service">板金・塗装</a></li>
-          <li><a href="#service">中古車販売・買取</a></li>
+          <li><a href="#service">クルマを探す（販売・買取）</a></li>
         </ul>
       </div>
       <div>
@@ -527,3 +545,13 @@
     <p class="copyright">© 1965- TAKAYA CO., LTD.</p>
   </div>
 </footer>
+
+<div class="callbar">
+  <a class="c-tel" href="#contact">
+    <em>お電話でのご相談</em>
+    <span class="num">0120-000-000</span>
+  </a>
+  <a class="c-form" href="#contact">
+    <span class="lbl">お問い合わせ</span>
+  </a>
+</div>
