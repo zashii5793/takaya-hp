@@ -145,10 +145,10 @@
 
   /* ---- サービス ---- */
   .services{background:var(--c-bg-alt)}
-  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:16px}
   .card{
     background:#fff;border:1px solid var(--c-border);border-radius:4px;
-    padding:26px 22px 24px;position:relative;text-decoration:none;color:inherit;
+    padding:24px 20px 22px;position:relative;text-decoration:none;color:inherit;
     display:flex;flex-direction:column;gap:10px;
   }
   .card::after{
@@ -157,12 +157,16 @@
   }
   .card:hover::after{width:100%}
   .card .no{font-family:var(--f-num);font-size:13px;font-weight:600;letter-spacing:.16em;color:var(--c-text-sub)}
-  .card h3{font-size:20px}
+  .card h3{font-size:18px}
   .card p{font-size:14px;color:var(--c-text-sub);line-height:1.7}
   .card p strong{color:var(--c-text);font-weight:700}
   .card .more{margin-top:auto;padding-top:12px;font-size:14px;color:var(--c-brand);font-weight:500}
-  @media (max-width:900px){ .cards{grid-template-columns:1fr 1fr} }
-  @media (max-width:560px){ .cards{grid-template-columns:1fr} }
+  .menu{margin-top:32px;padding-top:24px;border-top:1px solid var(--c-border);
+    display:flex;flex-wrap:wrap;gap:12px 10px;align-items:baseline}
+  .menu-t{font-size:13px;font-weight:700;color:var(--c-text-sub);letter-spacing:.08em;margin-right:4px}
+  .menu ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+  .menu li{background:#fff;border:1px solid var(--c-border);border-radius:999px;
+    padding:5px 14px;font-size:14px}
 
   /* ---- 選ばれる理由（赤ベタ 2/3） ---- */
   .reason{background:var(--c-brand);color:#fff}
@@ -183,13 +187,15 @@
   .sign{margin-top:28px;font-size:15px;color:var(--c-text-sub);
     border-top:1px solid var(--c-border);padding-top:20px}
   .sign b{font-size:20px;color:var(--c-text);margin-left:10px}
+  .sign{line-height:2.2}
 
   /* ---- 経営理念 ---- */
   .philosophy{background:var(--c-bg-alt)}
   .creed{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
   .creed div{background:#fff;border:1px solid var(--c-border);border-radius:4px;padding:28px 24px}
   .creed .n{font-family:var(--f-num);font-size:40px;font-weight:700;color:var(--c-brand-tint);line-height:1;display:block}
-  .creed h3{font-size:19px;margin-top:8px}
+  .creed .precept{font-size:17px;font-weight:700;line-height:1.8;margin-top:8px}
+  .creed .precept::before{content:"一、";color:var(--c-brand)}
   .creed p{margin-top:10px;font-size:14px;color:var(--c-text-sub);line-height:1.8}
   details{margin-top:28px;border-top:1px solid var(--c-border);padding-top:20px}
   summary{cursor:pointer;font-weight:500;font-size:15px}
@@ -218,16 +224,33 @@
   .contact{background:var(--c-brand);color:#fff;text-align:center}
   .contact h2{font-size:34px}
   .contact .lead{margin-top:16px;color:rgba(255,255,255,.9)}
+  .tels{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:40px;max-width:840px;margin-left:auto;margin-right:auto}
   .tel-big{
-    display:inline-flex;flex-direction:column;align-items:center;gap:6px;margin-top:36px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
     color:#fff;text-decoration:none;
+    border:1px solid rgba(255,255,255,.45);border-radius:4px;padding:20px 16px;
   }
-  .tel-big .num{font-family:var(--f-num);font-weight:700;font-size:64px;line-height:1;letter-spacing:.02em}
+  .tel-big:hover{background:rgba(0,0,0,.12)}
+  .tel-big .co{font-size:13px;letter-spacing:.04em;color:rgba(255,255,255,.9)}
+  .hours-line{margin-top:24px;font-size:15px;color:rgba(255,255,255,.92)}
+  .dept{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+    margin-top:36px;padding-top:24px;border-top:1px solid rgba(255,255,255,.3);
+  }
+  .dept div{display:flex;flex-direction:column;gap:2px}
+  .dept .k{font-size:13px;color:rgba(255,255,255,.85)}
+  .dept a{font-family:var(--f-num);font-weight:600;font-size:22px;color:#fff;text-decoration:none;white-space:nowrap}
+  .dept a:hover{text-decoration:underline}
+  @media (max-width:768px){
+    .tels{grid-template-columns:1fr;gap:12px}
+    .dept{grid-template-columns:1fr 1fr;gap:16px}
+  }
+  .tel-big .num{font-family:var(--f-num);font-weight:700;font-size:46px;line-height:1.05;letter-spacing:.02em;white-space:nowrap}
   .tel-big .hours{font-size:14px;color:rgba(255,255,255,.9)}
   .contact .actions{margin-top:32px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
   .btn-white{
     background:#fff;color:var(--c-brand);text-decoration:none;font-weight:700;
-    padding:15px 36px;border-radius:4px;min-height:48px;display:inline-flex;align-items:center;
+    padding:15px 28px;border-radius:4px;min-height:48px;display:inline-flex;align-items:center;gap:10px;
   }
   .btn-white:hover{background:#F2F2F2}
   .btn-outline{
@@ -242,7 +265,7 @@
   }
   @media (max-width:768px){
     .contact h2{font-size:24px}
-    .tel-big .num{font-size:40px}
+    .tel-big .num{font-size:38px}
     .map{aspect-ratio:4/3}
   }
 
@@ -298,8 +321,8 @@
 <header>
   <div class="wrap head">
     <div class="logo">
-      <b>TAKAYA</b>
-      <small>株式会社タカヤ</small>
+      <b>TAKAYA MOTOR</b>
+      <small>タカヤモーター株式会社</small>
     </div>
     <nav aria-label="メインメニュー">
       <ul>
@@ -311,8 +334,8 @@
       </ul>
     </nav>
     <a class="btn-tel" href="#contact">
-      <em>お電話でのご相談</em>
-      <span class="num">0120-000-000</span>
+      <em>フリーダイヤル（タカヤモーター）</em>
+      <span class="num">0120-100-152</span>
     </a>
   </div>
 </header>
@@ -321,7 +344,7 @@
   <div class="wrap">
     <p class="eyebrow">SINCE 1965</p>
     <h1>車のことは、<br>ぜんぶタカヤで。</h1>
-    <p class="lead"><span class="todo">副見出し 要記入</span>　車検・整備から板金・保険まで。創業から60年、地域の車を一台ずつ見てきました。</p>
+    <p class="lead">地域のみなさまに支えられて60年。これからも信頼のサービスで、みなさまのお役に立てるよう努力してまいります。</p>
     <div class="promises">
       <div class="promise">
         <span class="n">PROMISE 01</span>
@@ -347,7 +370,7 @@
   <div class="wrap">
     <ul>
       <li><span class="v">1965<i>年</i></span><span class="k">創業。地域とともに60年</span></li>
-      <li><span class="v">8<i>業務</i></span><span class="k">車のことは一か所で完結</span></li>
+      <li><span class="v">8<i>業務</i></span><span class="k">ワンストップで対応</span></li>
       <li><span class="v">0<i>円</i></span><span class="k">代車費用。期間中も無料</span></li>
       <li><span class="v">161<i>本</i></span><span class="k">整備ブログの記事数</span></li>
     </ul>
@@ -359,34 +382,60 @@
     <div class="sec-head">
       <span class="en">SERVICE</span>
       <h2>車のことなら、ひと通り。</h2>
-      <p>タカヤが対応する 8 業務のうち、お問い合わせの多いものを掲載しています。
-        <span class="todo">8業務の正式名称・内訳 要記入</span></p>
+      <p>各メーカー新車・中古車販売、車の買取、リース、各種ローン、車検、一般整備、鈑金塗装、損害保険代理業務。
+        この 8 業務をワンストップで承ります。下の 5 つが窓口です。</p>
     </div>
     <div class="cards">
       <a class="card" href="#contact">
         <span class="no">01</span>
-        <h3>車検・法定点検</h3>
-        <p><strong>どんな車種・どんなメーカーにも対応します。</strong>見積りは無料。作業前に費用をご説明し、了解をいただいてから着手します。</p>
+        <h3>クルマ探す・買い取る</h3>
+        <p><strong>どんなメーカーでもお探しできます。</strong>新車・中古車の販売、買取・下取りに対応します。</p>
         <span class="more">詳しく見る →</span>
       </a>
       <a class="card" href="#contact">
         <span class="no">02</span>
-        <h3>一般整備・修理</h3>
-        <p>異音・警告灯・エアコンの不調など。原因の切り分けからお任せください。</p>
+        <h3>法人・個人リース</h3>
+        <p>メンテナンス費用も込みで、安心・便利なカーライフを。大手ではできないサービスを提供しています。</p>
         <span class="more">詳しく見る →</span>
       </a>
       <a class="card" href="#contact">
         <span class="no">03</span>
-        <h3>板金・塗装</h3>
-        <p>擦り傷・へこみの修理。保険を使う場合の手続きもあわせてご相談いただけます。</p>
+        <h3>車検・点検・整備</h3>
+        <p><strong>どんな車種・どんなメーカーにも対応します。</strong>オイル交換などの日常整備から、ドライブレコーダー設置・カスタムまで。</p>
         <span class="more">詳しく見る →</span>
       </a>
       <a class="card" href="#contact">
         <span class="no">04</span>
-        <h3>クルマを探す（販売・買取）</h3>
-        <p><strong>どんなメーカーでもお探しできます。</strong>販売後の整備まで同じ工場で。乗り換えのご相談も承ります。<span class="todo">許可番号 要確認</span></p>
+        <h3>板金・コーティング</h3>
+        <p>東京海上日動のリペアネットサービスを提供。弊社へ直接ご連絡いただくことも可能です。<span class="todo">コーティングの内容 要記入</span></p>
         <span class="more">詳しく見る →</span>
       </a>
+      <a class="card" href="#contact">
+        <span class="no">05</span>
+        <h3>自動車保険</h3>
+        <p>損害保険代理店として、事故対応から見直しのご相談まで承ります。<span class="todo">取扱保険会社 要確認</span></p>
+        <span class="more">詳しく見る →</span>
+      </a>
+    </div>
+    <div class="menu">
+      <span class="menu-t">対応メニュー</span>
+      <ul>
+        <li>車検・法定点検</li>
+        <li>一般整備・修理</li>
+        <li>オイル交換</li>
+        <li>ドライブレコーダー設置</li>
+        <li>カスタム</li>
+        <li>板金・塗装</li>
+        <li>コーティング</li>
+        <li>新車・中古車販売</li>
+        <li>買取・下取り</li>
+        <li>カーリース</li>
+        <li>レンタカー</li>
+        <li>各種ローン</li>
+        <li>自動車保険</li>
+        <li>無料代車</li>
+        <li>引取・納車</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -422,14 +471,15 @@
     </div>
     <div class="greet">
       <div>
-        <p><span class="todo">あいさつ本文 要記入</span></p>
-        <p>1965年の創業以来、私たちは地域のお客様のお車をお預かりしてきました。
-          車は生活の道具です。止まってしまえば、仕事にも家族の予定にも影響します。
-          だからこそ、預かる期間を短く、費用を分かりやすく、を大事にしてきました。</p>
-        <p>大きな設備や台数では、ディーラーさんには及びません。
-          その代わり、一台ごとの事情に合わせて手を動かすことはできます。
-          車のことで迷ったら、まず一度ご相談ください。</p>
-        <p class="sign">代表取締役<b>【要記入】</b></p>
+        <p>経営理念に三か条を掲げ、日々業務に邁進しております。</p>
+        <p>車の販売・リースから整備や修理、代車、保険など自動車におけるほぼ全ての業務をお客様にお任せ頂けるよう、
+          トータルカーライフサポートをこれからも徹底して参ります。
+          さらに高い品質と確かな満足度を感じていただけるよう、これからも成長し続ける企業でありたい。
+          それが私たちタカヤグループの行く道であります。お客様のご来店を心よりお待ちしております。</p>
+        <p class="sign">
+          タカヤモーター株式会社 代表取締役社長<b>草地 賢吾</b><br>
+          タカヤリース株式会社 代表取締役社長<b>石指 英樹</b>
+        </p>
       </div>
     </div>
   </div>
@@ -440,28 +490,29 @@
     <div class="sec-head">
       <span class="en">PHILOSOPHY</span>
       <h2>経営理念</h2>
-      <p><span class="todo">現行サイトの理念原文 要確認</span> 以下はレイアウト確認用の仮テキストです。</p>
+      <p>この三か条を掲げ、日々業務に邁進しております。</p>
     </div>
     <div class="creed">
       <div>
         <span class="n">01</span>
-        <h3>お客様の生活を止めない</h3>
-        <p>預かる時間を短く、代車を無料で。車が使えない期間をできる限り作らないことを、仕事の前提に置きます。</p>
+        <p class="precept">常に豊かさを追求し、優れた人材育成へ努力・研鑽しよう。</p>
       </div>
       <div>
         <span class="n">02</span>
-        <h3>技術は、説明できて初めて価値になる</h3>
-        <p>何を、なぜ、いくらで。専門用語は必ず言い換えて伝えます。</p>
+        <p class="precept">お客様満足度を第一とし、質の良い物・サービスを提供しよう。</p>
       </div>
       <div>
         <span class="n">03</span>
-        <h3>地域で、長く続ける</h3>
-        <p>一度の売上より、次に呼んでいただけること。60年続いた理由をこれからも守ります。</p>
+        <p class="precept">価値ある仕事を通じ、公平な配分と利益をもって地域社会に貢献しよう。</p>
       </div>
     </div>
     <details>
-      <summary>経営理念の原文を読む</summary>
-      <p><span class="todo">原文 要記入</span></p>
+      <summary>地球の環境と未来を考える（環境への取り組み）</summary>
+      <p>私たちは日常生活で多量のエネルギーを使用しています。特にクルマからの排出ガスが地球温暖化の大きな要因の一つとなっています。
+        国内で1年間に排出される二酸化炭素総量の20％は、これらクルマから排出されると云われています。
+        私たち一人ひとりが、クルマが原因で引き起こされる環境問題の被害者であると同時に加害者であることを忘れてはなりません。
+        私たちタカヤは、お客様と一体となりクルマのエコ活動を推進し、排出ガス削減と地球温暖化防止へ努力いたします。
+        それが私たちタカヤカーグループの行く道であります。</p>
     </details>
   </div>
 </section>
@@ -498,15 +549,35 @@
   <div class="wrap">
     <h2>まずは、お電話ください。</h2>
     <p class="lead">見積りは無料です。「これ直る？」だけのご相談でも構いません。</p>
-    <a class="tel-big" href="#contact">
-      <span class="num">0120-000-000</span>
-      <span class="hours"><span class="todo">フリーダイヤル・営業時間・定休日 要記入</span></span>
-    </a>
-    <div class="actions">
-      <a class="btn-white" href="#contact">お問い合わせフォーム</a>
-      <a class="btn-outline" href="#contact">アクセス・地図</a>
+
+    <div class="tels">
+      <a class="tel-big" href="tel:0120100152">
+        <span class="co">タカヤモーター株式会社</span>
+        <span class="num">0120-100-152</span>
+        <span class="hours">販売・車検・整備・保険のご相談</span>
+      </a>
+      <a class="tel-big" href="tel:0120556649">
+        <span class="co">タカヤリース株式会社</span>
+        <span class="num">0120-556-649</span>
+        <span class="hours">リース・レンタカーのご相談</span>
+      </a>
     </div>
-    <div class="map">Google マップ埋め込み<span class="todo">所在地 要記入</span></div>
+
+    <p class="hours-line">営業時間 8:30–17:30／定休日 毎週火曜日・年末年始・ゴールデンウィーク・盆休み</p>
+
+    <div class="actions">
+      <a class="btn-white" href="#contact">お問い合わせフォーム<span class="todo">Google フォームの公開URL 要取得</span></a>
+      <a class="btn-outline" href="mailto:takaya-customer-service@takaya-gp.jp">メールで問い合わせる</a>
+    </div>
+
+    <div class="dept">
+      <div><span class="k">サービス（整備・車検）</span><a href="tel:0862721001">086-272-1001</a></div>
+      <div><span class="k">営業（タカヤモーター）</span><a href="tel:0862721021">086-272-1021</a></div>
+      <div><span class="k">営業（タカヤリース）</span><a href="tel:0862733611">086-273-3611</a></div>
+      <div><span class="k">総務</span><a href="tel:0862723065">086-272-3065</a></div>
+    </div>
+
+    <div class="map">〒703-8233 岡山市中区高屋21-1<span class="todo">Google マップ埋め込み</span></div>
   </div>
 </section>
 
@@ -514,21 +585,23 @@
   <div class="wrap">
     <div class="foot-grid">
       <div>
-        <h4>株式会社タカヤ<span class="todo">正式社名 要確認</span></h4>
+        <h4>タカヤモーター株式会社／タカヤリース株式会社</h4>
         <ul>
-          <li><span class="todo">所在地 要記入</span></li>
-          <li><span class="todo">電話番号 要記入</span></li>
-          <li><span class="todo">営業時間・定休日 要記入</span></li>
-          <li><span class="todo">認証工場番号・古物商許可番号 要確認</span></li>
+          <li>〒703-8233 岡山市中区高屋21-1</li>
+          <li>タカヤモーター 0120-100-152／タカヤリース 0120-556-649</li>
+          <li>営業時間 8:30–17:30／定休日 毎週火曜日ほか</li>
+          <li>創立 タカヤモーター 昭和40年5月10日／タカヤリース 昭和59年5月</li>
+          <li><span class="todo">認証工場番号・古物商許可番号・保険代理店登録 要確認</span></li>
         </ul>
       </div>
       <div>
         <h4>サービス</h4>
         <ul>
-          <li><a href="#service">車検・法定点検</a></li>
-          <li><a href="#service">一般整備・修理</a></li>
-          <li><a href="#service">板金・塗装</a></li>
-          <li><a href="#service">クルマを探す（販売・買取）</a></li>
+          <li><a href="#service">クルマ探す・買い取る</a></li>
+          <li><a href="#service">法人・個人リース</a></li>
+          <li><a href="#service">車検・点検</a></li>
+          <li><a href="#service">板金・コーティング</a></li>
+          <li><a href="#service">自動車保険</a></li>
         </ul>
       </div>
       <div>
@@ -542,14 +615,14 @@
         </ul>
       </div>
     </div>
-    <p class="copyright">© 1965- TAKAYA CO., LTD.</p>
+    <p class="copyright">© 1965- TAKAYA MOTOR CO., LTD. / TAKAYA LEASE CO., LTD.</p>
   </div>
 </footer>
 
 <div class="callbar">
-  <a class="c-tel" href="#contact">
-    <em>お電話でのご相談</em>
-    <span class="num">0120-000-000</span>
+  <a class="c-tel" href="tel:0120100152">
+    <em>タカヤモーター</em>
+    <span class="num">0120-100-152</span>
   </a>
   <a class="c-form" href="#contact">
     <span class="lbl">お問い合わせ</span>
