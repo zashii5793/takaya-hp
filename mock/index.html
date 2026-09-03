@@ -1,0 +1,529 @@
+<title>タカヤ トップページ案</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+  :root{
+    --c-brand:#E60012;
+    --c-brand-dark:#B8000E;
+    --c-brand-tint:#FFF1F2;
+    --c-text:#1A1A1A;
+    --c-text-sub:#666666;
+    --c-bg:#FFFFFF;
+    --c-bg-alt:#F7F7F7;
+    --c-border:#E5E5E5;
+
+    --f-jp:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
+    --f-num:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+
+    --w-max:1140px;
+    --pad-x:40px;
+    --sec-y:96px;
+  }
+  @media (max-width:768px){
+    :root{ --pad-x:20px; --sec-y:56px; }
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--c-bg);
+    color:var(--c-text);
+    font-family:var(--f-jp);
+    font-size:16px;
+    line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{line-height:1.3;text-wrap:balance;margin:0;font-weight:700}
+  p{margin:0}
+  a{color:var(--c-brand);text-decoration-thickness:1px;text-underline-offset:3px}
+  a:focus-visible,button:focus-visible{outline:3px solid var(--c-brand-dark);outline-offset:2px}
+  img{max-width:100%}
+
+  .wrap{max-width:var(--w-max);margin:0 auto;padding:0 var(--pad-x)}
+  section{padding:var(--sec-y) 0}
+
+  /* ---- 要記入マーカー（モック用。実装時に削除） ---- */
+  .todo{
+    font-family:var(--f-jp);
+    font-size:12px;font-weight:500;line-height:1.4;
+    color:var(--c-brand-dark);
+    background:var(--c-brand-tint);
+    border:1px dashed var(--c-brand);
+    border-radius:3px;
+    padding:1px 6px;
+    display:inline-block;
+    white-space:nowrap;
+  }
+  .on-red .todo{color:#fff;background:rgba(0,0,0,.22);border-color:rgba(255,255,255,.75)}
+
+  /* ---- モック注記バー ---- */
+  .mockbar{
+    background:#1A1A1A;color:#fff;font-size:13px;line-height:1.6;
+    padding:10px 0;
+  }
+  .mockbar .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline}
+  .mockbar strong{font-weight:700;letter-spacing:.04em}
+  .mockbar span{color:#C9C9C9}
+
+  /* ---- ヘッダー ---- */
+  header{border-bottom:1px solid var(--c-border);background:#fff;position:relative;z-index:2}
+  .head{display:flex;align-items:center;gap:24px;min-height:76px}
+  .logo{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+  .logo b{
+    font-family:var(--f-num);font-weight:700;font-size:30px;letter-spacing:.06em;
+    color:var(--c-brand);line-height:1;
+  }
+  .logo small{font-size:12px;color:var(--c-text-sub);line-height:1}
+  nav ul{display:flex;gap:28px;list-style:none;margin:0;padding:0;font-size:15px;font-weight:500}
+  nav a{color:var(--c-text);text-decoration:none;padding:4px 0;display:inline-block;border-bottom:2px solid transparent}
+  nav a:hover{color:var(--c-brand);border-bottom-color:var(--c-brand)}
+  .btn-tel{
+    display:flex;flex-direction:column;justify-content:center;
+    background:var(--c-brand);color:#fff;text-decoration:none;
+    padding:8px 20px;border-radius:4px;min-height:48px;
+  }
+  .btn-tel:hover{background:var(--c-brand-dark)}
+  .btn-tel em{font-style:normal;font-size:11px;letter-spacing:.08em;opacity:.9}
+  .btn-tel .num{font-family:var(--f-num);font-weight:700;font-size:24px;line-height:1.1;letter-spacing:.02em}
+  @media (max-width:900px){ nav,.btn-tel{display:none} }
+
+  /* ---- ヒーロー（赤ベタ 1/3） ---- */
+  .hero{background:var(--c-brand);color:#fff;padding:80px 0 0}
+  .hero .eyebrow{
+    font-family:var(--f-num);font-size:15px;letter-spacing:.22em;font-weight:600;
+    opacity:.85;margin-bottom:20px;
+  }
+  .hero h1{font-size:56px;letter-spacing:.01em}
+  .hero .lead{margin-top:24px;font-size:17px;max-width:34em;color:rgba(255,255,255,.92)}
+  .promises{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+    margin-top:56px;transform:translateY(48px);
+  }
+  .promise{background:#fff;color:var(--c-text);padding:28px 24px 26px;border-radius:4px}
+  .promise .n{
+    font-family:var(--f-num);font-size:13px;font-weight:600;letter-spacing:.18em;
+    color:var(--c-brand);display:block;margin-bottom:10px;
+  }
+  .promise h3{font-size:22px}
+  .promise p{margin-top:8px;font-size:14px;color:var(--c-text-sub);line-height:1.7}
+  .hero-foot{height:48px}
+  @media (max-width:768px){
+    .hero{padding-top:48px}
+    .hero h1{font-size:32px}
+    .hero .lead{font-size:16px}
+    .promises{grid-template-columns:1fr;gap:12px;margin-top:36px}
+  }
+
+  /* ---- 実績の数字 ---- */
+  .facts{padding-top:calc(var(--sec-y) + 24px)}
+  .facts ul{
+    list-style:none;margin:0;padding:0;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:32px;
+  }
+  .facts li{border-top:3px solid var(--c-brand);padding-top:16px}
+  .facts .v{
+    font-family:var(--f-num);font-weight:700;font-size:64px;line-height:1;
+    color:var(--c-brand);font-variant-numeric:tabular-nums;display:block;
+  }
+  .facts .v i{font-style:normal;font-size:26px;margin-left:4px;font-weight:600}
+  .facts .k{display:block;margin-top:10px;font-size:14px;color:var(--c-text-sub)}
+  @media (max-width:768px){
+    .facts ul{grid-template-columns:1fr 1fr;gap:24px}
+    .facts .v{font-size:40px}
+  }
+
+  /* ---- セクション見出し ---- */
+  .sec-head{margin-bottom:40px}
+  .sec-head .en{
+    font-family:var(--f-num);font-size:13px;font-weight:600;letter-spacing:.2em;
+    color:var(--c-brand);display:block;margin-bottom:8px;
+  }
+  .sec-head h2{font-size:32px;border-left:5px solid var(--c-brand);padding-left:16px}
+  .sec-head p{margin-top:14px;color:var(--c-text-sub);font-size:15px;max-width:40em}
+  @media (max-width:768px){ .sec-head h2{font-size:24px} }
+
+  /* ---- サービス ---- */
+  .services{background:var(--c-bg-alt)}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .card{
+    background:#fff;border:1px solid var(--c-border);border-radius:4px;
+    padding:26px 22px 24px;position:relative;text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .card::after{
+    content:"";position:absolute;left:0;bottom:0;height:3px;width:0;
+    background:var(--c-brand);transition:width .25s ease;
+  }
+  .card:hover::after{width:100%}
+  .card .no{font-family:var(--f-num);font-size:13px;font-weight:600;letter-spacing:.16em;color:var(--c-text-sub)}
+  .card h3{font-size:20px}
+  .card p{font-size:14px;color:var(--c-text-sub);line-height:1.7}
+  .card .more{margin-top:auto;padding-top:12px;font-size:14px;color:var(--c-brand);font-weight:500}
+  @media (max-width:900px){ .cards{grid-template-columns:1fr 1fr} }
+  @media (max-width:560px){ .cards{grid-template-columns:1fr} }
+
+  /* ---- 選ばれる理由（赤ベタ 2/3） ---- */
+  .reason{background:var(--c-brand);color:#fff}
+  .reason h2{font-size:40px;max-width:16em}
+  .reason .en{
+    font-family:var(--f-num);font-size:13px;font-weight:600;letter-spacing:.2em;
+    opacity:.85;display:block;margin-bottom:12px;
+  }
+  .reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+  .reason dl{margin:0;display:grid;gap:24px}
+  .reason dt{font-size:19px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:8px}
+  .reason dd{margin:8px 0 0;font-size:15px;color:rgba(255,255,255,.9);line-height:1.8}
+  @media (max-width:900px){ .reason-grid{grid-template-columns:1fr;gap:36px} .reason h2{font-size:28px} }
+
+  /* ---- ごあいさつ ---- */
+  .greet-grid{display:grid;grid-template-columns:320px 1fr;gap:48px;align-items:start}
+  .photo{
+    aspect-ratio:4/5;background:var(--c-bg-alt);border:1px dashed var(--c-border);
+    border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+    color:var(--c-text-sub);font-size:13px;text-align:center;padding:16px;
+  }
+  .greet-grid p+p{margin-top:20px}
+  .sign{margin-top:28px;font-size:15px;color:var(--c-text-sub)}
+  .sign b{font-size:20px;color:var(--c-text);margin-left:10px}
+  @media (max-width:900px){ .greet-grid{grid-template-columns:1fr;gap:28px} .photo{max-width:260px} }
+
+  /* ---- 経営理念 ---- */
+  .philosophy{background:var(--c-bg-alt)}
+  .creed{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .creed div{background:#fff;border:1px solid var(--c-border);border-radius:4px;padding:28px 24px}
+  .creed .n{font-family:var(--f-num);font-size:40px;font-weight:700;color:var(--c-brand-tint);line-height:1;display:block}
+  .creed h3{font-size:19px;margin-top:8px}
+  .creed p{margin-top:10px;font-size:14px;color:var(--c-text-sub);line-height:1.8}
+  details{margin-top:28px;border-top:1px solid var(--c-border);padding-top:20px}
+  summary{cursor:pointer;font-weight:500;font-size:15px}
+  details p{margin-top:14px;font-size:14px;color:var(--c-text-sub)}
+  @media (max-width:900px){ .creed{grid-template-columns:1fr} }
+
+  /* ---- ブログ ---- */
+  .posts{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .post{text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:10px}
+  .thumb{
+    aspect-ratio:16/10;background:var(--c-bg-alt);border:1px dashed var(--c-border);border-radius:4px;
+    display:flex;align-items:center;justify-content:center;color:var(--c-text-sub);font-size:12px;
+  }
+  .post time{font-family:var(--f-num);font-size:14px;font-weight:600;color:var(--c-text-sub);letter-spacing:.04em}
+  .post h3{font-size:17px;line-height:1.6}
+  .post:hover h3{color:var(--c-brand)}
+  .sec-foot{margin-top:40px;text-align:center}
+  .btn-ghost{
+    display:inline-block;border:1px solid var(--c-brand);color:var(--c-brand);
+    text-decoration:none;padding:13px 32px;border-radius:4px;font-weight:500;min-height:48px;
+  }
+  .btn-ghost:hover{background:var(--c-brand);color:#fff}
+  @media (max-width:900px){ .posts{grid-template-columns:1fr} }
+
+  /* ---- 連絡先（赤ベタ 3/3） ---- */
+  .contact{background:var(--c-brand);color:#fff;text-align:center}
+  .contact h2{font-size:34px}
+  .contact .lead{margin-top:16px;color:rgba(255,255,255,.9)}
+  .tel-big{
+    display:inline-flex;flex-direction:column;align-items:center;gap:6px;margin-top:36px;
+    color:#fff;text-decoration:none;
+  }
+  .tel-big .num{font-family:var(--f-num);font-weight:700;font-size:64px;line-height:1;letter-spacing:.02em}
+  .tel-big .hours{font-size:14px;color:rgba(255,255,255,.9)}
+  .contact .actions{margin-top:32px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  .btn-white{
+    background:#fff;color:var(--c-brand);text-decoration:none;font-weight:700;
+    padding:15px 36px;border-radius:4px;min-height:48px;display:inline-flex;align-items:center;
+  }
+  .btn-white:hover{background:#F2F2F2}
+  .btn-outline{
+    border:1px solid rgba(255,255,255,.8);color:#fff;text-decoration:none;
+    padding:15px 36px;border-radius:4px;min-height:48px;display:inline-flex;align-items:center;
+  }
+  .btn-outline:hover{background:rgba(0,0,0,.12)}
+  .map{
+    margin-top:48px;aspect-ratio:21/7;background:rgba(0,0,0,.14);
+    border:1px dashed rgba(255,255,255,.6);border-radius:4px;
+    display:flex;align-items:center;justify-content:center;font-size:14px;
+  }
+  @media (max-width:768px){
+    .contact h2{font-size:24px}
+    .tel-big .num{font-size:40px}
+    .map{aspect-ratio:4/3}
+  }
+
+  /* ---- フッター ---- */
+  footer{background:#1A1A1A;color:#B8B8B8;font-size:14px;padding:56px 0 32px}
+  .foot-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:40px}
+  footer h4{color:#fff;font-size:15px;margin:0 0 14px;font-weight:700}
+  footer ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  footer a{color:#B8B8B8;text-decoration:none}
+  footer a:hover{color:#fff;text-decoration:underline}
+  .copyright{
+    margin-top:40px;padding-top:20px;border-top:1px solid #333;
+    font-family:var(--f-num);font-size:13px;letter-spacing:.06em;color:#8A8A8A;
+  }
+  @media (max-width:900px){ .foot-grid{grid-template-columns:1fr;gap:28px} }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;animation:none !important}
+  }
+</style>
+
+<div class="mockbar">
+  <div class="wrap">
+    <strong>MOCK</strong>
+    <span>設計書 01〜03 に基づくトップページ案。<span class="todo">要記入</span> の箇所は未確定の実データ待ちです（推測値は入れていません）。</span>
+  </div>
+</div>
+
+<header>
+  <div class="wrap head">
+    <div class="logo">
+      <b>TAKAYA</b>
+      <small>株式会社タカヤ<span class="todo">正式社名 要確認</span></small>
+    </div>
+    <nav aria-label="メインメニュー">
+      <ul>
+        <li><a href="#about">会社案内</a></li>
+        <li><a href="#service">サービス</a></li>
+        <li><a href="#reason">選ばれる理由</a></li>
+        <li><a href="#blog">ブログ</a></li>
+        <li><a href="#contact">お問い合わせ</a></li>
+      </ul>
+    </nav>
+    <a class="btn-tel" href="#contact">
+      <em>お電話でのご相談</em>
+      <span class="num">0120-000-000</span>
+    </a>
+  </div>
+</header>
+
+<div class="hero on-red">
+  <div class="wrap">
+    <p class="eyebrow">SINCE 1965</p>
+    <h1>車のことは、<br>ぜんぶタカヤで。</h1>
+    <p class="lead"><span class="todo">副見出し 要記入</span>　車検・整備から板金・保険まで。創業から60年、地域の車を一台ずつ見てきました。</p>
+    <div class="promises">
+      <div class="promise">
+        <span class="n">PROMISE 01</span>
+        <h3>代車は無料</h3>
+        <p>修理・車検の期間中も、移動に困りません。追加料金はいただきません。</p>
+      </div>
+      <div class="promise">
+        <span class="n">PROMISE 02</span>
+        <h3>自社で完結</h3>
+        <p>外注に回さず自社工場で対応。<span class="todo">対応範囲 要確認</span></p>
+      </div>
+      <div class="promise">
+        <span class="n">PROMISE 03</span>
+        <h3>引取・納車</h3>
+        <p>お車を預けに来ていただく必要はありません。ご自宅・職場まで伺います。</p>
+      </div>
+    </div>
+  </div>
+  <div class="hero-foot"></div>
+</div>
+
+<section class="facts">
+  <div class="wrap">
+    <ul>
+      <li><span class="v">1965<i>年</i></span><span class="k">創業。地域とともに60年</span></li>
+      <li><span class="v">8<i>業務</i></span><span class="k">車のことは一か所で完結</span></li>
+      <li><span class="v">0<i>円</i></span><span class="k">代車費用。期間中も無料</span></li>
+      <li><span class="v">161<i>本</i></span><span class="k">整備ブログの記事数</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="services" id="service">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="en">SERVICE</span>
+      <h2>車のことなら、ひと通り。</h2>
+      <p>タカヤが対応する 8 業務のうち、お問い合わせの多いものを掲載しています。
+        <span class="todo">8業務の正式名称・内訳 要記入</span></p>
+    </div>
+    <div class="cards">
+      <a class="card" href="#contact">
+        <span class="no">01</span>
+        <h3>車検・法定点検</h3>
+        <p>見積りは無料。作業前に費用をご説明し、了解をいただいてから着手します。</p>
+        <span class="more">詳しく見る →</span>
+      </a>
+      <a class="card" href="#contact">
+        <span class="no">02</span>
+        <h3>一般整備・修理</h3>
+        <p>異音・警告灯・エアコンの不調など。原因の切り分けからお任せください。</p>
+        <span class="more">詳しく見る →</span>
+      </a>
+      <a class="card" href="#contact">
+        <span class="no">03</span>
+        <h3>板金・塗装</h3>
+        <p>擦り傷・へこみの修理。保険を使う場合の手続きもあわせてご相談いただけます。</p>
+        <span class="more">詳しく見る →</span>
+      </a>
+      <a class="card" href="#contact">
+        <span class="no">04</span>
+        <h3>中古車販売・買取</h3>
+        <p>販売後の整備まで同じ工場で。乗り換えのご相談も承ります。<span class="todo">許可番号 要確認</span></p>
+        <span class="more">詳しく見る →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="reason on-red" id="reason">
+  <div class="wrap reason-grid">
+    <div>
+      <span class="en">WHY TAKAYA</span>
+      <h2>大手にはできないことを、やっています。</h2>
+    </div>
+    <dl>
+      <div>
+        <dt>担当が最後まで変わりません</dt>
+        <dd>受付から作業、納車後のご相談まで同じ顔ぶれで対応します。前回何をしたかを、毎回説明し直す必要はありません。</dd>
+      </div>
+      <div>
+        <dt>直せるものは、直して使う提案をします</dt>
+        <dd>交換ありきの見積りは出しません。あと何年乗るかを伺ったうえで、費用のかけどころをご提案します。</dd>
+      </div>
+      <div>
+        <dt>費用は、作業前に確定させます</dt>
+        <dd>追加が必要になった場合は、必ず一度お電話でご確認します。開けてみたら高くなっていた、をなくします。</dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="en">MESSAGE</span>
+      <h2>ごあいさつ</h2>
+    </div>
+    <div class="greet-grid">
+      <div class="photo">
+        <span>代表 顔写真</span>
+        <span class="todo">撮影・手配 要</span>
+      </div>
+      <div>
+        <p><span class="todo">あいさつ本文 要記入</span></p>
+        <p>1965年の創業以来、私たちは地域のお客様のお車をお預かりしてきました。
+          車は生活の道具です。止まってしまえば、仕事にも家族の予定にも影響します。
+          だからこそ、預かる期間を短く、費用を分かりやすく、を大事にしてきました。</p>
+        <p>大きな設備や台数では、ディーラーさんには及びません。
+          その代わり、一台ごとの事情に合わせて手を動かすことはできます。
+          車のことで迷ったら、まず一度ご相談ください。</p>
+        <p class="sign">代表取締役<b>【要記入】</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="philosophy">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="en">PHILOSOPHY</span>
+      <h2>経営理念</h2>
+      <p><span class="todo">現行サイトの理念原文 要確認</span> 以下はレイアウト確認用の仮テキストです。</p>
+    </div>
+    <div class="creed">
+      <div>
+        <span class="n">01</span>
+        <h3>お客様の生活を止めない</h3>
+        <p>預かる時間を短く、代車を無料で。車が使えない期間をできる限り作らないことを、仕事の前提に置きます。</p>
+      </div>
+      <div>
+        <span class="n">02</span>
+        <h3>技術は、説明できて初めて価値になる</h3>
+        <p>何を、なぜ、いくらで。専門用語は必ず言い換えて伝えます。</p>
+      </div>
+      <div>
+        <span class="n">03</span>
+        <h3>地域で、長く続ける</h3>
+        <p>一度の売上より、次に呼んでいただけること。60年続いた理由をこれからも守ります。</p>
+      </div>
+    </div>
+    <details>
+      <summary>経営理念の原文を読む</summary>
+      <p><span class="todo">原文 要記入</span></p>
+    </details>
+  </div>
+</section>
+
+<section id="blog">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="en">BLOG</span>
+      <h2>整備ブログ</h2>
+      <p>現場で実際にあった作業を記録しています。全 161 本。</p>
+    </div>
+    <div class="posts">
+      <a class="post" href="#blog">
+        <span class="thumb">記事サムネイル<span class="todo">要移行</span></span>
+        <time datetime="2026-08-20">2026.08.20</time>
+        <h3><span class="todo">現行ブログから移行</span> 記事タイトルが入ります</h3>
+      </a>
+      <a class="post" href="#blog">
+        <span class="thumb">記事サムネイル<span class="todo">要移行</span></span>
+        <time datetime="2026-08-06">2026.08.06</time>
+        <h3><span class="todo">現行ブログから移行</span> 記事タイトルが入ります</h3>
+      </a>
+      <a class="post" href="#blog">
+        <span class="thumb">記事サムネイル<span class="todo">要移行</span></span>
+        <time datetime="2026-07-28">2026.07.28</time>
+        <h3><span class="todo">現行ブログから移行</span> 記事タイトルが入ります</h3>
+      </a>
+    </div>
+    <div class="sec-foot"><a class="btn-ghost" href="#blog">記事一覧を見る</a></div>
+  </div>
+</section>
+
+<section class="contact on-red" id="contact">
+  <div class="wrap">
+    <h2>まずは、お電話ください。</h2>
+    <p class="lead">見積りは無料です。「これ直る？」だけのご相談でも構いません。</p>
+    <a class="tel-big" href="#contact">
+      <span class="num">0120-000-000</span>
+      <span class="hours"><span class="todo">フリーダイヤル・営業時間・定休日 要記入</span></span>
+    </a>
+    <div class="actions">
+      <a class="btn-white" href="#contact">お問い合わせフォーム</a>
+      <a class="btn-outline" href="#contact">アクセス・地図</a>
+    </div>
+    <div class="map">Google マップ埋め込み<span class="todo">所在地 要記入</span></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>株式会社タカヤ<span class="todo">正式社名 要確認</span></h4>
+        <ul>
+          <li><span class="todo">所在地 要記入</span></li>
+          <li><span class="todo">電話番号 要記入</span></li>
+          <li><span class="todo">営業時間・定休日 要記入</span></li>
+          <li><span class="todo">認証工場番号・古物商許可番号 要確認</span></li>
+        </ul>
+      </div>
+      <div>
+        <h4>サービス</h4>
+        <ul>
+          <li><a href="#service">車検・法定点検</a></li>
+          <li><a href="#service">一般整備・修理</a></li>
+          <li><a href="#service">板金・塗装</a></li>
+          <li><a href="#service">中古車販売・買取</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>会社について</h4>
+        <ul>
+          <li><a href="#about">会社案内</a></li>
+          <li><a href="#reason">選ばれる理由</a></li>
+          <li><a href="#blog">整備ブログ</a></li>
+          <li><a href="#contact">お問い合わせ</a></li>
+          <li><a href="#contact">プライバシーポリシー</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="copyright">© 1965- TAKAYA CO., LTD.</p>
+  </div>
+</footer>
