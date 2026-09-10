@@ -21,7 +21,9 @@ MAP_EMBED = ("https://maps.google.com/maps?q=%E3%82%BF%E3%82%AB%E3%83%A4%E3%83%A
              "&ll=34.6752208,133.9613749&z=17&hl=ja&output=embed")
 MAP_LINK = ("https://www.google.co.jp/maps/place/%E3%82%BF%E3%82%AB%E3%83%A4%E3%83%A2%E3%83%BC%E3%82%BF%E3%83%BC%E3%88%B1+%E3%82%B5%E3%83%BC%E3%83%93%E3%82%B9/"
             "@34.6752252,133.9588,17z/data=!3m1!4b1!4m6!3m5!1s0x355408b5db6dfb9d:0x653a5f5af1c074f5!8m2!3d34.6752208!4d133.9613749!16s%2Fg%2F1vb99wz9?hl=ja")
-HOURS = "8:30–17:30／火曜定休"
+HOURS_OPEN = "8:30–17:30"
+HOLIDAY = "毎週火曜日／年末年始・ゴールデンウィーク・お盆"
+HOURS = f"{HOURS_OPEN}／定休日 {HOLIDAY}"
 
 NAV = [  # ヘッダーの並び（2026-09-10 決定）。ブログはフッターと「お知らせ」帯から
     ("services/index.html", "サービス"),
@@ -240,7 +242,7 @@ def footer(root):
     <div class="footer-grid">
       <div>
         <p class="f-name">TakayaCarGroup<br>タカヤモーター株式会社／タカヤリース株式会社</p>
-        <p>〒703-8233 岡山市中区高屋21-1<br>営業時間 8:30–17:30／定休日 毎週火曜日ほか<br>創立 昭和40年5月10日（タカヤモーター）</p>
+        <p>〒703-8233 岡山市中区高屋21-1<br>営業時間 {HOURS_OPEN}／定休日 {HOLIDAY}<br>創立 昭和40年5月10日（タカヤモーター）</p>
         <p>{lotus_html()}</p>
         <p><span class="todo">認証工場番号・古物商許可番号・保険代理店登録 要確認</span></p>
         <ul class="social">{social_html(root)}</ul>
@@ -393,7 +395,7 @@ def build_index():
   <div class="wrap">
     <span class="eyebrow">SERVICE</span>
     <h2 class="sec-title">おクルマのことはすべてワンストップで対応可能です！</h2>
-    <p class="lead">新車・中古車の販売、買取、リース、各種ローン、車検・整備、板金塗装、自動車保険。クルマに関することは、5つの窓口でまとめてお受けします。</p>
+    <p class="lead">クルマを探す・買い取る、リース、車検・点検・整備、板金・コーティング、自動車保険。クルマに関することは、この5つのサービスでまとめてお受けします。</p>
     <div class="cards cards--5">{svc_cards}
     </div>
   </div>
@@ -418,7 +420,7 @@ def build_index():
       <h2 class="sec-title">アクセス</h2>
       <div class="info-list" style="margin-top:20px">
         <div><h4>所在地</h4><p>〒703-8233<br>岡山市中区高屋21-1</p><a class="link-more" style="margin-top:6px" href="{MAP_LINK}" target="_blank" rel="noopener">Google マップで見る →</a></div>
-        <div><h4>営業時間</h4><p>8:30 – 17:30</p><p class="muted">定休日：毎週火曜日／年末年始・ゴールデンウィーク・盆休み</p></div>
+        <div><h4>営業時間</h4><p>{HOURS_OPEN}</p><p class="muted">定休日：{HOLIDAY}</p></div>
         <div><h4>お電話</h4>
           <p>タカヤモーター <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:20px;text-decoration:none;color:var(--ink)">0120-100-152</a><br>
              タカヤリース <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:20px;text-decoration:none;color:var(--ink)">0120-556-649</a></p></div>
@@ -448,7 +450,7 @@ def build_services_index():
       </div>
     </a>''' for slug, num, name, desc, img, tag in SERVICES)
     body = page_head(root, [("index.html", "トップ"), (None, "サービス")], "サービス",
-                     "新車・中古車の販売、買取、リース、各種ローン、車検・整備、板金塗装、自動車保険。クルマに関することは、5つの窓口でまとめてお受けします。") + f'''
+                     "クルマを探す・買い取る、リース、車検・点検・整備、板金・コーティング、自動車保険。クルマに関することは、この5つのサービスでまとめてお受けします。") + f'''
 <section class="sec"><div class="wrap">
   <div class="cards cards--3" style="margin-top:0">{cards}</div>
 </div></section>'''
@@ -618,7 +620,7 @@ def build_company():
     <tr><th>認証・許可</th><td>指定自動車整備事業／自動車特定整備事業<br>ISO 14001 認証取得<br><span class="todo">番号は要確認</span></td></tr>
     <tr><th>加盟団体</th><td><a href="{LOTUS_URL}" target="_blank" rel="noopener">ロータスクラブ（全日本ロータス同友会）</a> 会員</td></tr>
     <tr><th>採用</th><td><a href="recruit.html">採用情報を見る →</a></td></tr>
-    <tr><th>営業時間</th><td>8:30–17:30（定休日：毎週火曜日／年末年始・GW・盆休み）</td></tr>
+    <tr><th>営業時間</th><td>{HOURS_OPEN}（定休日：{HOLIDAY}）</td></tr>
   </tbody></table>
 </div></section>
 
@@ -640,14 +642,14 @@ def build_company():
 def build_access():
     root = ""
     body = page_head(root, [("index.html", "トップ"), (None, "アクセス")], "アクセス",
-                     "〒703-8233 岡山市中区高屋21-1。営業時間 8:30–17:30、定休日は毎週火曜日です。") + f'''
+                     "〒703-8233 岡山市中区高屋21-1。営業時間 8:30–17:30、定休日は毎週火曜日と年末年始・ゴールデンウィーク・お盆です。") + f'''
 <section class="sec"><div class="wrap">
   <div class="split split--media">
     <div class="info-list">
       <div><h4>所在地</h4><p>〒703-8233<br>岡山市中区高屋21-1</p><a class="link-more" style="margin-top:6px" href="{MAP_LINK}" target="_blank" rel="noopener">Google マップで見る →</a></div>
       <div><h4>交通</h4>
         <p>電車：JR高島駅から徒歩15分<br>お車：国道250号沿い、マルナカ高屋店の角を左折<br>バス：岡電バス「高屋」降り場から徒歩5分</p></div>
-      <div><h4>営業時間</h4><p>8:30 – 17:30</p><p class="muted">定休日：毎週火曜日／年末年始・ゴールデンウィーク・盆休み</p></div>
+      <div><h4>営業時間</h4><p>{HOURS_OPEN}</p><p class="muted">定休日：{HOLIDAY}</p></div>
       <div><h4>フリーダイヤル</h4>
         <p>タカヤモーター株式会社 <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:22px;text-decoration:none;color:var(--ink)">0120-100-152</a></p>
         <p>タカヤリース株式会社 <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:22px;text-decoration:none;color:var(--ink)">0120-556-649</a></p></div>
@@ -674,7 +676,7 @@ def build_contact():
       <div><h4>お電話</h4>
         <p>タカヤモーター <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:26px;text-decoration:none;color:var(--brand)">0120-100-152</a></p>
         <p>タカヤリース <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:26px;text-decoration:none;color:var(--brand)">0120-556-649</a></p>
-        <p class="muted">受付 8:30–17:30／定休日 毎週火曜日</p></div>
+        <p class="muted">受付 {HOURS_OPEN}／定休日：{HOLIDAY}</p></div>
       <div><h4>メール</h4><p><a href="mailto:takaya-customer-service@takaya-gp.jp">takaya-customer-service@takaya-gp.jp</a></p></div>
       <div><h4>部署直通</h4><p class="muted">サービス 086-272-1001／営業（モーター）086-272-1021／営業（リース）086-273-3611／総務 086-272-3065</p></div>
     </div>
