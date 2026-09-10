@@ -75,12 +75,21 @@ table{border-collapse:collapse;width:100%}
 .header-tel strong{font-family:var(--f-num);font-size:22px;font-weight:700;white-space:nowrap}
 .nav-toggle{display:none;margin-left:auto;width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:3px;cursor:pointer;padding:0}
 .nav-toggle span{display:block;width:20px;height:2px;background:var(--ink);margin:4px auto;transition:transform .2s,opacity .2s}
-@media (max-width:900px){
+@media (max-width:1120px){
+  .site-header .wrap{gap:16px}
+  .brand__name{font-size:20px}
+  .brand__sub{display:none}
+  .nav ul{gap:14px}
+  .nav a{font-size:13px}
+  .header-tel{padding:5px 10px}
+  .header-tel strong{font-size:19px}
+}
+@media (max-width:1000px){
   .brand__name{font-size:20px}
   .brand__sub{font-size:10px}
   .header-tel{display:none}
   .nav-toggle{display:block}
-  .nav{position:absolute;left:0;right:0;top:var(--header-h);background:#fff;border-bottom:1px solid var(--line);display:none;margin:0}
+  .nav{position:absolute;left:0;right:0;top:var(--header-h);margin-left:0;background:#fff;border-bottom:1px solid var(--line);display:none;margin:0}
   .nav ul{flex-direction:column;gap:0;padding:8px 0}
   .nav a{display:block;padding:14px var(--pad-x);border-bottom:1px solid var(--line-soft)}
   .nav a.is-active{color:var(--brand)}
@@ -92,7 +101,7 @@ table{border-collapse:collapse;width:100%}
 
 /* スマホ固定バー（C-07） */
 .sp-bar{display:none}
-@media (max-width:900px){
+@media (max-width:1000px){
   .sp-bar{display:grid;grid-template-columns:1fr 1fr;position:fixed;left:0;right:0;bottom:0;z-index:90;border-top:1px solid var(--line);background:#fff}
   .sp-bar a{display:flex;align-items:center;justify-content:center;min-height:56px;text-decoration:none;font-weight:700;font-size:15px}
   .sp-bar a:first-child{color:var(--brand)}

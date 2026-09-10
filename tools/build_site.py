@@ -25,13 +25,14 @@ HOURS_OPEN = "8:30–17:30"
 HOLIDAY = "毎週火曜日・第1日曜日（繁忙期を除く）／年末年始・ゴールデンウィーク・お盆"
 HOURS = f"{HOURS_OPEN}／定休日 {HOLIDAY}"
 
-NAV = [  # ヘッダーの並び（2026-09-10 決定）。ブログはフッターと「お知らせ」帯から
+NAV = [  # ヘッダーの並び（2026-09-10 決定。ブログは 2026-09-11 に末尾へ追加）
     ("index.html", "TOP"),
     ("services/index.html", "サービス"),
     ("company.html", "会社情報"),
     ("access.html", "アクセス"),
     ("recruit.html", "採用情報"),
     ("contact.html", "お問い合わせ"),
+    ("blog/index.html", "ブログ"),
 ]
 
 # SNS・外部リンク（URL 受領後に差し替え。None のものは「準備中」表示）
