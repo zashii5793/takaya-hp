@@ -22,28 +22,57 @@ HOURS = "8:30–17:30／火曜定休"
 
 NAV = [
     ("services/index.html", "サービス"),
+    ("recruit.html", "採用情報"),
+    ("blog/index.html", "ブログ"),
     ("company.html", "会社概要"),
     ("access.html", "アクセス"),
     ("contact.html", "お問い合わせ"),
 ]
 
+# SNS・外部リンク（URL 受領後に差し替え。None のものは「準備中」表示）
+SOCIAL = [
+    ("Instagram", None),
+    ("Facebook", None),
+    ("LINE", None),
+]
+LOTUS_URL = "https://www.lotas.co.jp/"  # ロータスクラブ（2026-09-10 受領）
+
 SERVICES = [
     # slug, 番号, 名称, 1行説明, 画像, 写真タグ
-    ("cars", "01", "クルマを探す・買い取る", "新車は日本車の全メーカー。中古車はご希望条件で業者オークションから探すオーダー形式。", "cars", "イメージ図／写真差し替え予定：展示車"),
+    ("cars", "01", "クルマを探す・買い取る", "新車は日本車の全メーカー。中古車はご希望条件で業者オークションから探すオーダー形式。", "exterior-road", ""),
     ("lease", "02", "法人・個人リース", "税金・保険・車検・整備まで月額に含めたメンテナンスリースと、ファイナンスリース。", "lease", "イメージ図／写真差し替え予定：リース車両"),
-    ("inspection", "03", "車検・点検・整備", "国産車は全メーカー対応、輸入車もOK。45分のニュースマイル車検。", "inspection", "イメージ図／整備工場の写真は受領済み（ファイル待ち）"),
-    ("bodywork", "04", "板金・コーティング", "傷・へこみの修理から塗装まで。東京海上日動リペアネット取扱。", "bodywork", "イメージ図／写真差し替え予定：塗装ブース"),
-    ("insurance", "05", "自動車保険", "東京海上日動・損保ジャパンの代理店。購入から保険まで一つの窓口で。", "insurance", "イメージ図／写真差し替え予定：相談カウンター"),
+    ("inspection", "03", "車検・点検・整備", "国産車は全メーカー対応、輸入車もOK。45分のニュースマイル車検。", "mechanic-engine", ""),
+    ("bodywork", "04", "板金・コーティング", "傷・へこみの修理から塗装まで。東京海上日動リペアネット取扱。", "paint-booth", ""),
+    ("insurance", "05", "自動車保険", "東京海上日動・損保ジャパンの代理店。購入から保険まで一つの窓口で。", "president", ""),
 ]
 
 
 # 詳細ページだけ差し替える画像（カードは SERVICES の画像のまま）
 DETAIL_IMG = {
     "lease": ("drive", "イメージ図：快適なドライブを（写真差し替え予定）"),
+    "inspection": ("mechanic-lift", ""),
+    "bodywork": ("bodywork-sanding", ""),
+}
+
+
+# 採用パンフレット（2026-09-10 受領）から切り出した写真。alt はここで一元管理
+PHOTOS = {
+    "exterior-road": "タカヤモーター 社屋と展示場（岡山市中区高屋）",
+    "building": "タカヤモーター フロント社屋",
+    "factory": "整備工場（リフト・車検ライン）",
+    "mechanic-lift": "リフトアップした車両の下回りを整備する整備士",
+    "mechanic-engine": "エンジンルームを点検する整備士",
+    "bodywork-sanding": "板金作業（研磨）",
+    "paint-booth": "塗装ブースでの塗装作業",
+    "staff": "整備スタッフ",
+    "president": "打ち合わせの様子",
 }
 
 
 def ph(root, img, tag, extra_class=""):
+    if img in PHOTOS:
+        return (f'<div class="ph ph--photo {extra_class}"><img src="{root}assets/img/photos/{img}.jpg" '
+                f'alt="{PHOTOS[img]}" loading="lazy"></div>')
     return (f'<div class="ph {extra_class}"><img src="{root}assets/img/{img}.svg" alt="" loading="lazy">'
             f'<span class="tag">{tag}</span></div>')
 
@@ -88,6 +117,22 @@ def cta(root):
 </section>'''
 
 
+def lotus_html():
+    if LOTUS_URL:
+        return f'<a href="{LOTUS_URL}" target="_blank" rel="noopener" style="color:inherit">ロータスクラブ（全日本ロータス同友会）会員</a>'
+    return 'ロータスクラブ（全日本ロータス同友会）会員'
+
+
+def social_html(root):
+    out = f'<li><a href="{root}blog/index.html">ブログ</a></li>'
+    for name, href in SOCIAL:
+        if href is None:
+            out += f'<li><span class="social__off" title="URL 受領後に有効化">{name}（準備中）</span></li>'
+        else:
+            out += f'<li><a href="{href}" target="_blank" rel="noopener">{name}</a></li>'
+    return out
+
+
 def footer(root):
     svc = "".join(f'<li><a href="{root}services/{slug}.html">{name}</a></li>' for slug, _, name, *_ in SERVICES)
     return f'''<footer class="site-footer">
@@ -96,12 +141,15 @@ def footer(root):
       <div>
         <p class="f-name">TakayaCarGroup<br>タカヤモーター株式会社／タカヤリース株式会社</p>
         <p>〒703-8233 岡山市中区高屋21-1<br>営業時間 8:30–17:30／定休日 毎週火曜日ほか<br>創立 昭和40年5月10日（タカヤモーター）</p>
-        <p>ロータスクラブ（全日本ロータス同友会）会員</p>
+        <p>{lotus_html()}</p>
         <p><span class="todo">認証工場番号・古物商許可番号・保険代理店登録 要確認</span></p>
+        <ul class="social">{social_html(root)}</ul>
       </div>
       <div><h4>サービス</h4><ul>{svc}</ul></div>
       <div><h4>会社について</h4><ul>
         <li><a href="{root}company.html">会社概要</a></li>
+        <li><a href="{root}recruit.html">採用情報</a></li>
+        <li><a href="{root}blog/index.html">ブログ</a></li>
         <li><a href="{root}access.html">アクセス</a></li>
         <li><a href="{root}contact.html">お問い合わせ</a></li>
         <li><a href="{root}privacy.html">プライバシーポリシー</a></li>
@@ -207,7 +255,7 @@ def build_index():
         <a class="btn btn--ghost" href="#service">サービスを見る</a>
       </div>
     </div>
-    {ph(root, "hero", "イメージ図／社屋の写真は受領済み（ファイル待ち）")}
+    {ph(root, "exterior-road", "")}
   </div>
 </section>
 
@@ -246,6 +294,20 @@ def build_index():
     <p class="lead">各メーカー新車・中古車販売、車の買取、リース、各種ローン、車検、一般整備、鈑金塗装、損害保険代理業務。この8業務を、5つの窓口でお受けします。</p>
     <div class="cards cards--5">{svc_cards}
     </div>
+  </div>
+</section>
+
+<section class="news">
+  <div class="wrap">
+    <div class="news__head">
+      <span class="eyebrow">NEWS / BLOG</span>
+      <p class="news__title">お知らせ・ブログ</p>
+    </div>
+    <ul class="news__list">
+      <li><time>2026.08.20</time><a href="blog/index.html">現行ブログの記事タイトルが入ります（移行後に差し替え）</a></li>
+      <li><time>2026.08.06</time><a href="blog/index.html">現行ブログの記事タイトルが入ります（移行後に差し替え）</a></li>
+    </ul>
+    <a class="link-more" href="blog/index.html">一覧を見る →</a>
   </div>
 </section>
 
@@ -434,7 +496,7 @@ def build_company():
                      "タカヤモーター株式会社（昭和40年創立）とタカヤリース株式会社（昭和59年創立）。岡山市中区高屋で、クルマに関わる8つの業務を行っています。") + f'''
 <section class="sec"><div class="wrap split">
   <div>
-    {ph(root, "company", "イメージ図／社屋の写真は受領済み（ファイル待ち）")}
+    {ph(root, "building", "")}
     <div class="box box--alt" style="margin-top:24px">
       <p class="muted" style="letter-spacing:.06em">経営理念</p>
       <ol style="padding-left:1.3em;font-size:14px;line-height:2;color:var(--ink-sub);margin-top:10px">
@@ -454,7 +516,8 @@ def build_company():
     <tr><th>事業内容</th><td>タカヤモーター：自動車販売業務／自動車整備業務／自動車損害保険代理店業務<br>タカヤリース：自動車リース業務／レンタカー業務／（株）ロートピア フランチャイズ業務</td></tr>
     <tr><th>取扱メーカー</th><td>スズキ・ダイハツ代理店。新車は日本車全メーカー（トヨタ／ホンダ／日産／ダイハツ／スズキ／マツダ／三菱／スバル／いすゞ／三菱ふそう／日野）</td></tr>
     <tr><th>認証・許可</th><td>指定自動車整備事業／自動車特定整備事業<br>ISO 14001 認証取得<br><span class="todo">番号は要確認</span></td></tr>
-    <tr><th>加盟団体</th><td>ロータスクラブ（全日本ロータス同友会）会員</td></tr>
+    <tr><th>加盟団体</th><td><a href="{LOTUS_URL}" target="_blank" rel="noopener">ロータスクラブ（全日本ロータス同友会）</a> 会員</td></tr>
+    <tr><th>採用</th><td><a href="recruit.html">採用情報を見る →</a></td></tr>
     <tr><th>営業時間</th><td>8:30–17:30（定休日：毎週火曜日／年末年始・GW・盆休み）</td></tr>
   </tbody></table>
 </div></section>
@@ -482,6 +545,8 @@ def build_access():
   <div class="split split--media">
     <div class="info-list">
       <div><h4>所在地</h4><p>〒703-8233<br>岡山市中区高屋21-1</p><a class="link-more" style="margin-top:6px" href="{MAP_LINK}" target="_blank" rel="noopener">Google マップで見る →</a></div>
+      <div><h4>交通</h4>
+        <p>電車：JR高島駅から徒歩15分<br>お車：国道250号沿い、マルナカ高屋店の角を左折<br>バス：岡電バス「高屋」降り場から徒歩5分</p></div>
       <div><h4>営業時間</h4><p>8:30 – 17:30</p><p class="muted">定休日：毎週火曜日／年末年始・ゴールデンウィーク・盆休み</p></div>
       <div><h4>フリーダイヤル</h4>
         <p>タカヤモーター株式会社 <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:22px;text-decoration:none;color:var(--ink)">0120-100-152</a></p>
@@ -549,7 +614,140 @@ def build_privacy():
     page("privacy.html", "プライバシーポリシー", "タカヤモーター株式会社／タカヤリース株式会社のプライバシーポリシー。", body)
 
 
+# ======================================================================
+# 採用情報（文言はご本人提供 2026-09-10。Indeed・ミイダスの応募ページ URL は受領待ち）
+# ======================================================================
+def build_recruit():
+    root = ""
+    body = page_head(root, [("index.html", "トップ"), (None, "採用情報")], "採用情報",
+                     "タカヤモーターでは、タカヤの理念に共感し一緒に働ける仲間を募集しています。通期を通じて新人・中途採用活動をしています。ご興味がありましたら、お気軽にお問い合わせフォームにてご連絡ください。") + f'''
+<section class="sec"><div class="wrap split">
+  <div>
+    <span class="eyebrow">MECHANIC</span>
+    <h2 class="sec-title">自動車整備士募集！</h2>
+    <p class="lead">技術に自信がなくても、やる気と意欲がある方をタカヤモーターは歓迎します。年齢・経験・学歴は一切不問です。</p>
+    <ul class="reasons">
+      <li><strong>ベテランスタッフから、タカヤが誇る高い整備技術を学べます</strong><p>基礎技術の習熟期間を設け、ご本人のご希望やご経験に合わせて少しずつ業務をお任せします。</p></li>
+      <li><strong>様々な車種を、メーカー問わず整備できます</strong><p>車検整備・一般整備・車両診断から板金・塗装まで。工程が分かれていないので、幅広く経験できます。</p></li>
+      <li><strong>岡山で60年、地域密着の老舗ブランド</strong><p>転勤はありません。地域のお客様と長くお付き合いする仕事です。</p></li>
+      <li><strong>若手を役員に登用するなど、組織改革を進めています</strong><p>整備のキャリアだけでなく、事業計画・組織設計・マネジメント・会計まで役員が伝えるキャリアアップ支援制度があります。</p></li>
+    </ul>
+    <div class="btn-row">
+      <a class="btn btn--primary" href="{FORM}" target="_blank" rel="noopener">お問い合わせフォームから応募・相談する</a>
+      <a class="btn btn--ghost" href="tel:0862723065">総務 086-272-3065</a>
+      <span class="muted">Indeed・ミイダスにも掲載しています <span class="todo">要確認：各応募ページのURL</span></span>
+    </div>
+  </div>
+  <div>
+    {ph(root, "factory", "")}
+    <div class="box box--alt" style="margin-top:20px">
+      <h4>まずは職場の雰囲気を見に来てください</h4>
+      <p>面接は計2回。1回目はオンラインでも可能ですが、できれば職場の雰囲気を直接見ていただきたいので対面をおすすめします。現場見学もできます。勤務開始日のご相談（3ヶ月先など）も可能です。</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec sec--alt"><div class="wrap">
+  <span class="eyebrow">APPEAL</span>
+  <h2 class="sec-title">タカヤグループのアピールポイント</h2>
+  <div class="appeal">
+    <div class="appeal__item"><span class="appeal__num">1</span><h3>多種多様な仲間</h3><p>ベテランから若手まで、バランスが取れた組織構成となっています。タカヤは多様な価値観を尊重します。</p></div>
+    <div class="appeal__item"><span class="appeal__num">2</span><h3>相談できる安心感</h3><p>スタッフ全員が何気ない会話ができるような雰囲気作りをとても大切にしています。</p></div>
+    <div class="appeal__item"><span class="appeal__num">3</span><h3>技術を本気で学ぶ</h3><p>卓越した技術を身につけるためには自発的、かつ好奇心ある学びが不可欠。タカヤは本人のWillを応援します。</p></div>
+    <div class="appeal__item"><span class="appeal__num">4</span><h3>様々なキャリアに挑戦</h3><p>整備技術を深める以外にも、営業やフロント、経営といった、幅広く学べる機会を設けています。</p></div>
+  </div>
+  <div class="gallery">
+      {ph(root, "mechanic-engine", "")}
+      {ph(root, "staff", "")}
+      {ph(root, "paint-booth", "")}
+      {ph(root, "mechanic-lift", "")}
+      {ph(root, "president", "")}
+  </div>
+</div></section>
+
+<section class="sec sec--deep"><div class="wrap">
+  <span class="eyebrow">GROWTH</span>
+  <h2 class="sec-title">タカヤグループは社員一人ひとりの成長を本気で応援します</h2>
+  <div class="grow">
+    <div><h3>相談</h3><p>上長以外にも会社役員とも気軽に相談できます。</p></div>
+    <div><h3>スキルUP</h3><p>年間3,500台以上の車を取り扱うため、経験値を多く積めます。</p></div>
+    <div><h3>研修</h3><p>外部研修を積極的に実施し、知見を広めるようにしています。</p></div>
+    <div><h3>キャリア</h3><p>整備以外にも、本人の意欲次第で他部のスキルを学べます。</p></div>
+    <div><h3>その他</h3><p>誕生日休暇など、福利厚生も充実を図っています。</p></div>
+  </div>
+  <p class="grow__mission">会社だけではなく個人の市場価値を高めることを、タカヤグループは“最重要”ミッションとしています。</p>
+</div></section>
+
+<section class="sec"><div class="wrap">
+  <span class="eyebrow">JOB DESCRIPTION</span>
+  <h2 class="sec-title">募集要項</h2>
+  <div class="split" style="margin-top:24px;align-items:start">
+    <table class="dl-table"><tbody>
+      <tr><th>雇用形態</th><td>正社員</td></tr>
+      <tr><th>仕事内容</th><td>車検整備／一般整備／車両診断／板金・塗装<br><span class="muted">基礎技術の習熟期間を設けて、高い技術を習得いただくことを会社として期待しています。</span></td></tr>
+      <tr><th>必須</th><td>3級以上の自動車整備士資格</td></tr>
+      <tr><th>あれば歓迎</th><td>自動車整備の実務経験／検査員の有資格者</td></tr>
+      <tr><th>給与</th><td>月給 200,000円〜300,000円<br><span class="muted">勤続1年以上の方には退職金制度があります。平均所定労働時間 202時間／月</span></td></tr>
+      <tr><th>試用期間</th><td>3か月（労働条件は同条件）</td></tr>
+      <tr><th>勤務時間</th><td>8:30〜17:30（シフト制）</td></tr>
+      <tr><th>休日・休暇</th><td>毎週火曜日／日曜日（隔週・祝日はシフト交代制）／年末年始・GW・お盆<br>特別休暇：誕生日月に誕生日休暇を1日付与</td></tr>
+    </tbody></table>
+    <table class="dl-table"><tbody>
+      <tr><th>勤務地</th><td>〒703-8233 岡山県岡山市中区高屋21-1<br><span class="muted">JR高島駅から徒歩15分／転勤なし／喫煙所あり</span></td></tr>
+      <tr><th>社会保険</th><td>雇用保険／労災保険／健康保険／厚生年金</td></tr>
+      <tr><th>待遇・福利厚生</th><td>
+        <ul class="dash-list" style="margin-top:0">
+          <li>再雇用制度あり（65歳まで）</li>
+          <li>キャリアアップ支援制度：整備のキャリアだけでなく、事業計画作成・組織設計・マネジメント・会計知識など、役員がナレッジを伝授します（役員は大手／ベンチャーIT企業など自動車業界以外の知見も持っています）</li>
+          <li>社内表彰制度</li>
+          <li>社内相談窓口：役員による1on1を定期的に設け、ご本人の希望実現に向けてフォローします</li>
+        </ul></td></tr>
+      <tr><th>選考</th><td>面接2回（1回目はオンライン可・対面推奨）／現場見学可／勤務開始日の相談OK</td></tr>
+      <tr><th>応募方法</th><td><a href="{FORM}" target="_blank" rel="noopener">お問い合わせフォーム</a>、または総務 086-272-3065 へ。Indeed・ミイダスからも応募できます。</td></tr>
+    </tbody></table>
+  </div>
+</div></section>
+
+<section class="sec sec--alt"><div class="wrap split" style="align-items:start">
+  <div>
+    <span class="eyebrow">STEP</span>
+    <h2 class="sec-title">採用までのステップ</h2>
+    <ol class="steps">
+      <li><span>1</span><div><strong>ホームページから申込み</strong><p><a href="{FORM}" target="_blank" rel="noopener">お問い合わせフォーム</a>からお申し込みください。</p></div></li>
+      <li><span>2</span><div><strong>初回面談</strong><p>オンラインもしくは対面で、会社説明を交えた面談をします。</p></div></li>
+      <li><span>3</span><div><strong>面接</strong><p>最低1回から2回まで、対面による面接を予定しています。</p></div></li>
+    </ol>
+  </div>
+  <div>
+    <span class="eyebrow">FAQ</span>
+    <h2 class="sec-title">よくある質問</h2>
+    <dl class="faq">
+      <dt>採用面接では何を聞かれますか？</dt><dd>学業や将来のキャリア形成を中心とした質問をさせていただきます。</dd>
+      <dt>整備技術試験はありますか？</dt><dd>基本的に技術試験は実施しないですが、場合によっては確認をさせて頂きます。</dd>
+      <dt>タカヤグループの強みはなんですか？</dt><dd>整備、営業、フロントのスタッフ全員が、お客様に喜んで頂けるサービスを提供しようと本気で考え、実践しているところです。当たり前ですが徹底しています。</dd>
+    </dl>
+  </div>
+</div></section>'''
+    page("recruit.html", "採用情報｜自動車整備士募集", "タカヤモーター株式会社の採用情報。自動車整備士（正社員）募集。3級以上の整備士資格、年齢・経験・学歴不問。月給20〜30万円、火曜定休、転勤なし、岡山市中区高屋。", body, active="recruit.html")
+
+
+def build_blog():
+    root = "../"
+    posts = [("2026.08.20", "現行ブログの記事タイトルが入ります（移行後に差し替え）"),
+             ("2026.08.06", "現行ブログの記事タイトルが入ります（移行後に差し替え）"),
+             ("2026.07.24", "現行ブログの記事タイトルが入ります（移行後に差し替え）")]
+    items = "".join(f'<li class="post"><time>{d}</time><a href="#">{t}</a></li>' for d, t in posts)
+    body = page_head(root, [("index.html", "トップ"), (None, "ブログ")], "ブログ",
+                     "日々の整備のこと、お知らせ、地域の話題など。") + f'''
+<section class="sec"><div class="wrap">
+  <p class="muted" style="margin-bottom:18px"><span class="todo">移行作業：現行サイトの記事をこの一覧に移します（E-01〜E-06）。名称は「ブログ」で仮置き。SNS の連携先も受領後に追加</span></p>
+  <ul class="post-list">{items}</ul>
+</div></section>'''
+    page("blog/index.html", "ブログ", "タカヤモーター株式会社のブログ・お知らせ。", body, active="blog")
+
+
 if __name__ == "__main__":
+    build_recruit(); build_blog()
     build_index()
     build_services_index()
     build_cars(); build_lease(); build_inspection(); build_bodywork(); build_insurance()
