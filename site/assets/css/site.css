@@ -6,7 +6,7 @@
   --brand-tint:#FBF0EF;
   --ink:#1C1B1A;
   --ink-sub:#4A4642;
-  --ink-muted:#8A837C;
+  --ink-muted:#6B655F;
   --bg:#FFFFFF;
   --bg-alt:#FAF9F7;
   --bg-deep:#1F1E1C;
@@ -42,7 +42,7 @@ table{border-collapse:collapse;width:100%}
 .sec-title{font-size:clamp(24px,3.2vw,34px)}
 .lead{margin-top:14px;font-size:15px;color:var(--ink-sub);max-width:44em}
 .sec--deep .lead{color:#D9D2CA}
-.muted{color:var(--ink-muted);font-size:13px}
+.muted{color:var(--ink-sub);font-size:14px}
 .todo{font-size:12px;color:#8A5A00;background:#FFF6E0;border:1px dashed #E0B860;border-radius:3px;padding:1px 7px;display:inline-block;line-height:1.6}
 
 /* ボタン */
@@ -233,6 +233,11 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .detail h2{font-size:22px}
 .detail .lead{margin-top:12px}
 .detail .lead strong{color:var(--ink)}
+
+/* 部署直通（お問い合わせ） */
+.tel-lines{font-size:15px;line-height:2}
+.tel-lines a{font-family:var(--f-num);font-size:18px;font-weight:700;color:var(--ink);text-decoration:none;letter-spacing:.02em}
+.tel-lines a:hover{color:var(--brand)}
 
 /* アクセス */
 .map{aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#E8E4DE;border:1px solid var(--line)}

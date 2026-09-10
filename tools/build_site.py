@@ -679,7 +679,7 @@ def build_contact():
         <p>タカヤリース <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:26px;text-decoration:none;color:var(--brand)">0120-556-649</a></p>
         <p class="muted">受付 {HOURS_OPEN}／定休日：{HOLIDAY}</p></div>
       <div><h4>メール</h4><p><a href="mailto:takaya-customer-service@takaya-gp.jp">takaya-customer-service@takaya-gp.jp</a></p></div>
-      <div><h4>部署直通</h4><p class="muted">サービス 086-272-1001／営業（モーター）086-272-1021／営業（リース）086-273-3611／総務 086-272-3065</p></div>
+      <div><h4>部署直通</h4><p class="tel-lines">サービス <a href="tel:0862721001">086-272-1001</a><br>営業（タカヤモーター） <a href="tel:0862721021">086-272-1021</a><br>営業（タカヤリース） <a href="tel:0862733611">086-273-3611</a><br>総務 <a href="tel:0862723065">086-272-3065</a></p></div>
     </div>
     <div>
       <h4 style="font-size:16px">お問い合わせフォーム</h4>
