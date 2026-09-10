@@ -64,8 +64,8 @@ table{border-collapse:collapse;width:100%}
 .site-header .wrap{display:flex;align-items:center;gap:24px;min-height:var(--header-h)}
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
 .brand__mark{width:40px;height:40px;border-radius:50%;background:var(--brand);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.brand__name{font-weight:700;font-size:15px;line-height:1.3;white-space:nowrap}
-.brand__sub{font-size:11px;color:var(--ink-muted);line-height:1.3}
+.brand__name{font-family:var(--f-num);font-weight:700;font-size:24px;letter-spacing:.02em;line-height:1.1;white-space:nowrap}
+.brand__sub{font-size:11px;color:var(--ink-sub);line-height:1.3;white-space:nowrap}
 .nav{margin-left:auto}
 .nav ul{list-style:none;display:flex;gap:26px}
 .nav a{color:var(--ink);text-decoration:none;font-size:14px;padding:6px 0;border-bottom:2px solid transparent;white-space:nowrap}
@@ -76,7 +76,8 @@ table{border-collapse:collapse;width:100%}
 .nav-toggle{display:none;margin-left:auto;width:44px;height:44px;border:1px solid var(--line);background:#fff;border-radius:3px;cursor:pointer;padding:0}
 .nav-toggle span{display:block;width:20px;height:2px;background:var(--ink);margin:4px auto;transition:transform .2s,opacity .2s}
 @media (max-width:900px){
-  .brand__sub{display:none}
+  .brand__name{font-size:20px}
+  .brand__sub{font-size:10px}
   .header-tel{display:none}
   .nav-toggle{display:block}
   .nav{position:absolute;left:0;right:0;top:var(--header-h);background:#fff;border-bottom:1px solid var(--line);display:none;margin:0}
@@ -107,8 +108,11 @@ table{border-collapse:collapse;width:100%}
 .hero__since span{font-family:var(--f-num);font-size:13px;letter-spacing:.2em;font-weight:600;color:var(--ink-muted)}
 .hero h1{font-size:clamp(26px,3.6vw,40px);line-height:1.45}
 .hero__lead{margin-top:20px;font-size:16px;color:var(--ink-sub);max-width:27em}
-.pills{list-style:none;display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:20px}
-.pills li{font-size:13px;border:1px solid var(--line);background:var(--bg-alt);border-radius:999px;padding:6px 14px;white-space:nowrap}
+.pills{list-style:none;display:grid;gap:8px;margin-top:22px;max-width:30em}
+.pills li{display:flex;align-items:center;gap:12px;font-size:17px;font-weight:700;color:var(--ink);background:var(--brand-tint);border-left:4px solid var(--brand);border-radius:0 4px 4px 0;padding:10px 16px 10px 14px;line-height:1.4}
+.pills li::before{content:"✓";flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.pills li em{font-style:normal;color:var(--brand)}
+@media (max-width:900px){.pills li{font-size:15px;padding:9px 14px 9px 12px}}
 .ph{position:relative;overflow:hidden;background:#EAE6E1;border-radius:4px}
 .ph svg,.ph img{width:100%;height:100%;object-fit:cover}
 .ph .tag{position:absolute;left:12px;bottom:12px;background:rgba(28,27,26,.72);color:#fff;font-size:11px;letter-spacing:.04em;padding:3px 9px;border-radius:2px}
@@ -118,6 +122,12 @@ table{border-collapse:collapse;width:100%}
   .hero .ph{order:-1;aspect-ratio:16/10}
   .hero__lead{font-size:15px}
 }
+
+/* 大切にしていること（トップ） */
+.values__title{font-family:var(--f-num);font-size:13px;letter-spacing:.2em;font-weight:600;color:var(--brand)}
+.values{list-style:none;display:grid;gap:14px;margin-top:12px}
+.values li{font-size:19px;font-weight:700;line-height:1.6;color:var(--ink);padding:14px 18px;border-left:4px solid var(--brand);background:var(--bg-alt)}
+@media (max-width:900px){.values li{font-size:17px}}
 
 /* 実績 */
 .stats{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg-alt)}
@@ -329,3 +339,22 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .faq dd::before{content:"A";font-family:var(--f-num);color:var(--ink-muted);font-weight:700;font-size:18px}
 @media (max-width:900px){.appeal,.grow{grid-template-columns:1fr 1fr}.gallery{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:560px){.appeal,.grow{grid-template-columns:1fr}.gallery{grid-template-columns:1fr 1fr}}
+
+/* ブログ一覧・記事 */
+.post div{min-width:0}
+.post__cat{display:inline-block;margin-left:10px;font-size:11px;color:var(--brand);border:1px solid var(--brand);border-radius:999px;padding:1px 8px;vertical-align:middle}
+.post__excerpt{font-size:13px;color:var(--ink-muted);margin-top:4px;line-height:1.7}
+.post-meta{font-family:var(--f-num);font-size:14px;color:var(--ink-muted);letter-spacing:.04em}
+.page-head .post__cat{margin-left:12px}
+.post-body{max-width:46em}
+.post-body h2{font-size:20px;margin-top:36px;padding-left:12px;border-left:4px solid var(--brand);line-height:1.5}
+.post-figure{margin:22px 0}
+.post-figure .ph{aspect-ratio:16/9}
+.post-figure figcaption{font-size:12px;color:var(--ink-muted);margin-top:6px}
+.post-nav{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line-soft);font-size:14px}
+.post-nav a{text-decoration:none;color:var(--ink)}
+.post-nav a:hover{color:var(--brand)}
+.post-nav .pager__next{text-align:right}
+.pager{display:flex;gap:10px;align-items:center;margin-top:24px;font-family:var(--f-num);font-size:14px}
+.pager .is-current{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;border-radius:3px;font-weight:700}
+@media (max-width:640px){.post{grid-template-columns:1fr;gap:4px}.post-nav{grid-template-columns:1fr}.post-nav .pager__next{text-align:left}}

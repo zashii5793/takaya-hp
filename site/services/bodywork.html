@@ -8,16 +8,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="../assets/css/site.css">
+<!-- 計測: GA4 の測定IDを tools/build_site.py の GA_ID に入れると、ここに gtag が入ります -->
 </head>
 <body>
-<header class="site-header">
+<header class="site-header" data-area="header">
   <div class="wrap">
     <a class="brand" href="../index.html">
       <span class="brand__mark">ロゴ</span>
-      <span><span class="brand__name">TakayaCarGroup／タカヤモーター(株)</span><br><span class="brand__sub">タカヤリース株式会社</span></span>
+      <span><span class="brand__name">TakayaCarGroup</span><br><span class="brand__sub">タカヤモーター株式会社／タカヤリース株式会社</span></span>
     </a>
     <button class="nav-toggle" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
-    <nav class="nav" aria-label="グローバルナビ"><ul><li><a href="../services/index.html" class="is-active">サービス</a></li><li><a href="../recruit.html">採用情報</a></li><li><a href="../blog/index.html">ブログ</a></li><li><a href="../company.html">会社概要</a></li><li><a href="../access.html">アクセス</a></li><li><a href="../contact.html">お問い合わせ</a></li></ul></nav>
+    <nav class="nav" aria-label="グローバルナビ"><ul><li><a href="../services/index.html" class="is-active">サービス</a></li><li><a href="../company.html">会社情報</a></li><li><a href="../access.html">アクセス</a></li><li><a href="../recruit.html">採用情報</a></li><li><a href="../contact.html">お問い合わせ</a></li></ul></nav>
     <a class="header-tel" href="tel:0120100152"><small>フリーダイヤル</small><strong>0120-100-152</strong></a>
   </div>
 </header>
@@ -29,7 +30,7 @@
   <ul class="svc-nav"><li><a href="../services/cars.html">01 クルマを探す・買い取る</a></li><li><a href="../services/lease.html">02 法人・個人リース</a></li><li><a href="../services/inspection.html">03 車検・点検・整備</a></li><li><a href="../services/bodywork.html" class="is-active">04 板金・コーティング</a></li><li><a href="../services/insurance.html">05 自動車保険</a></li></ul>
 </div></section>
 <section class="sec"><div class="wrap detail">
-  <div class="ph ph--photo "><img src="../assets/img/photos/bodywork-sanding.jpg" alt="板金作業（研磨）" loading="lazy"></div>
+  <div class="ph ph--photo " data-slot="bodywork-detail"><img src="../assets/img/photos/bodywork-detail.jpg" alt="板金作業（研磨）" loading="lazy"></div>
   <div>
     
 <h2>傷・へこみから塗装まで</h2>
@@ -44,10 +45,10 @@
   </div>
 </div></section>
 </main>
-<section class="cta sec--alt">
+<section class="cta sec--alt" data-area="cta">
   <div class="wrap">
     <div>
-      <h2>お見積り・ご相談は無料です</h2>
+      <h2>ご相談は無料なので、お気軽にお問い合わせください</h2>
       <p>「これは直りますか」「いくらぐらいですか」だけでも構いません。お電話でもフォームでもお受けします。</p>
     </div>
     <div class="cta__actions">
@@ -56,7 +57,7 @@
     </div>
   </div>
 </section>
-<footer class="site-footer">
+<footer class="site-footer" data-area="footer">
   <div class="wrap">
     <div class="footer-grid">
       <div>
@@ -64,11 +65,11 @@
         <p>〒703-8233 岡山市中区高屋21-1<br>営業時間 8:30–17:30／定休日 毎週火曜日ほか<br>創立 昭和40年5月10日（タカヤモーター）</p>
         <p><a href="https://www.lotas.co.jp/" target="_blank" rel="noopener" style="color:inherit">ロータスクラブ（全日本ロータス同友会）会員</a></p>
         <p><span class="todo">認証工場番号・古物商許可番号・保険代理店登録 要確認</span></p>
-        <ul class="social"><li><a href="../blog/index.html">ブログ</a></li><li><span class="social__off" title="URL 受領後に有効化">Instagram（準備中）</span></li><li><span class="social__off" title="URL 受領後に有効化">Facebook（準備中）</span></li><li><span class="social__off" title="URL 受領後に有効化">LINE（準備中）</span></li></ul>
+        <ul class="social"><li><a href="../blog/index.html">ブログ</a></li><li><a href="https://www.instagram.com/takayamotor/" target="_blank" rel="noopener">Instagram</a></li><li><a href="https://x.com/takayacargroup" target="_blank" rel="noopener">X</a></li></ul>
       </div>
       <div><h4>サービス</h4><ul><li><a href="../services/cars.html">クルマを探す・買い取る</a></li><li><a href="../services/lease.html">法人・個人リース</a></li><li><a href="../services/inspection.html">車検・点検・整備</a></li><li><a href="../services/bodywork.html">板金・コーティング</a></li><li><a href="../services/insurance.html">自動車保険</a></li></ul></div>
       <div><h4>会社について</h4><ul>
-        <li><a href="../company.html">会社概要</a></li>
+        <li><a href="../company.html">会社情報</a></li>
         <li><a href="../recruit.html">採用情報</a></li>
         <li><a href="../blog/index.html">ブログ</a></li>
         <li><a href="../access.html">アクセス</a></li>
@@ -80,7 +81,7 @@
   </div>
 </footer>
 <script src="../assets/js/site.js"></script>
-<div class="sp-bar">
+<div class="sp-bar" data-area="sp_bar">
   <a href="tel:0120100152">📞 0120-100-152</a>
   <a href="../contact.html">お問い合わせ</a>
 </div>

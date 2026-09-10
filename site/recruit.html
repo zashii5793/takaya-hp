@@ -8,16 +8,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="assets/css/site.css">
+<!-- 計測: GA4 の測定IDを tools/build_site.py の GA_ID に入れると、ここに gtag が入ります -->
 </head>
 <body>
-<header class="site-header">
+<header class="site-header" data-area="header">
   <div class="wrap">
     <a class="brand" href="index.html">
       <span class="brand__mark">ロゴ</span>
-      <span><span class="brand__name">TakayaCarGroup／タカヤモーター(株)</span><br><span class="brand__sub">タカヤリース株式会社</span></span>
+      <span><span class="brand__name">TakayaCarGroup</span><br><span class="brand__sub">タカヤモーター株式会社／タカヤリース株式会社</span></span>
     </a>
     <button class="nav-toggle" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
-    <nav class="nav" aria-label="グローバルナビ"><ul><li><a href="services/index.html">サービス</a></li><li><a href="recruit.html" class="is-active">採用情報</a></li><li><a href="blog/index.html">ブログ</a></li><li><a href="company.html">会社概要</a></li><li><a href="access.html">アクセス</a></li><li><a href="contact.html">お問い合わせ</a></li></ul></nav>
+    <nav class="nav" aria-label="グローバルナビ"><ul><li><a href="services/index.html">サービス</a></li><li><a href="company.html">会社情報</a></li><li><a href="access.html">アクセス</a></li><li><a href="recruit.html" class="is-active">採用情報</a></li><li><a href="contact.html">お問い合わせ</a></li></ul></nav>
     <a class="header-tel" href="tel:0120100152"><small>フリーダイヤル</small><strong>0120-100-152</strong></a>
   </div>
 </header>
@@ -42,11 +43,12 @@
     <div class="btn-row">
       <a class="btn btn--primary" href="https://docs.google.com/forms/d/1dqDrili-aAHTuZznA2gH81imzFE-1Ae7TnBwVE7lZE8/viewform" target="_blank" rel="noopener">お問い合わせフォームから応募・相談する</a>
       <a class="btn btn--ghost" href="tel:0862723065">総務 086-272-3065</a>
-      <span class="muted">Indeed・ミイダスにも掲載しています <span class="todo">要確認：各応募ページのURL</span></span>
+      <a class="btn btn--outline" href="https://miidas.jp/partner_apply/457581" target="_blank" rel="noopener">ミイダスから応募する</a>
+      <span class="muted">Indeed にも掲載しています <span class="todo">要確認：Indeed の応募ページURL</span></span>
     </div>
   </div>
   <div>
-    <div class="ph ph--photo "><img src="assets/img/photos/factory.jpg" alt="整備工場（リフト・車検ライン）" loading="lazy"></div>
+    <div class="ph ph--photo " data-slot="recruit"><img src="assets/img/photos/recruit.jpg" alt="整備工場（リフト・車検ライン）" loading="lazy"></div>
     <div class="box box--alt" style="margin-top:20px">
       <h4>まずは職場の雰囲気を見に来てください</h4>
       <p>面接は計2回。1回目はオンラインでも可能ですが、できれば職場の雰囲気を直接見ていただきたいので対面をおすすめします。現場見学もできます。勤務開始日のご相談（3ヶ月先など）も可能です。</p>
@@ -64,11 +66,11 @@
     <div class="appeal__item"><span class="appeal__num">4</span><h3>様々なキャリアに挑戦</h3><p>整備技術を深める以外にも、営業やフロント、経営といった、幅広く学べる機会を設けています。</p></div>
   </div>
   <div class="gallery">
-      <div class="ph ph--photo "><img src="assets/img/photos/mechanic-engine.jpg" alt="エンジンルームを点検する整備士" loading="lazy"></div>
-      <div class="ph ph--photo "><img src="assets/img/photos/staff.jpg" alt="整備スタッフ" loading="lazy"></div>
-      <div class="ph ph--photo "><img src="assets/img/photos/paint-booth.jpg" alt="塗装ブースでの塗装作業" loading="lazy"></div>
-      <div class="ph ph--photo "><img src="assets/img/photos/mechanic-lift.jpg" alt="リフトアップした車両の下回りを整備する整備士" loading="lazy"></div>
-      <div class="ph ph--photo "><img src="assets/img/photos/president.jpg" alt="打ち合わせの様子" loading="lazy"></div>
+      <div class="ph ph--photo " data-slot="gallery-1"><img src="assets/img/photos/gallery-1.jpg" alt="エンジンルームを点検する整備士" loading="lazy"></div>
+      <div class="ph ph--photo " data-slot="gallery-2"><img src="assets/img/photos/gallery-2.jpg" alt="整備スタッフ" loading="lazy"></div>
+      <div class="ph ph--photo " data-slot="gallery-3"><img src="assets/img/photos/gallery-3.jpg" alt="塗装ブースでの塗装作業" loading="lazy"></div>
+      <div class="ph ph--photo " data-slot="gallery-4"><img src="assets/img/photos/gallery-4.jpg" alt="リフトアップした車両の下回りを整備する整備士" loading="lazy"></div>
+      <div class="ph ph--photo " data-slot="gallery-5"><img src="assets/img/photos/gallery-5.jpg" alt="打ち合わせの様子" loading="lazy"></div>
   </div>
 </div></section>
 
@@ -110,7 +112,7 @@
           <li>社内相談窓口：役員による1on1を定期的に設け、ご本人の希望実現に向けてフォローします</li>
         </ul></td></tr>
       <tr><th>選考</th><td>面接2回（1回目はオンライン可・対面推奨）／現場見学可／勤務開始日の相談OK</td></tr>
-      <tr><th>応募方法</th><td><a href="https://docs.google.com/forms/d/1dqDrili-aAHTuZznA2gH81imzFE-1Ae7TnBwVE7lZE8/viewform" target="_blank" rel="noopener">お問い合わせフォーム</a>、または総務 086-272-3065 へ。Indeed・ミイダスからも応募できます。</td></tr>
+      <tr><th>応募方法</th><td><a href="https://docs.google.com/forms/d/1dqDrili-aAHTuZznA2gH81imzFE-1Ae7TnBwVE7lZE8/viewform" target="_blank" rel="noopener">お問い合わせフォーム</a>、または総務 086-272-3065 へ。<a href="https://miidas.jp/partner_apply/457581" target="_blank" rel="noopener">ミイダス</a>・Indeed からも応募できます。</td></tr>
     </tbody></table>
   </div>
 </div></section>
@@ -136,10 +138,10 @@
   </div>
 </div></section>
 </main>
-<section class="cta sec--alt">
+<section class="cta sec--alt" data-area="cta">
   <div class="wrap">
     <div>
-      <h2>お見積り・ご相談は無料です</h2>
+      <h2>ご相談は無料なので、お気軽にお問い合わせください</h2>
       <p>「これは直りますか」「いくらぐらいですか」だけでも構いません。お電話でもフォームでもお受けします。</p>
     </div>
     <div class="cta__actions">
@@ -148,7 +150,7 @@
     </div>
   </div>
 </section>
-<footer class="site-footer">
+<footer class="site-footer" data-area="footer">
   <div class="wrap">
     <div class="footer-grid">
       <div>
@@ -156,11 +158,11 @@
         <p>〒703-8233 岡山市中区高屋21-1<br>営業時間 8:30–17:30／定休日 毎週火曜日ほか<br>創立 昭和40年5月10日（タカヤモーター）</p>
         <p><a href="https://www.lotas.co.jp/" target="_blank" rel="noopener" style="color:inherit">ロータスクラブ（全日本ロータス同友会）会員</a></p>
         <p><span class="todo">認証工場番号・古物商許可番号・保険代理店登録 要確認</span></p>
-        <ul class="social"><li><a href="blog/index.html">ブログ</a></li><li><span class="social__off" title="URL 受領後に有効化">Instagram（準備中）</span></li><li><span class="social__off" title="URL 受領後に有効化">Facebook（準備中）</span></li><li><span class="social__off" title="URL 受領後に有効化">LINE（準備中）</span></li></ul>
+        <ul class="social"><li><a href="blog/index.html">ブログ</a></li><li><a href="https://www.instagram.com/takayamotor/" target="_blank" rel="noopener">Instagram</a></li><li><a href="https://x.com/takayacargroup" target="_blank" rel="noopener">X</a></li></ul>
       </div>
       <div><h4>サービス</h4><ul><li><a href="services/cars.html">クルマを探す・買い取る</a></li><li><a href="services/lease.html">法人・個人リース</a></li><li><a href="services/inspection.html">車検・点検・整備</a></li><li><a href="services/bodywork.html">板金・コーティング</a></li><li><a href="services/insurance.html">自動車保険</a></li></ul></div>
       <div><h4>会社について</h4><ul>
-        <li><a href="company.html">会社概要</a></li>
+        <li><a href="company.html">会社情報</a></li>
         <li><a href="recruit.html">採用情報</a></li>
         <li><a href="blog/index.html">ブログ</a></li>
         <li><a href="access.html">アクセス</a></li>
@@ -172,7 +174,7 @@
   </div>
 </footer>
 <script src="assets/js/site.js"></script>
-<div class="sp-bar">
+<div class="sp-bar" data-area="sp_bar">
   <a href="tel:0120100152">📞 0120-100-152</a>
   <a href="contact.html">お問い合わせ</a>
 </div>

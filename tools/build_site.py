@@ -4,10 +4,13 @@
 使い方:  python3 tools/build_site.py
 - ヘッダー・フッター・共通CTAはここで一元管理し、各ページに展開する
 - 文章はすべて現行サイトの文言とご本人に確認いただいた内容（docs/01-concept.md 3-1）
-- 写真枠は assets/photos/ にファイルが入るまでイメージ図（SVG）
+- 写真は assets/photos/<枠名>.jpg（png/webp も可）を置くだけで差し替わる。
+  無ければ assets/photos/pamphlet/crops/ のパンフレット切り出し → それも無ければイメージ図（SVG）
 """
 import os
 import re
+import shutil
+import struct
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUT = os.path.join(ROOT, "site")
@@ -20,60 +23,157 @@ MAP_LINK = ("https://www.google.co.jp/maps/place/%E3%82%BF%E3%82%AB%E3%83%A4%E3%
             "@34.6752252,133.9588,17z/data=!3m1!4b1!4m6!3m5!1s0x355408b5db6dfb9d:0x653a5f5af1c074f5!8m2!3d34.6752208!4d133.9613749!16s%2Fg%2F1vb99wz9?hl=ja")
 HOURS = "8:30–17:30／火曜定休"
 
-NAV = [
+NAV = [  # ヘッダーの並び（2026-09-10 決定）。ブログはフッターと「お知らせ」帯から
     ("services/index.html", "サービス"),
-    ("recruit.html", "採用情報"),
-    ("blog/index.html", "ブログ"),
-    ("company.html", "会社概要"),
+    ("company.html", "会社情報"),
     ("access.html", "アクセス"),
+    ("recruit.html", "採用情報"),
     ("contact.html", "お問い合わせ"),
 ]
 
 # SNS・外部リンク（URL 受領後に差し替え。None のものは「準備中」表示）
 SOCIAL = [
-    ("Instagram", None),
-    ("Facebook", None),
-    ("LINE", None),
-]
+    ("Instagram", "https://www.instagram.com/takayamotor/"),   # 2026-09-10 受領
+    ("X", "https://x.com/takayacargroup"),                      # 2026-09-10 受領
+]  # LINE・Facebook は運用していないため掲載しない（2026-09-10）
 LOTUS_URL = "https://www.lotas.co.jp/"  # ロータスクラブ（2026-09-10 受領）
+
+# 計測（GA4）。測定ID「G-XXXXXXXXXX」を受領したらここに入れる。空のままだとタグは出ない。
+# ページビューに加え、site.js が 電話・フォーム・SNS・地図・サービス・ブログ のクリックをイベント送信する
+GA_ID = ""
+
+
+def ga_html():
+    if not GA_ID:
+        return "<!-- 計測: GA4 の測定IDを tools/build_site.py の GA_ID に入れると、ここに gtag が入ります -->"
+    return f'''<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}gtag('js',new Date());gtag('config','{GA_ID}');</script>'''
 
 SERVICES = [
     # slug, 番号, 名称, 1行説明, 画像, 写真タグ
-    ("cars", "01", "クルマを探す・買い取る", "新車は日本車の全メーカー。中古車はご希望条件で業者オークションから探すオーダー形式。", "exterior-road", ""),
+    ("cars", "01", "クルマを探す・買い取る", "新車は日本車の全メーカー。中古車はご希望条件で業者オークションから探すオーダー形式。", "cars", ""),
     ("lease", "02", "法人・個人リース", "税金・保険・車検・整備まで月額に含めたメンテナンスリースと、ファイナンスリース。", "lease", "イメージ図／写真差し替え予定：リース車両"),
-    ("inspection", "03", "車検・点検・整備", "国産車は全メーカー対応、輸入車もOK。45分のニュースマイル車検。", "mechanic-engine", ""),
-    ("bodywork", "04", "板金・コーティング", "傷・へこみの修理から塗装まで。東京海上日動リペアネット取扱。", "paint-booth", ""),
-    ("insurance", "05", "自動車保険", "東京海上日動・損保ジャパンの代理店。購入から保険まで一つの窓口で。", "president", ""),
+    ("inspection", "03", "車検・点検・整備", "国産車は全メーカー対応、輸入車もOK。自社の指定工場で車検から一般整備まで。", "inspection", ""),
+    ("bodywork", "04", "板金・コーティング", "傷・へこみの修理から塗装まで。東京海上日動リペアネット取扱。", "bodywork", ""),
+    ("insurance", "05", "自動車保険", "東京海上日動・損保ジャパンの代理店。購入から保険まで一つの窓口で。", "insurance", ""),
 ]
 
 
-# 詳細ページだけ差し替える画像（カードは SERVICES の画像のまま）
-DETAIL_IMG = {
-    "lease": ("drive", "イメージ図：快適なドライブを（写真差し替え予定）"),
-    "inspection": ("mechanic-lift", ""),
-    "bodywork": ("bodywork-sanding", ""),
+# ======================================================================
+# 写真枠（スロット）
+#   assets/photos/<枠名>.jpg|jpeg|png|webp を置くと、その枠がその写真に差し替わる。
+#   無ければ assets/photos/pamphlet/crops/<既定>.jpg（採用パンフレットの切り出し）、
+#   それも無ければ site/assets/img/<svg>.svg のイメージ図を表示する。
+#   枠名: (既定の切り出し名 or None, イメージ図SVG, alt, 使う場所, 推奨サイズ(幅,高さ))
+# ======================================================================
+PHOTO_SLOTS = {
+    "hero":              ("exterior-road",    "hero",       "タカヤモーター 社屋と展示場（岡山市中区高屋）", "トップのメイン写真", (1600, 900)),
+    "company":           ("building",         "company",    "タカヤモーター フロント社屋",                   "会社概要", (1200, 750)),
+    "cars":              ("exterior-road",    "cars",       "展示場と社屋",                                   "サービスカード／クルマを探す（詳細）", (800, 500)),
+    "lease":             (None,               "lease",      "リース車両",                                     "サービスカード：法人・個人リース", (800, 500)),
+    "lease-detail":      (None,               "drive",      "快適なドライブを",                               "法人・個人リース（詳細）", (1200, 750)),
+    "inspection":        ("mechanic-engine",  "inspection", "エンジンルームを点検する整備士",                 "サービスカード：車検・点検・整備", (800, 500)),
+    "inspection-detail": ("mechanic-lift",    "inspection", "リフトアップした車両の下回りを整備する整備士",   "車検・点検・整備（詳細）", (1200, 750)),
+    "bodywork":          ("paint-booth",      "bodywork",   "塗装ブースでの塗装作業",                         "サービスカード：板金・コーティング", (800, 500)),
+    "bodywork-detail":   ("bodywork-sanding", "bodywork",   "板金作業（研磨）",                               "板金・コーティング（詳細）", (1200, 750)),
+    "insurance":         ("president",        "insurance",  "打ち合わせの様子",                               "サービスカード：自動車保険／自動車保険（詳細）", (800, 500)),
+    "recruit":           ("factory",          "inspection", "整備工場（リフト・車検ライン）",                 "採用情報のメイン写真", (1200, 750)),
+    "gallery-1":         ("mechanic-engine",  None,         "エンジンルームを点検する整備士",                 "採用情報ギャラリー 1", (800, 600)),
+    "gallery-2":         ("staff",            None,         "整備スタッフ",                                   "採用情報ギャラリー 2", (800, 600)),
+    "gallery-3":         ("paint-booth",      None,         "塗装ブースでの塗装作業",                         "採用情報ギャラリー 3", (800, 600)),
+    "gallery-4":         ("mechanic-lift",    None,         "リフトアップした車両の下回りを整備する整備士",   "採用情報ギャラリー 4", (800, 600)),
+    "gallery-5":         ("president",        None,         "打ち合わせの様子",                               "採用情報ギャラリー 5", (800, 600)),
 }
-
-
-# 採用パンフレット（2026-09-10 受領）から切り出した写真。alt はここで一元管理
-PHOTOS = {
-    "exterior-road": "タカヤモーター 社屋と展示場（岡山市中区高屋）",
-    "building": "タカヤモーター フロント社屋",
-    "factory": "整備工場（リフト・車検ライン）",
-    "mechanic-lift": "リフトアップした車両の下回りを整備する整備士",
-    "mechanic-engine": "エンジンルームを点検する整備士",
-    "bodywork-sanding": "板金作業（研磨）",
-    "paint-booth": "塗装ブースでの塗装作業",
-    "staff": "整備スタッフ",
-    "president": "打ち合わせの様子",
+PLACEHOLDER_TAG = {
+    "lease": "イメージ図／写真差し替え予定：リース車両",
+    "lease-detail": "イメージ図：快適なドライブを（写真差し替え予定）",
 }
+PHOTO_EXTS = ("jpg", "jpeg", "png", "webp")
+PHOTO_SRC = os.path.join(ROOT, "assets", "photos")
+PHOTO_CROPS = os.path.join(PHOTO_SRC, "pamphlet", "crops")
+PHOTO_OUT = os.path.join(OUT, "assets", "img", "photos")
+PHOTO_FILES = {}   # slot -> 出力ファイル名（site/assets/img/photos/ 内）。解決後に埋まる
 
 
-def ph(root, img, tag, extra_class=""):
-    if img in PHOTOS:
-        return (f'<div class="ph ph--photo {extra_class}"><img src="{root}assets/img/photos/{img}.jpg" '
-                f'alt="{PHOTOS[img]}" loading="lazy"></div>')
-    return (f'<div class="ph {extra_class}"><img src="{root}assets/img/{img}.svg" alt="" loading="lazy">'
+def image_size(path):
+    """JPEG / PNG / WebP の (幅, 高さ) を返す。読めなければ None。"""
+    try:
+        with open(path, "rb") as f:
+            head = f.read(32)
+            if head[:8] == b"\x89PNG\r\n\x1a\n":
+                return struct.unpack(">II", head[16:24])
+            if head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+                chunk = head[12:16]
+                if chunk == b"VP8X":
+                    w = int.from_bytes(head[24:27], "little") + 1
+                    h = int.from_bytes(head[27:30], "little") + 1
+                    return (w, h)
+                if chunk == b"VP8 ":
+                    f.seek(26); d = f.read(4)
+                    return (struct.unpack("<H", d[:2])[0] & 0x3FFF, struct.unpack("<H", d[2:4])[0] & 0x3FFF)
+                if chunk == b"VP8L":
+                    f.seek(21); b = f.read(4)
+                    bits = int.from_bytes(b, "little")
+                    return ((bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1)
+            if head[:2] == b"\xff\xd8":
+                f.seek(2)
+                while True:
+                    marker = f.read(2)
+                    if len(marker) < 2 or marker[0] != 0xFF:
+                        return None
+                    if marker[1] in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):
+                        f.read(3)
+                        h, w = struct.unpack(">HH", f.read(4))
+                        return (w, h)
+                    (ln,) = struct.unpack(">H", f.read(2))
+                    f.seek(ln - 2, 1)
+    except Exception:
+        return None
+    return None
+
+
+def resolve_photos():
+    """各枠に使う写真ファイルを決めて site/assets/img/photos/ にコピーする。"""
+    if os.path.isdir(PHOTO_OUT):
+        shutil.rmtree(PHOTO_OUT)
+    os.makedirs(PHOTO_OUT, exist_ok=True)
+    print("写真枠:")
+    for slot, (default, _svg, _alt, usage, (rw, rh)) in PHOTO_SLOTS.items():
+        src = None
+        for ext in PHOTO_EXTS:
+            cand = os.path.join(PHOTO_SRC, f"{slot}.{ext}")
+            if os.path.isfile(cand):
+                src = cand
+                origin = "差し替え済み"
+                break
+        if src is None and default:
+            cand = os.path.join(PHOTO_CROPS, f"{default}.jpg")
+            if os.path.isfile(cand):
+                src = cand
+                origin = "パンフレット切り出し"
+        if src is None:
+            print(f"  {slot:18s} イメージ図（{usage}）")
+            continue
+        ext = os.path.splitext(src)[1].lower().lstrip(".")
+        ext = "jpg" if ext == "jpeg" else ext
+        out_name = f"{slot}.{ext}"
+        shutil.copyfile(src, os.path.join(PHOTO_OUT, out_name))
+        PHOTO_FILES[slot] = out_name
+        size = image_size(src)
+        note = ""
+        if size and (size[0] < rw * 0.6):
+            note = f"  ※解像度不足（推奨 {rw}×{rh} 以上）"
+        print(f"  {slot:18s} {origin} {os.path.basename(src)} {size[0]}×{size[1]}{note}" if size else f"  {slot:18s} {origin} {os.path.basename(src)}")
+
+
+def ph(root, slot, tag="", extra_class=""):
+    """写真枠。差し替え写真 → パンフレット切り出し → イメージ図 の順で表示する。"""
+    default, svg, alt, _usage, _size = PHOTO_SLOTS[slot]
+    if slot in PHOTO_FILES:
+        return (f'<div class="ph ph--photo {extra_class}" data-slot="{slot}">'
+                f'<img src="{root}assets/img/photos/{PHOTO_FILES[slot]}" alt="{alt}" loading="lazy"></div>')
+    tag = tag or PLACEHOLDER_TAG.get(slot, "イメージ図（写真差し替え予定）")
+    return (f'<div class="ph {extra_class}" data-slot="{slot}"><img src="{root}assets/img/{svg}.svg" alt="" loading="lazy">'
             f'<span class="tag">{tag}</span></div>')
 
 
@@ -82,11 +182,11 @@ def header(root, active):
     for href, label in NAV:
         cls = ' class="is-active"' if href.split("/")[0] == active else ""
         items += f'<li><a href="{root}{href}"{cls}>{label}</a></li>'
-    return f'''<header class="site-header">
+    return f'''<header class="site-header" data-area="header">
   <div class="wrap">
     <a class="brand" href="{root}index.html">
       <span class="brand__mark">ロゴ</span>
-      <span><span class="brand__name">TakayaCarGroup／タカヤモーター(株)</span><br><span class="brand__sub">タカヤリース株式会社</span></span>
+      <span><span class="brand__name">TakayaCarGroup</span><br><span class="brand__sub">タカヤモーター株式会社／タカヤリース株式会社</span></span>
     </a>
     <button class="nav-toggle" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav" aria-label="グローバルナビ"><ul>{items}</ul></nav>
@@ -96,17 +196,17 @@ def header(root, active):
 
 
 def sp_bar(root):
-    return f'''<div class="sp-bar">
+    return f'''<div class="sp-bar" data-area="sp_bar">
   <a href="tel:0120100152">📞 0120-100-152</a>
   <a href="{root}contact.html">お問い合わせ</a>
 </div>'''
 
 
 def cta(root):
-    return f'''<section class="cta sec--alt">
+    return f'''<section class="cta sec--alt" data-area="cta">
   <div class="wrap">
     <div>
-      <h2>お見積り・ご相談は無料です</h2>
+      <h2>ご相談は無料なので、お気軽にお問い合わせください</h2>
       <p>「これは直りますか」「いくらぐらいですか」だけでも構いません。お電話でもフォームでもお受けします。</p>
     </div>
     <div class="cta__actions">
@@ -135,7 +235,7 @@ def social_html(root):
 
 def footer(root):
     svc = "".join(f'<li><a href="{root}services/{slug}.html">{name}</a></li>' for slug, _, name, *_ in SERVICES)
-    return f'''<footer class="site-footer">
+    return f'''<footer class="site-footer" data-area="footer">
   <div class="wrap">
     <div class="footer-grid">
       <div>
@@ -147,7 +247,7 @@ def footer(root):
       </div>
       <div><h4>サービス</h4><ul>{svc}</ul></div>
       <div><h4>会社について</h4><ul>
-        <li><a href="{root}company.html">会社概要</a></li>
+        <li><a href="{root}company.html">会社情報</a></li>
         <li><a href="{root}recruit.html">採用情報</a></li>
         <li><a href="{root}blog/index.html">ブログ</a></li>
         <li><a href="{root}access.html">アクセス</a></li>
@@ -175,6 +275,7 @@ def page(path, title, desc, body, active=""):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="{root}assets/css/site.css">
+{ga_html()}
 </head>
 <body>
 {header(root, active)}
@@ -227,6 +328,7 @@ def contact_row(root, primary_label, tel=None):
 # ======================================================================
 def build_index():
     root = ""
+    news_items = "".join(f'\n      <li><time>{p["date"]}</time><a href="{post_url(p, root)}">{p["title"]}</a></li>' for p in POSTS[:2])
     svc_cards = "".join(f'''
     <a class="card" href="services/{slug}.html">
       {ph(root, img, tag)}
@@ -239,32 +341,32 @@ def build_index():
     </a>''' for slug, num, name, desc, img, tag in SERVICES)
 
     body = f'''
-<section class="hero">
+<section class="hero" data-area="hero">
   <div class="wrap">
     <div>
       <p class="hero__since"><span>SINCE 1965 ・ OKAYAMA</span></p>
       <h1>お客様満足No.1を目指し、<br>質の高いカーサービスを。</h1>
-      <p class="hero__lead">地域のみなさまに支えられて60年。一台一台、お客様のご事情に合わせたきめ細かな対応で、これからも安心、信頼のサービスをお届けします。</p>
+      <p class="hero__lead">1965年の創業から60年、延べ10万台以上のクルマを見てきました。一台一台、お客様のご事情に合わせたきめ細かな対応で、これからも安心、信頼のサービスをお届けします。</p>
       <ul class="pills">
-        <li>スズキ・ダイハツ 代理店</li>
-        <li>国産車は全メーカー 車検・整備OK</li>
-        <li>輸入車も対応</li>
+        <li>スズキ・ダイハツ <em>代理店</em></li>
+        <li>国産車は<em>全メーカー</em> 車検・整備OK</li>
+        <li><em>輸入車</em>も対応</li>
       </ul>
       <div class="btn-row">
         <a class="btn btn--primary" href="contact.html">お問い合わせ</a>
         <a class="btn btn--ghost" href="#service">サービスを見る</a>
       </div>
     </div>
-    {ph(root, "exterior-road", "")}
+    {ph(root, "hero")}
   </div>
 </section>
 
 <section class="stats">
   <div class="wrap">
-    <div class="stat"><strong>1965<small>年</small></strong><span>創立（昭和40年5月10日）</span></div>
-    <div class="stat"><strong>8<small>業務</small></strong><span>ワンストップで対応</span></div>
-    <div class="stat"><strong>45<small>分</small></strong><span>車検ライン（自社の指定工場）</span></div>
-    <div class="stat"><strong>60<small>年</small></strong><span>地域に支えられて</span></div>
+    <div class="stat"><strong>1965<small>年</small></strong><span>創業（昭和40年5月10日）</span></div>
+    <div class="stat"><strong>60<small>年</small></strong><span>岡山市中区で、地域とともに</span></div>
+    <div class="stat"><strong>10<small>万台以上</small></strong><span>これまでに見てきたクルマ（延べ）</span></div>
+    <div class="stat"><strong>3,500<small>台／年</small></strong><span>年間の取扱台数</span></div>
   </div>
 </section>
 
@@ -273,12 +375,12 @@ def build_index():
     <div>
       <span class="eyebrow">ABOUT</span>
       <h2 class="sec-title">岡山市中区で60年。<br>クルマのことを、まとめて相談できる会社です。</h2>
-      <p class="lead">タカヤモーター（昭和40年創立）とタカヤリース（昭和59年創立）の2社で、新車・中古車の販売、買取、リース、車検・整備、板金塗装、自動車保険まで8つの業務を行っています。スズキ・ダイハツの代理店ですが、国産車は全メーカー、輸入車の整備もお受けします。</p>
-      <a class="link-more" href="company.html">会社概要を見る →</a>
+      <p class="lead">タカヤモーター（昭和40年創立）とタカヤリース（昭和59年創立）の2社で、新車・中古車の販売、買取、リース、車検・整備、板金塗装、自動車保険まで、クルマのことをまとめてお受けしています。スズキ・ダイハツの代理店ですが、国産車は全メーカー、輸入車の整備もお受けします。</p>
+      <a class="link-more" href="company.html">会社情報を見る →</a>
     </div>
     <div>
-      <p class="muted" style="letter-spacing:.06em">大切にしていること</p>
-      <ul class="dash-list" style="margin-top:8px">
+      <p class="values__title">大切にしていること</p>
+      <ul class="values">
         <li>お客様にとって、何がベストかを優先して対応します</li>
         <li>おクルマの代替ありきの提案はしません</li>
         <li>大切なおクルマをながく乗りたい方には、どんな点検や修理が必要かを丁寧に説明します</li>
@@ -291,21 +393,19 @@ def build_index():
   <div class="wrap">
     <span class="eyebrow">SERVICE</span>
     <h2 class="sec-title">おクルマのことはすべてワンストップで対応可能です！</h2>
-    <p class="lead">各メーカー新車・中古車販売、車の買取、リース、各種ローン、車検、一般整備、鈑金塗装、損害保険代理業務。この8業務を、5つの窓口でお受けします。</p>
+    <p class="lead">新車・中古車の販売、買取、リース、各種ローン、車検・整備、板金塗装、自動車保険。クルマに関することは、5つの窓口でまとめてお受けします。</p>
     <div class="cards cards--5">{svc_cards}
     </div>
   </div>
 </section>
 
-<section class="news">
+<section class="news" data-area="news">
   <div class="wrap">
     <div class="news__head">
       <span class="eyebrow">NEWS / BLOG</span>
       <p class="news__title">お知らせ・ブログ</p>
     </div>
-    <ul class="news__list">
-      <li><time>2026.08.20</time><a href="blog/index.html">現行ブログの記事タイトルが入ります（移行後に差し替え）</a></li>
-      <li><time>2026.08.06</time><a href="blog/index.html">現行ブログの記事タイトルが入ります（移行後に差し替え）</a></li>
+    <ul class="news__list">{news_items}
     </ul>
     <a class="link-more" href="blog/index.html">一覧を見る →</a>
   </div>
@@ -329,7 +429,7 @@ def build_index():
   </div>
 </section>
 '''
-    page("index.html", "トップ", "岡山市中区高屋のタカヤモーター／タカヤリース。新車・中古車販売、買取、リース、車検・整備、板金塗装、自動車保険まで8業務をワンストップで。スズキ・ダイハツ代理店、国産全メーカー・輸入車の整備に対応。", body, active="index.html")
+    page("index.html", "トップ", "岡山市中区高屋のタカヤモーター／タカヤリース。新車・中古車販売、買取、リース、車検・整備、板金塗装、自動車保険までワンストップで。1965年創業、延べ10万台以上の実績。スズキ・ダイハツ代理店、国産全メーカー・輸入車の整備に対応。", body, active="index.html")
 
 
 # ======================================================================
@@ -348,7 +448,7 @@ def build_services_index():
       </div>
     </a>''' for slug, num, name, desc, img, tag in SERVICES)
     body = page_head(root, [("index.html", "トップ"), (None, "サービス")], "サービス",
-                     "各メーカー新車・中古車販売、車の買取、リース、各種ローン、車検、一般整備、鈑金塗装、損害保険代理業務。この8業務を、5つの窓口でお受けします。") + f'''
+                     "新車・中古車の販売、買取、リース、各種ローン、車検・整備、板金塗装、自動車保険。クルマに関することは、5つの窓口でまとめてお受けします。") + f'''
 <section class="sec"><div class="wrap">
   <div class="cards cards--3" style="margin-top:0">{cards}</div>
 </div></section>'''
@@ -358,7 +458,7 @@ def build_services_index():
 def svc_page(slug, title, lead_html, content_html, contact_html):
     root = "../"
     _, num, name, _, img, tag = next(s for s in SERVICES if s[0] == slug)
-    img, tag = DETAIL_IMG.get(slug, (img, tag))
+    img = f"{slug}-detail" if f"{slug}-detail" in PHOTO_SLOTS else img
     body = page_head(root, [("index.html", "トップ"), ("services/index.html", "サービス"), (None, name)],
                      f'<span class="card__num" style="display:block;margin-bottom:4px">{num}</span>{name}', lead_html,
                      svc_nav(root, slug)) + f'''
@@ -465,7 +565,7 @@ def build_inspection():
 </div>
 <ul class="chips chips--lg" style="margin-top:20px"><li>車検</li><li>6ヶ月点検・12ヶ月法定点検</li><li>一般整備・修理</li><li>オイル交換</li><li>タイヤ交換</li><li>ドライブレコーダー取付</li><li>カスタム</li></ul>'''
     svc_page("inspection", "車検・点検・整備",
-             "スズキ・ダイハツの代理店ですが、国産車は全メーカーの車検・点検・整備に対応。輸入車もお受けします。45分のニュースマイル車検、料金表を掲載。",
+             "スズキ・ダイハツの代理店ですが、国産車は全メーカーの車検・点検・整備に対応。輸入車もお受けします。ニュースマイル車検の料金表を掲載。",
              content, contact_row("../", "車検の見積りを依頼する"))
 
 
@@ -492,11 +592,11 @@ def build_insurance():
 # ======================================================================
 def build_company():
     root = ""
-    body = page_head(root, [("index.html", "トップ"), (None, "会社概要")], "会社概要",
-                     "タカヤモーター株式会社（昭和40年創立）とタカヤリース株式会社（昭和59年創立）。岡山市中区高屋で、クルマに関わる8つの業務を行っています。") + f'''
+    body = page_head(root, [("index.html", "トップ"), (None, "会社情報")], "会社情報",
+                     "タカヤモーター株式会社（昭和40年創立）とタカヤリース株式会社（昭和59年創立）。岡山市中区高屋で、1965年から延べ10万台以上のクルマを見てきました。") + f'''
 <section class="sec"><div class="wrap split">
   <div>
-    {ph(root, "building", "")}
+    {ph(root, "company")}
     <div class="box box--alt" style="margin-top:24px">
       <p class="muted" style="letter-spacing:.06em">経営理念</p>
       <ol style="padding-left:1.3em;font-size:14px;line-height:2;color:var(--ink-sub);margin-top:10px">
@@ -534,7 +634,7 @@ def build_company():
     <li>大切なおクルマをながく乗りたい方には、どんな点検や修理が必要かを丁寧に説明します</li>
   </ul>
 </div></section>'''
-    page("company.html", "会社概要", "タカヤモーター株式会社・タカヤリース株式会社の会社概要。創立、代表者、所在地、資本金、従業員数、事業内容、経営理念。", body, active="company.html")
+    page("company.html", "会社情報", "タカヤモーター株式会社・タカヤリース株式会社の会社情報。創立、代表者、所在地、資本金、従業員数、事業内容、経営理念。", body, active="company.html")
 
 
 def build_access():
@@ -567,7 +667,7 @@ def build_access():
 def build_contact():
     root = ""
     body = page_head(root, [("index.html", "トップ"), (None, "お問い合わせ")], "お問い合わせ",
-                     "お見積り・ご相談は無料です。「これは直りますか」「いくらぐらいですか」だけでも構いません。お電話でもフォームでもお受けします。") + f'''
+                     "ご相談は無料なので、お気軽にお問い合わせください。「これは直りますか」「いくらぐらいですか」だけでも構いません。お電話でもフォームでもお受けします。") + f'''
 <section class="sec"><div class="wrap">
   <div class="split">
     <div class="info-list">
@@ -586,7 +686,7 @@ def build_contact():
     </div>
   </div>
 </div></section>'''
-    page("contact.html", "お問い合わせ", "タカヤモーターへのお問い合わせ。フリーダイヤル 0120-100-152、お問い合わせフォーム、メール。お見積り・ご相談は無料です。", body, active="contact.html")
+    page("contact.html", "お問い合わせ", "タカヤモーターへのお問い合わせ。フリーダイヤル 0120-100-152、お問い合わせフォーム、メール。ご相談は無料です。", body, active="contact.html")
 
 
 def build_privacy():
@@ -615,7 +715,9 @@ def build_privacy():
 
 
 # ======================================================================
-# 採用情報（文言はご本人提供 2026-09-10。Indeed・ミイダスの応募ページ URL は受領待ち）
+# 採用情報（文言はご本人提供 2026-09-10。ミイダス URL 受領 2026-09-10、Indeed は受領待ち）
+MIIDAS_URL = "https://miidas.jp/partner_apply/457581"
+INDEED_URL = None
 # ======================================================================
 def build_recruit():
     root = ""
@@ -635,11 +737,12 @@ def build_recruit():
     <div class="btn-row">
       <a class="btn btn--primary" href="{FORM}" target="_blank" rel="noopener">お問い合わせフォームから応募・相談する</a>
       <a class="btn btn--ghost" href="tel:0862723065">総務 086-272-3065</a>
-      <span class="muted">Indeed・ミイダスにも掲載しています <span class="todo">要確認：各応募ページのURL</span></span>
+      <a class="btn btn--outline" href="{MIIDAS_URL}" target="_blank" rel="noopener">ミイダスから応募する</a>
+      <span class="muted">Indeed にも掲載しています <span class="todo">要確認：Indeed の応募ページURL</span></span>
     </div>
   </div>
   <div>
-    {ph(root, "factory", "")}
+    {ph(root, "recruit")}
     <div class="box box--alt" style="margin-top:20px">
       <h4>まずは職場の雰囲気を見に来てください</h4>
       <p>面接は計2回。1回目はオンラインでも可能ですが、できれば職場の雰囲気を直接見ていただきたいので対面をおすすめします。現場見学もできます。勤務開始日のご相談（3ヶ月先など）も可能です。</p>
@@ -657,11 +760,11 @@ def build_recruit():
     <div class="appeal__item"><span class="appeal__num">4</span><h3>様々なキャリアに挑戦</h3><p>整備技術を深める以外にも、営業やフロント、経営といった、幅広く学べる機会を設けています。</p></div>
   </div>
   <div class="gallery">
-      {ph(root, "mechanic-engine", "")}
-      {ph(root, "staff", "")}
-      {ph(root, "paint-booth", "")}
-      {ph(root, "mechanic-lift", "")}
-      {ph(root, "president", "")}
+      {ph(root, "gallery-1")}
+      {ph(root, "gallery-2")}
+      {ph(root, "gallery-3")}
+      {ph(root, "gallery-4")}
+      {ph(root, "gallery-5")}
   </div>
 </div></section>
 
@@ -703,7 +806,7 @@ def build_recruit():
           <li>社内相談窓口：役員による1on1を定期的に設け、ご本人の希望実現に向けてフォローします</li>
         </ul></td></tr>
       <tr><th>選考</th><td>面接2回（1回目はオンライン可・対面推奨）／現場見学可／勤務開始日の相談OK</td></tr>
-      <tr><th>応募方法</th><td><a href="{FORM}" target="_blank" rel="noopener">お問い合わせフォーム</a>、または総務 086-272-3065 へ。Indeed・ミイダスからも応募できます。</td></tr>
+      <tr><th>応募方法</th><td><a href="{FORM}" target="_blank" rel="noopener">お問い合わせフォーム</a>、または総務 086-272-3065 へ。<a href="{MIIDAS_URL}" target="_blank" rel="noopener">ミイダス</a>・Indeed からも応募できます。</td></tr>
     </tbody></table>
   </div>
 </div></section>
@@ -731,22 +834,82 @@ def build_recruit():
     page("recruit.html", "採用情報｜自動車整備士募集", "タカヤモーター株式会社の採用情報。自動車整備士（正社員）募集。3級以上の整備士資格、年齢・経験・学歴不問。月給20〜30万円、火曜定休、転勤なし、岡山市中区高屋。", body, active="recruit.html")
 
 
+# 記事データ（移行時は現行ブログ161本をここ、または別ファイルに移す）
+# slug は URL（blog/<slug>.html）。日付の新しい順に並べる
+POSTS = [
+    {"slug": "2026-08-20-sample", "date": "2026.08.20", "cat": "お知らせ",
+     "title": "現行ブログの記事タイトルが入ります（移行後に差し替え）",
+     "excerpt": "記事の冒頭1〜2文をここに。一覧とトップの「お知らせ」帯に表示されます。",
+     "body": SAMPLE_BODY if "SAMPLE_BODY" in globals() else ""},
+    {"slug": "2026-08-06-sample", "date": "2026.08.06", "cat": "整備のこと",
+     "title": "現行ブログの記事タイトルが入ります（移行後に差し替え）",
+     "excerpt": "記事の冒頭1〜2文をここに。", "body": ""},
+    {"slug": "2026-07-24-sample", "date": "2026.07.24", "cat": "地域の話題",
+     "title": "現行ブログの記事タイトルが入ります（移行後に差し替え）",
+     "excerpt": "記事の冒頭1〜2文をここに。", "body": ""},
+]
+SAMPLE_BODY = '''
+<p><span class="todo">ここに記事本文が入ります（移行時に差し替え）。以下は見た目確認用のサンプルです。</span></p>
+<p>タカヤモーターです。いつもありがとうございます。今回は、日々の整備で気づいたことをお伝えします。</p>
+<h2>見出しの例</h2>
+<p>本文の段落です。写真を入れる場合は下のように横幅いっぱいで表示します。</p>
+<figure class="post-figure"><div class="ph" data-slot="blog-sample"><img src="../assets/img/inspection.svg" alt="" loading="lazy"><span class="tag">記事の写真</span></div><figcaption>写真のキャプション</figcaption></figure>
+<h2>もうひとつの見出し</h2>
+<ul>
+  <li>箇条書きの例</li>
+  <li>箇条書きの例</li>
+</ul>
+<p>ご不明な点があれば、お気軽に <a href="../contact.html">お問い合わせ</a> ください。</p>
+'''
+POSTS[0]["body"] = SAMPLE_BODY
+
+
+def post_url(post, root):
+    return f"{root}blog/{post['slug']}.html"
+
+
 def build_blog():
     root = "../"
-    posts = [("2026.08.20", "現行ブログの記事タイトルが入ります（移行後に差し替え）"),
-             ("2026.08.06", "現行ブログの記事タイトルが入ります（移行後に差し替え）"),
-             ("2026.07.24", "現行ブログの記事タイトルが入ります（移行後に差し替え）")]
-    items = "".join(f'<li class="post"><time>{d}</time><a href="#">{t}</a></li>' for d, t in posts)
+    items = "".join(
+        f'''<li class="post">
+      <time>{p["date"]}</time>
+      <div><a href="{post_url(p, root)}">{p["title"]}</a><span class="post__cat">{p["cat"]}</span>
+        <p class="post__excerpt">{p["excerpt"]}</p></div>
+    </li>''' for p in POSTS)
     body = page_head(root, [("index.html", "トップ"), (None, "ブログ")], "ブログ",
                      "日々の整備のこと、お知らせ、地域の話題など。") + f'''
 <section class="sec"><div class="wrap">
-  <p class="muted" style="margin-bottom:18px"><span class="todo">移行作業：現行サイトの記事をこの一覧に移します（E-01〜E-06）。名称は「ブログ」で仮置き。SNS の連携先も受領後に追加</span></p>
+  <p class="muted" style="margin-bottom:18px"><span class="todo">移行作業：現行サイトの記事をこの一覧に移します（E-01〜E-06）。名称は「ブログ」で仮置き</span></p>
   <ul class="post-list">{items}</ul>
+  <nav class="pager" aria-label="ページ送り"><span class="is-current">1</span><span class="muted">記事が増えたらページ送りが入ります</span></nav>
 </div></section>'''
     page("blog/index.html", "ブログ", "タカヤモーター株式会社のブログ・お知らせ。", body, active="blog")
+    for i, p in enumerate(POSTS):
+        build_post(i)
+
+
+def build_post(i):
+    root = "../"
+    p = POSTS[i]
+    newer = POSTS[i - 1] if i > 0 else None
+    older = POSTS[i + 1] if i + 1 < len(POSTS) else None
+    body_html = p["body"] or SAMPLE_BODY
+    nav = "".join([
+        f'<a class="pager__prev" href="{post_url(newer, root)}">← {newer["title"]}</a>' if newer else '<span></span>',
+        f'<a class="pager__next" href="{post_url(older, root)}">{older["title"]} →</a>' if older else '<span></span>',
+    ])
+    body = page_head(root, [("index.html", "トップ"), ("blog/index.html", "ブログ"), (None, p["title"])],
+                     p["title"], f'<time class="post-meta">{p["date"]}</time><span class="post__cat">{p["cat"]}</span>') + f'''
+<section class="sec"><div class="wrap">
+  <article class="prose post-body">{body_html}</article>
+  <nav class="post-nav" aria-label="前後の記事">{nav}</nav>
+  <p style="margin-top:28px"><a class="btn btn--ghost" href="{root}blog/index.html">ブログ一覧へ戻る</a></p>
+</div></section>'''
+    page(f"blog/{p['slug']}.html", p["title"], (p["excerpt"] or p["title"])[:120], body, active="blog")
 
 
 if __name__ == "__main__":
+    resolve_photos()
     build_recruit(); build_blog()
     build_index()
     build_services_index()
