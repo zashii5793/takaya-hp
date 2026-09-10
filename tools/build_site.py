@@ -302,7 +302,7 @@ def page_head(root, crumbs, title, lead, extra=""):
     return f'''<section class="page-head"><div class="wrap">
   <p class="crumbs">{c}</p>
   <h1>{title}</h1>
-  <p class="lead">{lead}</p>
+  {f'<p class="lead">{lead}</p>' if lead else ''}
   {extra}
 </div></section>'''
 
@@ -642,7 +642,7 @@ def build_company():
 def build_access():
     root = ""
     body = page_head(root, [("index.html", "トップ"), (None, "アクセス")], "アクセス",
-                     "〒703-8233 岡山市中区高屋21-1。営業時間 8:30–17:30、定休日は毎週火曜日と年末年始・ゴールデンウィーク・お盆です。") + f'''
+                     "") + f'''
 <section class="sec"><div class="wrap">
   <div class="split split--media">
     <div class="info-list">
