@@ -37,6 +37,12 @@ SERVICES = [
 ]
 
 
+# 詳細ページだけ差し替える画像（カードは SERVICES の画像のまま）
+DETAIL_IMG = {
+    "lease": ("drive", "イメージ図：快適なドライブを（写真差し替え予定）"),
+}
+
+
 def ph(root, img, tag, extra_class=""):
     return (f'<div class="ph {extra_class}"><img src="{root}assets/img/{img}.svg" alt="" loading="lazy">'
             f'<span class="tag">{tag}</span></div>')
@@ -290,6 +296,7 @@ def build_services_index():
 def svc_page(slug, title, lead_html, content_html, contact_html):
     root = "../"
     _, num, name, _, img, tag = next(s for s in SERVICES if s[0] == slug)
+    img, tag = DETAIL_IMG.get(slug, (img, tag))
     body = page_head(root, [("index.html", "トップ"), ("services/index.html", "サービス"), (None, name)],
                      f'<span class="card__num" style="display:block;margin-bottom:4px">{num}</span>{name}', lead_html,
                      svc_nav(root, slug)) + f'''
