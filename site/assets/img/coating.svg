@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 326" role="img" aria-label="PGⅢ親水性コーティングの仕組み：ガラス粒子が塗装に浸透してイオン結合し、表面は水が膜のように広がる親水性になる">
+  <defs>
+    <linearGradient id="paint" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9414F"/><stop offset="1" stop-color="#C21C2A"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DCEFFA"/><stop offset="1" stop-color="#A9D3EE"/></linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7CC4EE" stop-opacity=".55"/><stop offset="1" stop-color="#3E9BD6" stop-opacity=".55"/></linearGradient>
+  </defs>
+  <rect width="760" height="326" fill="#FFFFFF"/>
+  <style>
+    .t{font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif;fill:#1C1B1A}
+    .h{font-size:15px;font-weight:700}
+    .s{font-size:12px;fill:#4A4642}
+    .k{font-size:11px;fill:#6B655F}
+    .b{font-size:13px;font-weight:700;fill:#E60012}
+  </style>
+
+  <!-- 左：一般的なコーティング -->
+  <text x="40" y="34" class="t h">一般的なコーティング</text>
+  <text x="40" y="54" class="t s">被膜が塗装の上に「のっている」状態</text>
+  <rect x="40" y="150" width="300" height="60" fill="url(#paint)"/>
+  <text x="52" y="186" class="t" font-size="12" fill="#fff" font-weight="700">塗装</text>
+  <rect x="40" y="132" width="300" height="18" fill="#B9C9D3"/>
+  <text x="52" y="145" class="t" font-size="11" fill="#1C1B1A">コーティング被膜</text>
+  <rect x="40" y="210" width="300" height="10" fill="#8A837C"/>
+  <text x="52" y="232" class="t k">ボディ</text>
+  <line x1="190" y1="150" x2="190" y2="132" stroke="#1C1B1A" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="196" y="122" class="t k">塗装と被膜は別の層</text>
+
+  <!-- 区切り -->
+  <line x1="380" y1="24" x2="380" y2="306" stroke="#E4DFD9" stroke-width="1"/>
+
+  <!-- 右：PGⅢ -->
+  <text x="420" y="34" class="t h">PGⅢ「親水性」コーティング</text>
+  <text x="420" y="54" class="t s">ガラス粒子が塗装に浸透し、イオン結合で一体化</text>
+  <rect x="420" y="150" width="300" height="60" fill="url(#paint)"/>
+  <text x="432" y="186" class="t" font-size="12" fill="#fff" font-weight="700">塗装</text>
+  <!-- 浸透したガラス粒子 -->
+  <g fill="url(#glass)" stroke="#5FA8D8" stroke-width="1">
+    <circle cx="450" cy="160" r="6"/><circle cx="478" cy="168" r="5"/><circle cx="505" cy="158" r="6"/><circle cx="532" cy="170" r="5"/>
+    <circle cx="560" cy="160" r="6"/><circle cx="588" cy="169" r="5"/><circle cx="615" cy="159" r="6"/><circle cx="643" cy="168" r="5"/>
+    <circle cx="670" cy="160" r="6"/><circle cx="697" cy="168" r="5"/>
+    <circle cx="463" cy="146" r="5"/><circle cx="492" cy="145" r="4"/><circle cx="519" cy="146" r="5"/><circle cx="546" cy="145" r="4"/>
+    <circle cx="574" cy="146" r="5"/><circle cx="601" cy="145" r="4"/><circle cx="629" cy="146" r="5"/><circle cx="656" cy="145" r="4"/><circle cx="684" cy="146" r="5"/>
+  </g>
+  <rect x="420" y="138" width="300" height="6" fill="#A9D3EE"/>
+  <rect x="420" y="210" width="300" height="10" fill="#8A837C"/>
+  <text x="432" y="231" class="t k">ボディ</text>
+  <!-- 結合の説明 -->
+  <text x="420" y="249" class="t b" font-size="12">ガラス粒子は塗装と結合。塗装が剥がれない限り取れません</text>
+  <!-- 親水性の水 -->
+  <path d="M440 138 C470 120 520 120 560 128 C600 136 650 134 700 126 L700 138 Z" fill="url(#water)"/>
+  <text x="440" y="90" class="t s">親水性：水が膜のように広がって流れる</text>
+  <path d="M470 96 C500 104 540 108 580 106" stroke="#3E9BD6" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#3E9BD6"/></marker></defs>
+
+  <!-- 下段：ポイント -->
+  <g class="t">
+    <rect x="40" y="264" width="680" height="48" rx="4" fill="#FAF9F7" stroke="#E4DFD9"/>
+    <text x="56" y="284" class="t s"><tspan font-weight="700" fill="#1C1B1A">ポイント</tspan>　珪素・セルローズ・フッ素の成分は約2〜3年で弱まりますが、浸透したガラス粒子は残ります。</text>
+    <text x="56" y="303" class="t s">施工日から約1ヶ月は被膜の硬化期間のため、機械洗車はお控えください。</text>
+  </g>
+</svg>

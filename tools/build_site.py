@@ -470,12 +470,12 @@ def svc_page(slug, title, lead_html, content_html, contact_html):
 def build_cars():
     makers = "".join(f"<li>{m}</li>" for m in ["トヨタ", "ホンダ", "日産", "ダイハツ", "スズキ", "マツダ", "三菱", "スバル", "いすゞ", "三菱ふそう", "日野"])
     content = f'''
-<h2>新車は全メーカー、中古車はオーダー形式</h2>
-<p class="lead"><strong>新車は日本車の全メーカーをお取り扱いしています。</strong>中古車はご希望の条件を伺い、業者オークションから探してご提案する「オーダー形式」です。買取・下取りもあわせてご相談いただけます。</p>
+<h2>新車も中古車も、60年の販売実績</h2>
+<p class="lead"><strong>1965年の創業から、新車・中古車の販売を続けてきました。</strong>新車は国産車の全メーカーに対応。中古車は展示車のほか、ご希望の条件で業者オークションから探してご提案する「オーダー形式」でお応えします。買取・下取りもあわせてご相談いただけます。</p>
 <div class="tiles">
-  <div class="tile"><strong class="jp">全メーカー</strong><span>新車は日本車の全メーカー取り扱い</span></div>
-  <div class="tile"><strong class="jp">オーダー形式</strong><span>中古車はご希望条件で業者オークションから探します</span></div>
-  <div class="tile"><strong>1<small style="font-family:var(--f-jp);font-size:14px;color:var(--ink)">社完結</small></strong><span>車両・オプション・諸費用までワンストップ</span></div>
+  <div class="tile"><strong class="jp">全メーカー</strong><span>新車は国産車の全メーカーに対応</span></div>
+  <div class="tile"><strong class="jp">オーダー形式</strong><span>中古車は展示車＋業者オークションから</span></div>
+  <div class="tile"><strong class="jp">全国から</strong><span>カーセンサー掲載車には全国からお問い合わせ</span></div>
 </div>
 <div class="box-grid">
   <div class="box">
@@ -489,22 +489,22 @@ def build_cars():
     </ul>
   </div>
   <div class="box">
-    <h4>中古車はオーダー形式</h4>
-    <p class="sub">ご希望の一台を業者オークションから</p>
-    <p>店頭在庫は多くありませんが、<strong>ご予算・車種・年式・走行距離などの条件を伺い、業者オークションから条件に合う一台を探してご提案</strong>します。「この車種のこの年式で、走行○万km以内」といったご相談から承ります。</p>
+    <h4>中古車は展示車＋オーダー形式</h4>
+    <p class="sub">展示車にない一台も、業者オークションから</p>
+    <p>展示場の在庫車からお選びいただけるほか、<strong>ご予算・車種・年式・走行距離などの条件を伺い、業者オークションから条件に合う一台を探してご提案</strong>します。「この車種のこの年式で、走行○万km以内」といったご相談から承ります。</p>
     <ul class="chips chips--lg"><li>買取・下取り</li><li>各種ローン</li><li>購入後の整備・車検・保険まで</li></ul>
   </div>
 </div>
 <div class="box box--alt" style="margin-top:20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
   <div style="flex:1 1 280px">
-    <h4 style="font-size:14px">一部の在庫車はカーセンサーにも掲載しています</h4>
-    <p style="margin-top:6px;font-size:13px">写真・走行距離・価格は掲載ページが最新です。掲載車以外も、上記のオーダー形式でお探しできます。</p>
+    <h4 style="font-size:14px">在庫車はカーセンサーにも掲載。全国からお問い合わせをいただいています</h4>
+    <p style="margin-top:6px;font-size:13px">写真・走行距離・価格は掲載ページが最新です。県外の方への販売実績もあります。掲載車以外も、上記のオーダー形式でお探しできます。</p>
   </div>
   <a class="btn btn--dark" href="#">カーセンサー掲載車を見る →</a>
   <p style="flex-basis:100%;margin:0"><span class="todo">要確認：カーセンサーの掲載店ページURL</span></p>
 </div>'''
     svc_page("cars", "クルマを探す・買い取る",
-             "新車は日本車の全メーカー。中古車はご希望条件を伺って業者オークションから探すオーダー形式。買取・下取り、各種ローンもご相談ください。",
+             "1965年から続く新車・中古車の販売実績。新車は国産車の全メーカー、中古車は展示車と業者オークションからのオーダー形式。カーセンサー掲載車には全国からお問い合わせ。買取・下取り、各種ローンも。",
              content, contact_row("../", "クルマ探しを相談する", ("営業直通", "0862721021", "086-272-1021")))
 
 
@@ -516,8 +516,13 @@ def build_lease():
             ("各種消耗品の交換", "○", "－"), ("タイヤ交換 ※4", "○", "－"), ("バッテリーの交換 ※4", "○", "－")]
     tr = "".join(f"<tr><td>{a}</td><td><strong>{b}</strong></td><td>{c}</td></tr>" for a, b, c in rows)
     content = f'''
-<h2>メンテナンスリースとファイナンスリース</h2>
-<p class="lead"><strong>税金・保険・車検・整備・消耗品まで月額に含めた「メンテナンスリース」</strong>と、車両代と税金を中心にした「ファイナンスリース」の2種類。法人の社用車から個人のマイカーまで、ご事情に合わせてお選びいただけます。</p>
+<h2>100社以上の法人のお客様に、長年ごひいきいただいています</h2>
+<p class="lead"><strong>タカヤリースは昭和59年の設立から、岡山の100社以上の法人のお客様の社用車をお預かりしてきました。</strong>税金・保険・車検・整備・消耗品まで月額に含めた「メンテナンスリース」と、車両代と税金を中心にした「ファイナンスリース」の2種類。法人の社用車から個人のマイカーまで、ご事情に合わせてお選びいただけます。</p>
+<div class="tiles">
+  <div class="tile"><strong>100<small style="font-family:var(--f-jp);font-size:14px;color:var(--ink)">社以上</small></strong><span>長年お取引いただいている法人のお客様</span></div>
+  <div class="tile"><strong class="jp">2種類</strong><span>メンテナンスリース／ファイナンスリース</span></div>
+  <div class="tile"><strong class="jp">整備も同じ窓口</strong><span>車検・整備・保険まで自社で対応</span></div>
+</div>
 <div class="table-box">
   <div class="table-box__head"><strong>リース料に含まれる項目</strong></div>
   <div class="table-scroll"><table>
@@ -528,7 +533,7 @@ def build_lease():
 </div>
 <p class="muted" style="margin-top:14px"><span class="todo">要確認</span> 契約期間・最低台数・個人契約の可否・月額の目安</p>'''
     svc_page("lease", "法人・個人リース",
-             "税金・保険・車検・整備・消耗品まで月額に含めたメンテナンスリースと、車両代と税金を中心にしたファイナンスリース。法人の社用車から個人のマイカーまで。",
+             "100社以上の法人のお客様に長年ごひいきいただくタカヤリース。税金・保険・車検・整備まで月額に含めたメンテナンスリースと、ファイナンスリース。法人の社用車から個人のマイカーまで。",
              content, contact_row("../", "リースの相談をする", ("タカヤリース", "0120556649", "0120-556-649")))
 
 
@@ -554,11 +559,14 @@ def build_inspection():
   </table></div>
   <p class="table-box__note">表示価格は「法定諸費用＋基本技術料」から早期予約割引（60日前）2,200円を引いた総額（税込）です。部品代とその工賃は含まれていません。お車の状態により部品交換で料金が追加になる場合があります。<br>法定諸費用は令和8年11月現在のもので、以降の改定は反映していません。エコカー減税対象車や初度登録から13年を超える車は重量税が異なります。OBD検査対象車は別途料金が必要です。ご希望の場合は引取り・納車サービスも承ります。</p>
 </div>
+<h3 class="sub-title">車検だけでなく、日常の点検・取り付けもお任せください</h3>
 <div class="box-grid">
-  <div class="box"><h4>法定点検</h4><p>6ヶ月点検・12ヶ月法定点検を実施しています。車検と車検のあいだも、お車の状態を見ておくことができます。</p></div>
-  <div class="box"><h4>タイヤ交換</h4><p>ヨコハマタイヤ・ブリヂストンの正規取扱店です。銘柄選びからご相談ください。</p></div>
+  <div class="box"><h4>法定点検（6ヶ月・12ヶ月）</h4><p>車検と車検のあいだの法定点検を実施しています。定期的に見ておくことで、不具合を早く見つけて大きな修理を防ぎます。</p></div>
+  <div class="box"><h4>タイヤ交換・タイヤ販売</h4><p><strong>YOKOHAMA（ヨコハマタイヤ）・ブリヂストン</strong>を取り扱っています。銘柄・サイズ選びからご相談ください。夏タイヤ・冬タイヤの履き替えもどうぞ。</p></div>
+  <div class="box"><h4>ドライブレコーダー取付</h4><p>前後カメラ・駐車監視タイプなど、ご希望に合わせて機種選びから取り付けまで行います。持ち込みのご相談も承ります。</p></div>
+  <div class="box"><h4>各種パーツ取付</h4><p>ナビ・ETC・バックカメラ・エアロ・ホイールなど、さまざまなパーツの取り付けに対応します。お気軽にご相談ください。</p></div>
 </div>
-<ul class="chips chips--lg" style="margin-top:20px"><li>車検</li><li>6ヶ月点検・12ヶ月法定点検</li><li>一般整備・修理</li><li>オイル交換</li><li>タイヤ交換</li><li>ドライブレコーダー取付</li><li>カスタム</li></ul>'''
+<ul class="chips chips--lg" style="margin-top:20px"><li>車検</li><li>法定点検</li><li>一般整備・修理</li><li>オイル交換</li><li>タイヤ交換</li><li>ドライブレコーダー取付</li><li>パーツ取付</li><li>カスタム</li></ul>'''
     svc_page("inspection", "車検・点検・整備",
              "スズキ・ダイハツの代理店ですが、国産車は全メーカーの車検・点検・整備に対応。輸入車もお受けします。ニュースマイル車検の料金表を掲載。",
              content, contact_row("../", "車検の見積りを依頼する"))
@@ -567,20 +575,54 @@ def build_inspection():
 def build_bodywork():
     content = '''
 <h2>傷・へこみから塗装まで</h2>
-<p class="lead">東京海上日動のリペアネットサービスを提供しています。なお、弊社に直接ご連絡いただくことも可能です。</p>
-<p class="muted" style="margin-top:14px"><span class="todo">要記入：コーティングの施工メニュー・下地処理・保証期間</span></p>'''
+<p class="lead">小さな傷・へこみの修理から、自社の塗装ブースでの塗装まで対応します。東京海上日動のリペアネットサービスを提供しています。なお、弊社に直接ご連絡いただくことも可能です。</p>
+
+<h3 class="sub-title">PGⅢ「親水性」コーティング</h3>
+<p class="lead"><strong>PGⅢは、通常のコーティングと異なり、イオン結合でガラスが塗膜を保護します。</strong>ガラス粒子が塗装に浸透して塗装分子と結合している状態なので、塗装が剥がれない限りガラス粒子が取れることはありません。表面の珪素・セルローズ・フッ素の成分は約2〜3年で弱まりますが、12ヶ月点検ごとのメンテナンスで長く保てます。</p>
+<figure class="diagram">
+  <img src="../assets/img/coating.svg" alt="PGⅢ親水性コーティングの仕組み。一般的なコーティングは被膜が塗装の上にのるが、PGⅢはガラス粒子が塗装に浸透してイオン結合し、表面は水が膜のように広がる親水性になる" loading="lazy">
+  <figcaption>一般的なコーティングとの違い（イメージ図）</figcaption>
+</figure>
+<div class="table-box">
+  <div class="table-box__head"><strong>PGⅢ「親水性」コーティング 施工価格</strong><span class="muted">税込</span><span class="right">2026年8月31日現在</span></div>
+  <div class="table-scroll"><table class="coat-table">
+    <thead><tr><th>クラス</th><th>新車時コーティング</th><th>12ヶ月点検ごとの<br>メンテナンス</th><th>車種の例</th></tr></thead>
+    <tbody>
+      <tr><td><p class="name">Aクラス</p></td><td class="num">55,000<small>円</small></td><td class="num">8,800<small>円</small></td><td class="cars"><b>ダイハツ</b> ムーヴ／キャンバス／タフト／ミライース　<b>スズキ</b> ワゴンR／ラパン／ハスラー／アルト／スマイル／ジムニー</td></tr>
+      <tr><td><p class="name">Bクラス</p></td><td class="num">66,000<small>円</small></td><td class="num">8,800<small>円</small></td><td class="cars"><b>ダイハツ</b> アトレー／タント　<b>スズキ</b> エブリイ／スペーシア</td></tr>
+      <tr><td><p class="name">Cクラス</p></td><td class="num">77,000<small>円</small></td><td class="num">8,800<small>円</small></td><td class="cars"><b>ダイハツ</b> ロッキー／トール　<b>スズキ</b> スイフト／ソリオ／XBEE／フロンクス　<b>トヨタ</b> ルーミー／アクア／ヤリス／カローラスポーツ／シエンタ／ライズ</td></tr>
+      <tr><td><p class="name">Dクラス</p></td><td class="num">88,000<small>円</small></td><td class="num">8,800<small>円</small></td><td class="cars"><b>トヨタ</b> ノア／RAV4／ヴォクシー／プリウス／ハリアー　<b>日産</b> エクストレイル　<b>スバル</b> フォレスター／レヴォーグ</td></tr>
+      <tr><td><p class="name">Eクラス</p></td><td class="num">99,000<small>円</small></td><td class="num">8,800<small>円</small></td><td class="cars"><b>トヨタ</b> アルファード／ヴェルファイア／クラウン　<b>日産</b> エルグランド</td></tr>
+    </tbody>
+  </table></div>
+  <p class="table-box__note">上記金額は消費税込みです。お車のクラスはお問い合わせください。被膜の硬化期間のため、施工日から約1ヶ月間は機械洗車等を行わないでください。以降は施工時にお渡しするお手入れ方法を参考にしてください。</p>
+</div>'''
     svc_page("bodywork", "板金・コーティング",
-             "傷・へこみの修理から塗装まで。東京海上日動のリペアネットサービスを提供。弊社へ直接のご連絡も可能です。",
-             content, contact_row("../", "傷・へこみを相談する"))
+             "傷・へこみの修理から塗装まで。PGⅢ親水性コーティング（新車時 55,000円〜）の施工価格表を掲載。東京海上日動のリペアネットサービスを提供。",
+             content, contact_row("../", "板金・コーティングを相談する"))
 
 
 def build_insurance():
     content = '''
-<h2>購入から保険まで、一つの窓口で</h2>
-<p class="lead">損害保険代理店として、自動車保険をお取り扱いしています。</p>
-<ul class="chips chips--lg" style="margin-top:16px"><li>東京海上日動</li><li>損保ジャパン</li></ul>'''
+<h2>購入から保険、万が一の修理まで、一つの窓口で</h2>
+<p class="lead"><strong>東京海上日動・損保ジャパンの代理店</strong>として、自動車保険をお取り扱いしています。クルマを買ったお店・車検を受けているお店で保険も相談できるので、お車の使い方に合った補償を選べます。</p>
+<ul class="chips chips--lg" style="margin-top:16px"><li>東京海上日動</li><li>損保ジャパン</li></ul>
+<div class="box-grid">
+  <div class="box"><h4>2社から比べて選べます</h4><p>東京海上日動と損保ジャパン、2社の補償内容と保険料を比べてご提案します。新規のご加入も、今の保険の見直しもどうぞ。</p></div>
+  <div class="box"><h4>事故のときの窓口はタカヤモーター</h4><p>万が一のときは、まずタカヤモーターへご連絡ください。保険会社への連絡・手続きをサポートします。</p></div>
+  <div class="box"><h4>修理も自社工場で対応</h4><p>事故で修理が必要になっても、保険の手続きから板金・塗装まで弊社で対応できます。東京海上日動のリペアネットサービスにも対応しています。</p></div>
+  <div class="box"><h4>車検・点検とあわせて見直し</h4><p>車検や点検でご来店のときに、保険の内容もあわせて確認できます。更新時期のご案内もします。</p></div>
+</div>
+<h3 class="sub-title">事故が起きたときの流れ</h3>
+<ol class="flow">
+  <li><strong>事故発生</strong>安全を確保し、警察へ連絡</li>
+  <li><strong>タカヤモーターへご連絡</strong>状況をお聞きします</li>
+  <li><strong>保険の手続き</strong>保険会社への連絡・手続きをサポート</li>
+  <li><strong>自社工場で修理</strong>板金・塗装まで弊社で対応</li>
+  <li><strong>お引き渡し</strong>修理内容をご説明してお渡し</li>
+</ol>'''
     svc_page("insurance", "自動車保険",
-             "損害保険代理店として自動車保険をお取り扱い。東京海上日動・損保ジャパン。",
+             "東京海上日動・損保ジャパンの代理店。2社から比べて選べ、事故のときの手続きから自社工場での修理まで一つの窓口で対応。",
              content, contact_row("../", "保険の見直しを相談する"))
 
 
