@@ -22,7 +22,7 @@ MAP_EMBED = ("https://maps.google.com/maps?q=%E3%82%BF%E3%82%AB%E3%83%A4%E3%83%A
 MAP_LINK = ("https://www.google.co.jp/maps/place/%E3%82%BF%E3%82%AB%E3%83%A4%E3%83%A2%E3%83%BC%E3%82%BF%E3%83%BC%E3%88%B1+%E3%82%B5%E3%83%BC%E3%83%93%E3%82%B9/"
             "@34.6752252,133.9588,17z/data=!3m1!4b1!4m6!3m5!1s0x355408b5db6dfb9d:0x653a5f5af1c074f5!8m2!3d34.6752208!4d133.9613749!16s%2Fg%2F1vb99wz9?hl=ja")
 HOURS_OPEN = "8:30–17:30"
-HOLIDAY = "毎週火曜日／年末年始・ゴールデンウィーク・お盆"
+HOLIDAY = "毎週火曜日・第1日曜日（繁忙期を除く）／年末年始・ゴールデンウィーク・お盆"
 HOURS = f"{HOURS_OPEN}／定休日 {HOLIDAY}"
 
 NAV = [  # ヘッダーの並び（2026-09-10 決定）。ブログはフッターと「お知らせ」帯から
