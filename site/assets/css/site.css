@@ -120,6 +120,7 @@ table{border-collapse:collapse;width:100%}
 .pills{list-style:none;display:grid;gap:8px;margin-top:22px;max-width:30em}
 .pills li{display:flex;align-items:center;gap:12px;font-size:17px;font-weight:700;color:var(--ink);background:var(--brand-tint);border-left:4px solid var(--brand);border-radius:0 4px 4px 0;padding:10px 16px 10px 14px;line-height:1.4}
 .pills li::before{content:"✓";flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.pills li>span{flex:1;min-width:0}
 .pills li em{font-style:normal;color:var(--brand)}
 @media (max-width:900px){.pills li{font-size:15px;padding:9px 14px 9px 12px}}
 .ph{position:relative;overflow:hidden;background:#EAE6E1;border-radius:4px}
