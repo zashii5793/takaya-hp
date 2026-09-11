@@ -214,7 +214,7 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 /* 情報ボックス */
 .box{border:1px solid var(--line);border-radius:4px;padding:22px 24px;background:#fff}
 .box--alt{background:var(--bg-alt)}
-.box h4{font-size:16px}
+.box h3{font-size:16px}
 .box .sub{font-size:13px;color:var(--ink-muted);margin-top:4px}
 .box p{font-size:14px;color:var(--ink-sub);margin-top:12px}
 .box-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}
@@ -253,7 +253,7 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .map{aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#E8E4DE;border:1px solid var(--line)}
 .map iframe{width:100%;height:100%;border:0;display:block}
 .info-list{display:grid;gap:18px}
-.info-list h4{font-size:13px;color:var(--ink-muted);font-weight:500;letter-spacing:.06em}
+.info-list h3{font-size:13px;color:var(--ink-muted);font-weight:500;letter-spacing:.06em}
 .info-list p{font-size:15px;margin-top:4px}
 .tel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px}
 .tel-grid div{border:1px solid var(--line);border-radius:4px;padding:14px 16px;background:#fff}
@@ -281,7 +281,7 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:32px}
 .site-footer p{font-size:13px;line-height:1.9}
 .site-footer .f-name{color:#fff;font-weight:700;font-size:15px}
-.site-footer h4{font-size:13px;color:#fff;margin-bottom:10px}
+.site-footer h3{font-size:13px;color:#fff;margin-bottom:10px}
 .site-footer ul{list-style:none;display:grid;gap:6px}
 .site-footer li a{color:#A9A29A;text-decoration:none;font-size:13px}
 .site-footer li a:hover{color:#fff}

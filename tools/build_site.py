@@ -7,6 +7,7 @@
 - 写真は assets/photos/<枠名>.jpg（png/webp も可）を置くだけで差し替わる。
   無ければ assets/photos/pamphlet/crops/ のパンフレット切り出し → それも無ければイメージ図（SVG）
 """
+import json
 import os
 import re
 import shutil
@@ -45,6 +46,73 @@ LOTUS_URL = "https://www.lotas.co.jp/"  # ロータスクラブ（2026-09-10 受
 # 計測（GA4）。測定ID「G-XXXXXXXXXX」を受領したらここに入れる。空のままだとタグは出ない。
 # ページビューに加え、site.js が 電話・フォーム・SNS・地図・サービス・ブログ のクリックをイベント送信する
 GA_ID = ""
+
+# 公開予定のドメイン。変わる場合はここだけ直す（canonical・OGP・サイトマップに使う）
+SITE_URL = "https://www.takayagroup.co.jp"
+SITE_NAME = "タカヤモーター株式会社"
+TEL_MAIN = "0120-100-152"
+ADDR = {"postal": "703-8233", "region": "岡山県", "city": "岡山市中区", "street": "高屋21-1"}
+GEO = {"lat": 34.6752208, "lng": 133.9613749}
+
+
+def jsonld(obj):
+    """JSON-LD を <script> にして返す。AI検索・検索エンジンに事実を構造で伝える。"""
+    return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + '</script>'
+
+
+def business_schema():
+    """会社の基本情報（住所・電話・営業時間・提供サービス）。全ページに入れる。"""
+    return {
+        "@context": "https://schema.org",
+        "@type": ["AutoRepair", "AutoDealer"],
+        "@id": SITE_URL + "/#business",
+        "name": SITE_NAME,
+        "alternateName": ["タカヤモーター", "TakayaCarGroup", "タカヤグループ"],
+        "url": SITE_URL + "/",
+        "logo": SITE_URL + "/assets/img/favicon.svg",
+        "image": SITE_URL + "/assets/img/ogp.jpg",
+        "telephone": "+81-120-100-152",
+        "email": "takaya-customer-service@takaya-gp.jp",
+        "foundingDate": "1965-05-10",
+        "description": ("岡山市中区高屋の自動車整備・販売会社。1965年創業、延べ10万台以上の入庫実績。"
+                        "スズキ・ダイハツの代理店ですが、国産車は全メーカーの車検・点検・整備に対応し、輸入車もお受けします。"
+                        "新車・中古車販売、法人／個人リース、板金・コーティング、自動車保険まで一つの窓口で対応します。"),
+        "address": {"@type": "PostalAddress", "postalCode": ADDR["postal"], "addressRegion": ADDR["region"],
+                    "addressLocality": ADDR["city"], "streetAddress": ADDR["street"], "addressCountry": "JP"},
+        "geo": {"@type": "GeoCoordinates", "latitude": GEO["lat"], "longitude": GEO["lng"]},
+        "hasMap": MAP_LINK,
+        "openingHoursSpecification": [{
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "opens": "08:30", "closes": "17:30"}],
+        "areaServed": [{"@type": "City", "name": "岡山市"}, {"@type": "State", "name": "岡山県"}],
+        "sameAs": [u for _, u in SOCIAL if u] + [LOTUS_URL],
+        "currenciesAccepted": "JPY",
+        "makesOffer": [{"@type": "Offer", "itemOffered": {"@type": "Service", "name": name,
+                        "description": desc, "serviceType": name}} for _, _, name, desc, *_ in SERVICES],
+    }
+
+
+def breadcrumb_schema(crumbs):
+    items = []
+    for i, (href, label) in enumerate(crumbs, start=1):
+        el = {"@type": "ListItem", "position": i, "name": label}
+        if href:
+            el["item"] = SITE_URL + "/" + href.replace("index.html", "")
+        items.append(el)
+    return {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": items}
+
+
+def faq_schema(qa):
+    return {"@context": "https://schema.org", "@type": "FAQPage",
+            "mainEntity": [{"@type": "Question", "name": q,
+                            "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in qa]}
+
+
+def faq_html(qa, title="よくある質問"):
+    """画面表示用のQ&A。構造化データと同じ内容を人にも見せる（これが無いと評価されない）。"""
+    items = "".join(f"<dt>{q}</dt><dd>{a}</dd>" for q, a in qa)
+    return f'<h3 class="sub-title">{title}</h3>\n<dl class="faq">{items}</dl>'
 
 
 def ga_html():
@@ -249,8 +317,8 @@ def footer(root):
         <p><span class="todo">認証工場番号・古物商許可番号・保険代理店登録 要確認</span></p>
         <ul class="social">{social_html(root)}</ul>
       </div>
-      <div><h4>サービス</h4><ul>{svc}</ul></div>
-      <div><h4>会社について</h4><ul>
+      <div><h3>サービス</h3><ul>{svc}</ul></div>
+      <div><h3>会社について</h3><ul>
         <li><a href="{root}company.html">会社情報</a></li>
         <li><a href="{root}recruit.html">採用情報</a></li>
         <li><a href="{root}blog/index.html">ブログ</a></li>
@@ -265,10 +333,26 @@ def footer(root):
 <script src="{root}assets/js/site.js"></script>'''
 
 
-def page(path, title, desc, body, active=""):
+_CRUMBS = []   # page_head() が直前に作ったパンくずを page() が拾う
+
+
+def page(path, title, desc, body, active="", schema=None):
+    global _CRUMBS
     root = "../" if "/" in path else ""
-    full_title = "タカヤモーター株式会社｜岡山市中区の車検・整備・新車中古車・リース・保険" if path == "index.html" \
-        else f"{title}｜タカヤモーター株式会社（岡山市中区）"
+    if path == "index.html":
+        full_title = "タカヤモーター株式会社｜岡山市中区の車検・整備・新車中古車販売・リース・保険"
+    elif "岡山" in title:
+        full_title = f"{title}｜タカヤモーター株式会社"
+    else:
+        full_title = f"{title}｜岡山市中区のタカヤモーター株式会社"
+    canonical = SITE_URL + "/" + ("" if path == "index.html" else path.replace("index.html", ""))
+    blocks = [business_schema()]
+    if _CRUMBS:
+        blocks.append(breadcrumb_schema(_CRUMBS))
+    if schema:
+        blocks += schema if isinstance(schema, list) else [schema]
+    _CRUMBS = []
+    ld = "\n".join(jsonld(b) for b in blocks)
     html = f'''<!doctype html>
 <html lang="ja">
 <head>
@@ -276,9 +360,22 @@ def page(path, title, desc, body, active=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{full_title}</title>
 <meta name="description" content="{desc}">
+<link rel="canonical" href="{canonical}">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="theme-color" content="#E60012">
+<meta property="og:type" content="{'website' if path == 'index.html' else 'article'}">
+<meta property="og:site_name" content="{SITE_NAME}">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="{full_title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:url" content="{canonical}">
+<meta property="og:image" content="{SITE_URL}/assets/img/ogp.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="{root}assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="{root}assets/css/site.css">
+{ld}
 {ga_html()}
 </head>
 <body>
@@ -300,6 +397,8 @@ def page(path, title, desc, body, active=""):
 
 
 def page_head(root, crumbs, title, lead, extra=""):
+    global _CRUMBS
+    _CRUMBS = list(crumbs)
     c = " › ".join(f'<a href="{root}{h}">{l}</a>' if h else l for h, l in crumbs)
     return f'''<section class="page-head"><div class="wrap">
   <p class="crumbs">{c}</p>
@@ -412,9 +511,9 @@ def build_index():
       <span class="eyebrow">ACCESS</span>
       <h2 class="sec-title">アクセス</h2>
       <div class="info-list" style="margin-top:20px">
-        <div><h4>所在地</h4><p>〒703-8233<br>岡山市中区高屋21-1</p><a class="link-more" style="margin-top:6px" href="{MAP_LINK}" target="_blank" rel="noopener">Google マップで見る →</a></div>
-        <div><h4>営業時間</h4><p>{HOURS_OPEN}</p><p class="muted">定休日：{HOLIDAY}</p></div>
-        <div><h4>お電話</h4>
+        <div><h3>所在地</h3><p>〒703-8233<br>岡山市中区高屋21-1</p><a class="link-more" style="margin-top:6px" href="{MAP_LINK}" target="_blank" rel="noopener">Google マップで見る →</a></div>
+        <div><h3>営業時間</h3><p>{HOURS_OPEN}</p><p class="muted">定休日：{HOLIDAY}</p></div>
+        <div><h3>お電話</h3>
           <p>タカヤモーター <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:20px;text-decoration:none;color:var(--ink)">0120-100-152</a><br>
              タカヤリース <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:20px;text-decoration:none;color:var(--ink)">0120-556-649</a></p></div>
       </div>
@@ -445,12 +544,13 @@ def build_services_index():
     body = page_head(root, [("index.html", "トップ"), (None, "サービス")], "サービス",
                      "クルマを探す・買い取る、リース、車検・点検・整備、板金・コーティング、自動車保険。クルマに関することは、この5つのサービスでまとめてお受けします。") + f'''
 <section class="sec"><div class="wrap">
-  <div class="cards cards--3" style="margin-top:0">{cards}</div>
+  <h2 class="sec-title">クルマのことは、この5つの窓口でまとめてお受けします</h2>
+  <div class="cards cards--3">{cards}</div>
 </div></section>'''
-    page("services/index.html", "サービス", "タカヤモーターの5つのサービス窓口：クルマを探す・買い取る／法人・個人リース／車検・点検・整備／板金・コーティング／自動車保険。", body, active="services")
+    page("services/index.html", "サービス", "岡山市中区のタカヤモーターが扱う5つのサービス。新車・中古車販売と買取、法人・個人リース、車検・点検・整備、板金塗装とコーティング、自動車保険。クルマに関することを一つの窓口でまとめてお受けします。", body, active="services")
 
 
-def svc_page(slug, title, lead_html, content_html, contact_html):
+def svc_page(slug, title, lead_html, content_html, contact_html, schema=None):
     root = "../"
     _, num, name, _, img, tag = next(s for s in SERVICES if s[0] == slug)
     img = f"{slug}-detail" if f"{slug}-detail" in PHOTO_SLOTS else img
@@ -464,7 +564,13 @@ def svc_page(slug, title, lead_html, content_html, contact_html):
     {contact_html}
   </div>
 </div></section>'''
-    page(f"services/{slug}.html", title, re.sub(r"<[^>]+>", "", lead_html)[:120], body, active="services")
+    _, num, name, desc, *_ = next(x for x in SERVICES if x[0] == slug)
+    svc = {"@context": "https://schema.org", "@type": "Service", "name": name, "description": desc,
+           "serviceType": name, "provider": {"@id": SITE_URL + "/#business"},
+           "areaServed": {"@type": "City", "name": "岡山市"},
+           "url": SITE_URL + f"/services/{slug}.html"}
+    blocks = [svc] + ([schema] if schema else [])
+    page(f"services/{slug}.html", title, re.sub(r"<[^>]+>", "", lead_html)[:120], body, active="services", schema=blocks)
 
 
 def build_cars():
@@ -479,7 +585,7 @@ def build_cars():
 </div>
 <div class="box-grid">
   <div class="box">
-    <h4>新車販売</h4>
+    <h3>新車販売</h3>
     <p class="sub">日本車 全メーカー取り扱い（トラックも含む）</p>
     <ul class="chips">{makers}</ul>
     <ul class="dash-list">
@@ -489,7 +595,7 @@ def build_cars():
     </ul>
   </div>
   <div class="box">
-    <h4>中古車は展示車＋オーダー形式</h4>
+    <h3>中古車は展示車＋オーダー形式</h3>
     <p class="sub">展示車にない一台も、業者オークションから</p>
     <p>展示場の在庫車からお選びいただけるほか、<strong>ご予算・車種・年式・走行距離などの条件を伺い、業者オークションから条件に合う一台を探してご提案</strong>します。「この車種のこの年式で、走行○万km以内」といったご相談から承ります。</p>
     <ul class="chips chips--lg"><li>買取・下取り</li><li>各種ローン</li><li>購入後の整備・車検・保険まで</li></ul>
@@ -497,11 +603,11 @@ def build_cars():
 </div>
 <div class="box box--alt" style="margin-top:20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
   <div style="flex:1 1 280px">
-    <h4 style="font-size:14px">在庫車はカーセンサーにも掲載。全国からお問い合わせをいただいています</h4>
+    <h3 style="font-size:14px">在庫車はカーセンサーにも掲載。全国からお問い合わせをいただいています</h3>
     <p style="margin-top:6px;font-size:13px">写真・走行距離・価格は掲載ページが最新です。県外の方への販売実績もあります。掲載車以外も、上記のオーダー形式でお探しできます。</p>
   </div>
-  <a class="btn btn--dark" href="#">カーセンサー掲載車を見る →</a>
-  <p style="flex-basis:100%;margin:0"><span class="todo">要確認：カーセンサーの掲載店ページURL</span></p>
+  <a class="btn btn--dark" href="../contact.html">在庫・お探しのクルマを相談する →</a>
+  <p style="flex-basis:100%;margin:0"><span class="todo">要確認：カーセンサーの掲載店ページURL（受領後、ここを掲載ページへのリンクに差し替え）</span></p>
 </div>'''
     svc_page("cars", "クルマを探す・買い取る",
              "1965年から続く新車・中古車の販売実績。新車は国産車の全メーカー、中古車は展示車と業者オークションからのオーダー形式。カーセンサー掲載車には全国からお問い合わせ。買取・下取り、各種ローンも。",
@@ -537,6 +643,26 @@ def build_lease():
              content, contact_row("../", "リースの相談をする", ("タカヤリース", "0120556649", "0120-556-649")))
 
 
+INSPECTION_QA = [
+    ("輸入車の車検もお願いできますか？",
+     "お受けします。スズキ・ダイハツの代理店ですが、国産車は全メーカーの車検・点検・整備に対応しており、輸入車もお受けします。ただし国産車より日数をいただきます。"),
+    ("国産車ならどのメーカーでも見てもらえますか？",
+     "国産車は全メーカーに対応しています。自社の指定工場で車検から一般整備まで行います。"),
+    ("車検はどのくらい時間がかかりますか？",
+     "コースによって異なります。ニューサービスコースは立ち合い車検で所要時間の目安が60分、スマイルコースは1日お預かり、プレミアムコースは1〜2日お預かりです。"),
+    ("車検中の代車はありますか？",
+     "スマイルコースとプレミアムコースは、ご来店時のレンタカーが無料です。"),
+    ("クルマを持って行けないのですが、引取りに来てもらえますか？",
+     "ご希望の場合は引取り・納車サービスを承ります。お電話またはお問い合わせフォームでご相談ください。"),
+    ("早めに予約すると安くなりますか？",
+     "60日前までの早期予約で2,200円割引になります。掲載の料金は、この早期予約割引を引いた総額（税込）です。"),
+    ("表示されている料金に含まれないものはありますか？",
+     "部品代とその工賃は含まれていません。お車の状態により部品交換で料金が追加になる場合があります。また、初度登録から13年を超える車やエコカー減税対象車は重量税が異なり、OBD検査対象車は別途料金が必要です。"),
+    ("車検以外の点検もお願いできますか？",
+     "6ヶ月点検・12ヶ月法定点検を実施しています。オイル交換、タイヤ交換（YOKOHAMA・ブリヂストン取扱）、ドライブレコーダーやナビ・ETCなど各種パーツの取り付けもお受けします。"),
+]
+
+
 def build_inspection():
     def price_row(name, desc, prices, badge=""):
         cells = "".join(f'<td class="num">{p}<small>円〜</small></td>' for p in prices)
@@ -561,15 +687,16 @@ def build_inspection():
 </div>
 <h3 class="sub-title">車検だけでなく、日常の点検・取り付けもお任せください</h3>
 <div class="box-grid">
-  <div class="box"><h4>法定点検（6ヶ月・12ヶ月）</h4><p>車検と車検のあいだの法定点検を実施しています。定期的に見ておくことで、不具合を早く見つけて大きな修理を防ぎます。</p></div>
-  <div class="box"><h4>タイヤ交換・タイヤ販売</h4><p><strong>YOKOHAMA（ヨコハマタイヤ）・ブリヂストン</strong>を取り扱っています。銘柄・サイズ選びからご相談ください。夏タイヤ・冬タイヤの履き替えもどうぞ。</p></div>
-  <div class="box"><h4>ドライブレコーダー取付</h4><p>前後カメラ・駐車監視タイプなど、ご希望に合わせて機種選びから取り付けまで行います。持ち込みのご相談も承ります。</p></div>
-  <div class="box"><h4>各種パーツ取付</h4><p>ナビ・ETC・バックカメラ・エアロ・ホイールなど、さまざまなパーツの取り付けに対応します。お気軽にご相談ください。</p></div>
+  <div class="box"><h3>法定点検（6ヶ月・12ヶ月）</h3><p>車検と車検のあいだの法定点検を実施しています。定期的に見ておくことで、不具合を早く見つけて大きな修理を防ぎます。</p></div>
+  <div class="box"><h3>タイヤ交換・タイヤ販売</h3><p><strong>YOKOHAMA（ヨコハマタイヤ）・ブリヂストン</strong>を取り扱っています。銘柄・サイズ選びからご相談ください。夏タイヤ・冬タイヤの履き替えもどうぞ。</p></div>
+  <div class="box"><h3>ドライブレコーダー取付</h3><p>前後カメラ・駐車監視タイプなど、ご希望に合わせて機種選びから取り付けまで行います。持ち込みのご相談も承ります。</p></div>
+  <div class="box"><h3>各種パーツ取付</h3><p>ナビ・ETC・バックカメラ・エアロ・ホイールなど、さまざまなパーツの取り付けに対応します。お気軽にご相談ください。</p></div>
 </div>
-<ul class="chips chips--lg" style="margin-top:20px"><li>車検</li><li>法定点検</li><li>一般整備・修理</li><li>オイル交換</li><li>タイヤ交換</li><li>ドライブレコーダー取付</li><li>パーツ取付</li><li>カスタム</li></ul>'''
-    svc_page("inspection", "車検・点検・整備",
-             "スズキ・ダイハツの代理店ですが、国産車は全メーカーの車検・点検・整備に対応。輸入車もお受けします。ニュースマイル車検の料金表を掲載。",
-             content, contact_row("../", "車検の見積りを依頼する"))
+<ul class="chips chips--lg" style="margin-top:20px"><li>車検</li><li>法定点検</li><li>一般整備・修理</li><li>オイル交換</li><li>タイヤ交換</li><li>ドライブレコーダー取付</li><li>パーツ取付</li><li>カスタム</li></ul>
+{faq_html(INSPECTION_QA)}'''
+    svc_page("inspection", "岡山市中区の車検・点検・整備",
+             "岡山市中区の車検・点検・整備。スズキ・ダイハツの代理店ですが国産車は全メーカーに対応し、輸入車もお受けします。ニュースマイル車検の料金表（軽 50,760円〜）、法定点検、タイヤ交換、ドライブレコーダー取付まで。",
+             content, contact_row("../", "車検の見積りを依頼する"), schema=faq_schema(INSPECTION_QA))
 
 
 def build_bodywork():
@@ -597,7 +724,7 @@ def build_bodywork():
   </table></div>
   <p class="table-box__note">上記金額は消費税込みです。お車のクラスはお問い合わせください。被膜の硬化期間のため、施工日から約1ヶ月間は機械洗車等を行わないでください。以降は施工時にお渡しするお手入れ方法を参考にしてください。</p>
 </div>'''
-    svc_page("bodywork", "板金・コーティング",
+    svc_page("bodywork", "板金・塗装・コーティング",
              "傷・へこみの修理から塗装まで。PGⅢ親水性コーティング（新車時 55,000円〜）の施工価格表を掲載。東京海上日動のリペアネットサービスを提供。",
              content, contact_row("../", "板金・コーティングを相談する"))
 
@@ -608,10 +735,10 @@ def build_insurance():
 <p class="lead"><strong>東京海上日動・損保ジャパンの代理店</strong>として、自動車保険をお取り扱いしています。クルマを買ったお店・車検を受けているお店で保険も相談できるので、お車の使い方に合った補償を選べます。</p>
 <ul class="chips chips--lg" style="margin-top:16px"><li>東京海上日動</li><li>損保ジャパン</li></ul>
 <div class="box-grid">
-  <div class="box"><h4>2社から比べて選べます</h4><p>東京海上日動と損保ジャパン、2社の補償内容と保険料を比べてご提案します。新規のご加入も、今の保険の見直しもどうぞ。</p></div>
-  <div class="box"><h4>事故のときの窓口はタカヤモーター</h4><p>万が一のときは、まずタカヤモーターへご連絡ください。保険会社への連絡・手続きをサポートします。</p></div>
-  <div class="box"><h4>修理も自社工場で対応</h4><p>事故で修理が必要になっても、保険の手続きから板金・塗装まで弊社で対応できます。東京海上日動のリペアネットサービスにも対応しています。</p></div>
-  <div class="box"><h4>車検・点検とあわせて見直し</h4><p>車検や点検でご来店のときに、保険の内容もあわせて確認できます。更新時期のご案内もします。</p></div>
+  <div class="box"><h3>2社から比べて選べます</h3><p>東京海上日動と損保ジャパン、2社の補償内容と保険料を比べてご提案します。新規のご加入も、今の保険の見直しもどうぞ。</p></div>
+  <div class="box"><h3>事故のときの窓口はタカヤモーター</h3><p>万が一のときは、まずタカヤモーターへご連絡ください。保険会社への連絡・手続きをサポートします。</p></div>
+  <div class="box"><h3>修理も自社工場で対応</h3><p>事故で修理が必要になっても、保険の手続きから板金・塗装まで弊社で対応できます。東京海上日動のリペアネットサービスにも対応しています。</p></div>
+  <div class="box"><h3>車検・点検とあわせて見直し</h3><p>車検や点検でご来店のときに、保険の内容もあわせて確認できます。更新時期のご案内もします。</p></div>
 </div>
 <h3 class="sub-title">事故が起きたときの流れ</h3>
 <ol class="flow">
@@ -622,7 +749,7 @@ def build_insurance():
   <li><strong>お引き渡し</strong>修理内容をご説明してお渡し</li>
 </ol>'''
     svc_page("insurance", "自動車保険",
-             "東京海上日動・損保ジャパンの代理店。2社から比べて選べ、事故のときの手続きから自社工場での修理まで一つの窓口で対応。",
+             "岡山市中区のタカヤモーターは東京海上日動・損保ジャパンの代理店です。2社の補償と保険料を比べて選べ、万が一の事故でも保険の手続きから自社工場での板金・塗装まで一つの窓口で対応します。",
              content, contact_row("../", "保険の見直しを相談する"))
 
 
@@ -671,7 +798,7 @@ def build_company():
     <li>大切なおクルマをながく乗りたい方には、どんな点検や修理が必要かを丁寧に説明します</li>
   </ul>
 </div></section>'''
-    page("company.html", "会社情報", "タカヤモーター株式会社・タカヤリース株式会社の会社情報。創立、代表者、所在地、資本金、従業員数、事業内容、経営理念。", body, active="company.html")
+    page("company.html", "会社情報", "タカヤモーター株式会社（1965年創立）とタカヤリース株式会社（1984年創立）の会社情報。岡山市中区高屋の所在地、代表者、資本金1,000万円、従業員27名、事業内容、経営理念、ロータスクラブ加盟について。", body, active="company.html")
 
 
 def build_access():
@@ -679,13 +806,14 @@ def build_access():
     body = page_head(root, [("index.html", "トップ"), (None, "アクセス")], "アクセス",
                      "") + f'''
 <section class="sec"><div class="wrap">
-  <div class="split split--media">
+  <h2 class="sec-title">所在地・行き方・営業時間</h2>
+  <div class="split split--media" style="margin-top:24px">
     <div class="info-list">
-      <div><h4>所在地</h4><p>〒703-8233<br>岡山市中区高屋21-1</p><a class="link-more" style="margin-top:6px" href="{MAP_LINK}" target="_blank" rel="noopener">Google マップで見る →</a></div>
-      <div><h4>交通</h4>
+      <div><h3>所在地</h3><p>〒703-8233<br>岡山市中区高屋21-1</p><a class="link-more" style="margin-top:6px" href="{MAP_LINK}" target="_blank" rel="noopener">Google マップで見る →</a></div>
+      <div><h3>交通</h3>
         <p>電車：JR高島駅から徒歩15分<br>お車：国道250号沿い、マルナカ高屋店の角を左折<br>バス：岡電バス「高屋」降り場から徒歩5分</p></div>
-      <div><h4>営業時間</h4><p>{HOURS_OPEN}</p><p class="muted">定休日：{HOLIDAY}</p></div>
-      <div><h4>フリーダイヤル</h4>
+      <div><h3>営業時間</h3><p>{HOURS_OPEN}</p><p class="muted">定休日：{HOLIDAY}</p></div>
+      <div><h3>フリーダイヤル</h3>
         <p>タカヤモーター株式会社 <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:22px;text-decoration:none;color:var(--ink)">0120-100-152</a></p>
         <p>タカヤリース株式会社 <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:22px;text-decoration:none;color:var(--ink)">0120-556-649</a></p></div>
     </div>
@@ -698,7 +826,7 @@ def build_access():
     <div><p>総務</p><a href="tel:0862723065">086-272-3065</a></div>
   </div>
 </div></section>'''
-    page("access.html", "アクセス", "タカヤモーター株式会社へのアクセス。〒703-8233 岡山市中区高屋21-1。営業時間・定休日・部署別電話番号。", body, active="access.html")
+    page("access.html", "アクセス", "タカヤモーター株式会社（〒703-8233 岡山市中区高屋21-1）へのアクセス。JR高島駅から徒歩15分、国道250号沿いマルナカ高屋店の角を左折、岡電バス高屋から徒歩5分。営業時間・定休日・部署別の電話番号もご案内します。", body, active="access.html")
 
 
 def build_contact():
@@ -706,24 +834,25 @@ def build_contact():
     body = page_head(root, [("index.html", "トップ"), (None, "お問い合わせ")], "お問い合わせ",
                      "ご相談は無料なので、お気軽にお問い合わせください。「これは直りますか」「いくらぐらいですか」だけでも構いません。お電話でもフォームでもお受けします。") + f'''
 <section class="sec"><div class="wrap">
-  <div class="split">
+  <h2 class="sec-title">お電話・メール・お問い合わせフォーム</h2>
+  <div class="split" style="margin-top:24px">
     <div class="info-list">
-      <div><h4>お電話</h4>
+      <div><h3>お電話</h3>
         <p>タカヤモーター <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:26px;text-decoration:none;color:var(--brand)">0120-100-152</a></p>
         <p>タカヤリース <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:26px;text-decoration:none;color:var(--brand)">0120-556-649</a></p>
         <p class="muted">受付 {HOURS_OPEN}／定休日：{HOLIDAY}</p></div>
-      <div><h4>メール</h4><p><a href="mailto:takaya-customer-service@takaya-gp.jp">takaya-customer-service@takaya-gp.jp</a></p></div>
-      <div><h4>部署直通</h4><p class="tel-lines">サービス <a href="tel:0862721001">086-272-1001</a><br>営業（タカヤモーター） <a href="tel:0862721021">086-272-1021</a><br>営業（タカヤリース） <a href="tel:0862733611">086-273-3611</a><br>総務 <a href="tel:0862723065">086-272-3065</a></p></div>
+      <div><h3>メール</h3><p><a href="mailto:takaya-customer-service@takaya-gp.jp">takaya-customer-service@takaya-gp.jp</a></p></div>
+      <div><h3>部署直通</h3><p class="tel-lines">サービス <a href="tel:0862721001">086-272-1001</a><br>営業（タカヤモーター） <a href="tel:0862721021">086-272-1021</a><br>営業（タカヤリース） <a href="tel:0862733611">086-273-3611</a><br>総務 <a href="tel:0862723065">086-272-3065</a></p></div>
     </div>
     <div>
-      <h4 style="font-size:16px">お問い合わせフォーム</h4>
+      <h3 style="font-size:16px">お問い合わせフォーム</h3>
       <p class="muted" style="margin-top:6px">下のフォームが表示されない場合は <a href="{FORM}" target="_blank" rel="noopener">こちらから開いてください</a>。</p>
       <div class="form-embed"><iframe src="{FORM_EMBED}" title="お問い合わせフォーム" loading="lazy">読み込んでいます…</iframe></div>
       <p class="muted" style="margin-top:8px"><span class="todo">要確認：Google フォーム右上「送信」→🔗 の公開URL（/d/e/…/viewform）に差し替え</span></p>
     </div>
   </div>
 </div></section>'''
-    page("contact.html", "お問い合わせ", "タカヤモーターへのお問い合わせ。フリーダイヤル 0120-100-152、お問い合わせフォーム、メール。ご相談は無料です。", body, active="contact.html")
+    page("contact.html", "お問い合わせ", "岡山市中区のタカヤモーターへのお問い合わせ。車検・整備の見積り、新車中古車、リース、板金塗装、保険のご相談はフリーダイヤル 0120-100-152、お問い合わせフォーム、メールで受け付けています。ご相談は無料です。", body, active="contact.html")
 
 
 def build_privacy():
@@ -748,7 +877,7 @@ def build_privacy():
     body = page_head("", [("index.html", "トップ"), (None, "プライバシーポリシー")], "プライバシーポリシー",
                      "タカヤモーター株式会社／タカヤリース株式会社の個人情報の取り扱いについて。") + f'''
 <section class="sec"><div class="wrap"><div class="prose">{"".join(out)}</div></div></section>'''
-    page("privacy.html", "プライバシーポリシー", "タカヤモーター株式会社／タカヤリース株式会社のプライバシーポリシー。", body)
+    page("privacy.html", "プライバシーポリシー", "タカヤモーター株式会社／タカヤリース株式会社における個人情報の取り扱いについて。取得する情報の範囲、利用目的、第三者提供、開示・訂正・削除のご請求方法、お問い合わせ窓口を記載しています。", body)
 
 
 # ======================================================================
@@ -781,7 +910,7 @@ def build_recruit():
   <div>
     {ph(root, "recruit")}
     <div class="box box--alt" style="margin-top:20px">
-      <h4>まずは職場の雰囲気を見に来てください</h4>
+      <h3>まずは職場の雰囲気を見に来てください</h3>
       <p>面接は計2回。1回目はオンラインでも可能ですが、できれば職場の雰囲気を直接見ていただきたいので対面をおすすめします。現場見学もできます。勤務開始日のご相談（3ヶ月先など）も可能です。</p>
     </div>
   </div>
@@ -868,7 +997,30 @@ def build_recruit():
     </dl>
   </div>
 </div></section>'''
-    page("recruit.html", "採用情報｜自動車整備士募集", "タカヤモーター株式会社の採用情報。自動車整備士（正社員）募集。3級以上の整備士資格、年齢・経験・学歴不問。給与は実績に応じて要相談、火曜定休、転勤なし、岡山市中区高屋。", body, active="recruit.html")
+    recruit_qa = [
+        ("採用面接では何を聞かれますか？", "学業や将来のキャリア形成を中心とした質問をさせていただきます。"),
+        ("整備技術試験はありますか？", "基本的に技術試験は実施しないですが、場合によっては確認をさせて頂きます。"),
+        ("タカヤグループの強みはなんですか？", "整備、営業、フロントのスタッフ全員が、お客様に喜んで頂けるサービスを提供しようと本気で考え、実践しているところです。当たり前ですが徹底しています。"),
+    ]
+    job = {
+        "@context": "https://schema.org", "@type": "JobPosting",
+        "title": "自動車整備士（正社員）",
+        "description": ("車検整備・一般整備・車両診断から板金・塗装まで担当いただきます。"
+                        "基礎技術の習熟期間を設け、ご本人の希望や経験に合わせて少しずつ業務をお任せします。"
+                        "年齢・経験・学歴は不問、3級以上の自動車整備士資格が必須です。"),
+        "employmentType": "FULL_TIME",
+        "hiringOrganization": {"@id": SITE_URL + "/#business"},
+        "jobLocation": {"@type": "Place", "address": {
+            "@type": "PostalAddress", "postalCode": ADDR["postal"], "addressRegion": ADDR["region"],
+            "addressLocality": ADDR["city"], "streetAddress": ADDR["street"], "addressCountry": "JP"}},
+        "qualifications": "3級以上の自動車整備士資格",
+        "skills": "自動車整備の実務経験、検査員の有資格者は歓迎",
+        "workHours": "8:30〜17:30（シフト制）",
+        "directApply": True,
+        "url": SITE_URL + "/recruit.html",
+        "datePosted": "2026-09-10", "validThrough": "2027-09-30",
+    }
+    page("recruit.html", "採用情報｜自動車整備士募集", "タカヤモーター株式会社の採用情報。自動車整備士（正社員）募集。3級以上の整備士資格、年齢・経験・学歴不問。給与は実績に応じて要相談、火曜定休、転勤なし、岡山市中区高屋。", body, active="recruit.html", schema=[job, faq_schema(recruit_qa)])
 
 
 # 記事データ（移行時は現行ブログ161本をここ、または別ファイルに移す）
@@ -920,7 +1072,7 @@ def build_blog():
   <ul class="post-list">{items}</ul>
   <nav class="pager" aria-label="ページ送り"><span class="is-current">1</span><span class="muted">記事が増えたらページ送りが入ります</span></nav>
 </div></section>'''
-    page("blog/index.html", "ブログ", "タカヤモーター株式会社のブログ・お知らせ。", body, active="blog")
+    page("blog/index.html", "ブログ", "岡山市中区のタカヤモーター株式会社のブログ・お知らせ。日々の整備で気づいたこと、車検や点検・タイヤ交換のご案内、新車中古車の入荷、地域の話題などを掲載しています。", body, active="blog")
     for i, p in enumerate(POSTS):
         build_post(i)
 
@@ -942,7 +1094,86 @@ def build_post(i):
   <nav class="post-nav" aria-label="前後の記事">{nav}</nav>
   <p style="margin-top:28px"><a class="btn btn--ghost" href="{root}blog/index.html">ブログ一覧へ戻る</a></p>
 </div></section>'''
-    page(f"blog/{p['slug']}.html", p["title"], (p["excerpt"] or p["title"])[:120], body, active="blog")
+    art = {"@context": "https://schema.org", "@type": "BlogPosting",
+           "headline": p["title"], "description": p["excerpt"],
+           "datePublished": p["date"].replace(".", "-"),
+           "url": SITE_URL + f"/blog/{p['slug']}.html",
+           "mainEntityOfPage": SITE_URL + f"/blog/{p['slug']}.html",
+           "author": {"@id": SITE_URL + "/#business"},
+           "publisher": {"@id": SITE_URL + "/#business"},
+           "articleSection": p["cat"]}
+    desc = f"{p['excerpt']}（{p['cat']}・{p['date']}）岡山市中区のタカヤモーター株式会社のブログです。車検・点検や整備のご相談もお気軽にどうぞ。"
+    page(f"blog/{p['slug']}.html", p["title"], desc[:140], body, active="blog", schema=art)
+
+
+def build_seo_files():
+    """検索エンジンとAIクローラー向けのファイル。"""
+    pages = []
+    for dp, _, fns in os.walk(OUT):
+        for fn in fns:
+            if fn.endswith(".html"):
+                rel = os.path.relpath(os.path.join(dp, fn), OUT).replace(os.sep, "/")
+                pages.append(rel)
+    order = {"index.html": 0, "services/index.html": 1}
+    pages.sort(key=lambda r: (order.get(r, 5), r))
+    today = "2026-09-11"
+    urls = ""
+    for rel in pages:
+        loc = SITE_URL + "/" + ("" if rel == "index.html" else rel.replace("index.html", ""))
+        pr = "1.0" if rel == "index.html" else ("0.8" if rel.startswith("services/") else "0.6")
+        urls += f"  <url><loc>{loc}</loc><lastmod>{today}</lastmod><priority>{pr}</priority></url>\n"
+    with open(os.path.join(OUT, "sitemap.xml"), "w", encoding="utf-8") as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n")
+
+    with open(os.path.join(OUT, "robots.txt"), "w", encoding="utf-8") as f:
+        f.write("User-agent: *\nAllow: /\n\n"
+                "# AI検索・生成AIのクローラーにも読み取りを許可する\n"
+                "User-agent: GPTBot\nAllow: /\n"
+                "User-agent: ClaudeBot\nAllow: /\n"
+                "User-agent: PerplexityBot\nAllow: /\n"
+                "User-agent: Google-Extended\nAllow: /\n\n"
+                f"Sitemap: {SITE_URL}/sitemap.xml\n")
+
+    # AI に会社の事実を短くまとめて渡すファイル（llms.txt の慣例）
+    svc = "\n".join(f"- [{name}]({SITE_URL}/services/{slug}.html): {desc}" for slug, _, name, desc, *_ in SERVICES)
+    with open(os.path.join(OUT, "llms.txt"), "w", encoding="utf-8") as f:
+        f.write(f"""# {SITE_NAME}（タカヤモーター／タカヤリース）
+
+> 岡山県岡山市中区高屋にある自動車整備・販売会社。1965年（昭和40年）創業、延べ10万台以上の入庫実績。
+> スズキ・ダイハツの代理店ですが、国産車は全メーカーの車検・点検・整備に対応し、輸入車もお受けします。
+> 自社の指定工場を持ち、車検から一般整備、板金・塗装、自動車保険、事故時の修理までを一つの窓口で対応します。
+
+## 基本情報
+- 所在地: 〒{ADDR['postal']} {ADDR['region']}{ADDR['city']}{ADDR['street']}
+- 電話: {TEL_MAIN}（タカヤモーター）／0120-556-649（タカヤリース）
+- 営業時間: {HOURS_OPEN}
+- 定休日: {HOLIDAY}
+- 創立: タカヤモーター株式会社 1965年5月10日／タカヤリース株式会社 1984年5月
+- 資本金: 1,000万円　従業員数: 27名
+- 加盟: ロータスクラブ（全日本ロータス同友会）
+
+## サービス
+{svc}
+
+## よく聞かれること
+- 国産車は全メーカーの車検・点検・整備に対応。輸入車も対応（国産車より日数がかかる）。
+- 車検はニューサービスコース（立ち合い・目安60分）、スマイルコース（1日お預かり）、プレミアムコース（1〜2日お預かり）の3種類。
+- 60日前までの早期予約で2,200円割引。
+- スマイルコース・プレミアムコースはご来店時のレンタカーが無料。
+- 引取り・納車サービスあり。
+- 中古車は展示車のほか、条件を伺って業者オークションから探すオーダー形式。
+- 法人リースは100社以上の取引実績。
+
+## ページ
+- [トップ]({SITE_URL}/)
+- [サービス一覧]({SITE_URL}/services/)
+- [会社情報]({SITE_URL}/company.html)
+- [アクセス]({SITE_URL}/access.html)
+- [採用情報]({SITE_URL}/recruit.html)
+- [お問い合わせ]({SITE_URL}/contact.html)
+""")
+    print("wrote sitemap.xml / robots.txt / llms.txt")
 
 
 if __name__ == "__main__":
@@ -952,3 +1183,4 @@ if __name__ == "__main__":
     build_services_index()
     build_cars(); build_lease(); build_inspection(); build_bodywork(); build_insurance()
     build_company(); build_access(); build_contact(); build_privacy()
+    build_seo_files()
