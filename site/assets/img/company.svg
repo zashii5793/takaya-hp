@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 340" role="img" aria-label="社屋の外観">
+            <defs><linearGradient id="co-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EEF3F7"></stop><stop offset="1" stop-color="#F8FAFC"></stop></linearGradient></defs>
+            <rect width="560" height="340" fill="url(#co-sky)"></rect>
+            <rect y="252" width="560" height="88" fill="#CBC7C1"></rect>
+            <g fill="#F3EFE8"><rect x="20" y="292" width="60" height="5"></rect><rect x="120" y="292" width="60" height="5"></rect><rect x="480" y="292" width="60" height="5"></rect></g>
+            <!-- 社屋 -->
+            <rect x="70" y="96" width="300" height="156" fill="#F6F3EE"></rect>
+            <rect x="370" y="140" width="130" height="112" fill="#E3DED7"></rect>
+            <rect x="70" y="82" width="300" height="16" fill="#E60012"></rect>
+            <rect x="110" y="60" width="140" height="18" rx="2" fill="#FFFFFF" stroke="#E3DED7"></rect>
+            <rect x="120" y="66" width="44" height="6" rx="3" fill="#E60012"></rect>
+            <rect x="172" y="66" width="68" height="6" rx="3" fill="#A9AEB4"></rect>
+            <g fill="#A9C4D6">
+              <rect x="96" y="124" width="56" height="42"></rect><rect x="166" y="124" width="56" height="42"></rect>
+              <rect x="236" y="124" width="56" height="42"></rect><rect x="306" y="124" width="44" height="42"></rect>
+              <rect x="96" y="186" width="120" height="66"></rect>
+            </g>
+            <g fill="#DCE9F0" opacity=".9"><rect x="100" y="128" width="14" height="34"></rect><rect x="170" y="128" width="14" height="34"></rect><rect x="240" y="128" width="14" height="34"></rect><rect x="310" y="128" width="12" height="34"></rect><rect x="100" y="190" width="20" height="58"></rect></g>
+            <rect x="154" y="186" width="3" height="66" fill="#F6F3EE"></rect>
+            <rect x="238" y="200" width="120" height="52" fill="#E3DED7"></rect>
+            <rect x="246" y="208" width="104" height="36" fill="#A9C4D6"></rect>
+            <rect x="392" y="168" width="86" height="84" fill="#4A6786"></rect>
+            <rect x="400" y="176" width="70" height="68" fill="#3B5570"></rect>
+            <rect x="37" y="226" width="7" height="31" fill="#8B6B4E"></rect><circle cx="40" cy="222" r="29" fill="#A6C79A"></circle><circle cx="29" cy="230" r="21" fill="#7FA872"></circle>
+            <rect x="533" y="232" width="5" height="25" fill="#8B6B4E"></rect><circle cx="536" cy="228" r="18" fill="#A6C79A"></circle><circle cx="527" cy="236" r="14" fill="#7FA872"></circle>
+            <!-- 駐車中の白い車 -->
+            <path d="M400 252 L400 240 C400 236 404 233 409 232 L444 227 L466 211 C470 208 476 206 482 206 L520 206 C526 206 532 208 536 211 L556 227 L560 228 L560 252 Z" fill="#F9F9F7"></path>
+            <path d="M400 246 L560 246 L560 252 L400 252 Z" fill="#D9D9D5"></path>
+            <g fill="#A9C4D6"><path d="M470 214 C473 211 477 210 482 210 L498 210 L498 227 L458 227 Z"></path><path d="M506 210 L520 210 C524 210 528 212 531 215 L541 227 L506 227 Z"></path></g>
+            <circle cx="428" cy="252" r="15" fill="#26241F"></circle><circle cx="530" cy="252" r="15" fill="#26241F"></circle><circle cx="428" cy="252" r="6" fill="#DADAD6"></circle><circle cx="530" cy="252" r="6" fill="#DADAD6"></circle>
+          </svg>
