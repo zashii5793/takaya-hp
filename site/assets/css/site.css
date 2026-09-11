@@ -388,3 +388,10 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .flow li strong{display:block;font-size:14px;color:var(--ink);margin:4px 0 2px}
 @media (max-width:900px){.flow{grid-template-columns:1fr 1fr}}
 @media (max-width:560px){.flow{grid-template-columns:1fr}}
+
+/* スマホのタップ領域を確保（指で押しやすい高さにする） */
+@media (max-width:1000px){
+  main p a,main td a,main dd a,main li a,.crumbs a,.tel-lines a,.site-footer p a{padding-block:8px}
+  .site-footer li a{display:inline-block;padding:7px 0}
+  .link-more{padding-block:6px}
+}

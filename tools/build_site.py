@@ -72,6 +72,12 @@ def business_schema():
         "logo": SITE_URL + "/assets/img/favicon.svg",
         "image": SITE_URL + "/assets/img/ogp.jpg",
         "telephone": "+81-120-100-152",
+        "contactPoint": [
+            {"@type": "ContactPoint", "contactType": "サービス（車検・整備）", "telephone": "+81-86-272-1001", "areaServed": "JP", "availableLanguage": "Japanese"},
+            {"@type": "ContactPoint", "contactType": "営業（タカヤモーター）", "telephone": "+81-86-272-1021", "areaServed": "JP", "availableLanguage": "Japanese"},
+            {"@type": "ContactPoint", "contactType": "営業（タカヤリース）", "telephone": "+81-86-273-3611", "areaServed": "JP", "availableLanguage": "Japanese"},
+            {"@type": "ContactPoint", "contactType": "総務・採用", "telephone": "+81-86-272-3065", "areaServed": "JP", "availableLanguage": "Japanese"},
+        ],
         "email": "takaya-customer-service@takaya-gp.jp",
         "foundingDate": "1965-05-10",
         "description": ("岡山市中区高屋の自動車整備・販売会社。1965年創業、延べ10万台以上の入庫実績。"
