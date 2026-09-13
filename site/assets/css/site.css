@@ -395,3 +395,19 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
   .site-footer li a{display:inline-block;padding:7px 0}
   .link-more{padding-block:6px}
 }
+
+/* お知らせページの SNS（2026-09-13） */
+.sns-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:26px}
+.sns-col__title{display:flex;align-items:center;gap:10px;font-size:17px;margin:0 0 12px}
+.sns-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;
+  font-family:var(--f-num);font-size:13px;font-weight:700;color:#fff;letter-spacing:.02em}
+.sns-badge--x{background:#0F1419}
+.sns-badge--ig{background:linear-gradient(135deg,#F9A03C 0%,#E4405F 50%,#8A3AB9 100%)}
+.sns-embed{min-height:200px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;overflow:hidden}
+.sns-embed .instagram-media{margin:0 auto 14px!important;min-width:0!important}
+.sns-embed--empty{display:flex;align-items:center;justify-content:center;text-align:center;min-height:220px}
+.sns-embed--empty p{margin:0;font-size:14px;line-height:1.7}
+.sns-col .link-more{margin-top:12px}
+@media (max-width:820px){
+  .sns-grid{grid-template-columns:1fr;gap:32px}
+}

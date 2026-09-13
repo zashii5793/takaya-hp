@@ -26,14 +26,14 @@ HOURS_OPEN = "8:30–17:30"
 HOLIDAY = "毎週火曜日・第1日曜日（繁忙期を除く）／年末年始・ゴールデンウィーク・お盆"
 HOURS = f"{HOURS_OPEN}／定休日 {HOLIDAY}"
 
-NAV = [  # ヘッダーの並び（2026-09-10 決定。ブログは 2026-09-11 に末尾へ追加）
+NAV = [  # ヘッダーの並び（2026-09-10 決定。2026-09-13 に「ブログ」→「お知らせ」へ改称）
     ("index.html", "TOP"),
     ("services/index.html", "サービス"),
     ("company.html", "会社情報"),
     ("access.html", "アクセス"),
     ("recruit.html", "採用情報"),
     ("contact.html", "お問い合わせ"),
-    ("blog/index.html", "ブログ"),
+    ("blog/index.html", "お知らせ"),
 ]
 
 # SNS・外部リンク（URL 受領後に差し替え。None のものは「準備中」表示）
@@ -41,6 +41,14 @@ SOCIAL = [
     ("Instagram", "https://www.instagram.com/takayamotor/"),   # 2026-09-10 受領
     ("X", "https://x.com/takayacargroup"),                      # 2026-09-10 受領
 ]  # LINE・Facebook は運用していないため掲載しない（2026-09-10）
+
+# お知らせページに並べる SNS（2026-09-13 ご依頼）
+X_HANDLE = "takayacargroup"                              # https://x.com/takayacargroup
+INSTAGRAM_URL = "https://www.instagram.com/takayamotor/"
+# Instagram は「アカウントの投稿を自動で並べる」公式ウィジェットが廃止されているため、
+# 載せたい投稿の URL をここに並べます（投稿の […] →「埋め込み」に出る URL）。
+# 自動で流したい場合は外部サービス（SnapWidget など）の埋め込みコードに差し替えます。
+INSTAGRAM_POSTS = []
 LOTUS_URL = "https://www.lotas.co.jp/"  # ロータスクラブ（2026-09-10 受領）
 
 # 計測（GA4）。測定ID「G-XXXXXXXXXX」を受領したらここに入れる。空のままだとタグは出ない。
@@ -302,7 +310,7 @@ def lotus_html():
 
 
 def social_html(root):
-    out = f'<li><a href="{root}blog/index.html">ブログ</a></li>'
+    out = f'<li><a href="{root}blog/index.html">お知らせ</a></li>'
     for name, href in SOCIAL:
         if href is None:
             out += f'<li><span class="social__off" title="URL 受領後に有効化">{name}（準備中）</span></li>'
@@ -327,7 +335,7 @@ def footer(root):
       <div><h3>会社について</h3><ul>
         <li><a href="{root}company.html">会社情報</a></li>
         <li><a href="{root}recruit.html">採用情報</a></li>
-        <li><a href="{root}blog/index.html">ブログ</a></li>
+        <li><a href="{root}blog/index.html">お知らせ</a></li>
         <li><a href="{root}access.html">アクセス</a></li>
         <li><a href="{root}contact.html">お問い合わせ</a></li>
         <li><a href="{root}privacy.html">プライバシーポリシー</a></li>
@@ -502,12 +510,12 @@ def build_index():
 <section class="news" data-area="news">
   <div class="wrap">
     <div class="news__head">
-      <span class="eyebrow">NEWS / BLOG</span>
-      <p class="news__title">お知らせ・ブログ</p>
+      <span class="eyebrow">NEWS</span>
+      <p class="news__title">お知らせ・SNS</p>
     </div>
     <ul class="news__list">{news_items}
     </ul>
-    <a class="link-more" href="blog/index.html">一覧を見る →</a>
+    <a class="link-more" href="blog/index.html">お知らせ一覧・SNSの投稿を見る →</a>
   </div>
 </section>
 
@@ -1063,6 +1071,49 @@ def post_url(post, root):
     return f"{root}blog/{post['slug']}.html"
 
 
+def sns_html():
+    """XとInstagramの投稿を並べる。スクリプトが読めない環境ではリンクが残る。"""
+    x_url = f"https://x.com/{X_HANDLE}"
+    x_block = f'''<div class="sns-col">
+      <h3 class="sns-col__title"><span class="sns-badge sns-badge--x">X</span>Xの投稿</h3>
+      <div class="sns-embed">
+        <a class="twitter-timeline" data-height="520" data-lang="ja" data-dnt="true"
+           href="{x_url}?ref_src=twsrc%5Etfw">Xで @{X_HANDLE} の投稿を見る</a>
+        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+      </div>
+      <a class="link-more" href="{x_url}" target="_blank" rel="noopener">Xでフォローする →</a>
+    </div>'''
+
+    if INSTAGRAM_POSTS:
+        posts = "".join(
+            f'''<blockquote class="instagram-media" data-instgrm-permalink="{u}"
+          data-instgrm-version="14"><a href="{u}">Instagramの投稿を見る</a></blockquote>''' for u in INSTAGRAM_POSTS)
+        ig_body = f'''<div class="sns-embed">{posts}
+        <script async src="https://www.instagram.com/embed.js"></script>
+      </div>'''
+    else:
+        ig_body = '''<div class="sns-embed sns-embed--empty">
+        <p><span class="todo">載せたい投稿のURLを tools/build_site.py の INSTAGRAM_POSTS に並べると、ここに投稿が表示されます</span></p>
+      </div>'''
+
+    ig_block = f'''<div class="sns-col">
+      <h3 class="sns-col__title"><span class="sns-badge sns-badge--ig">IG</span>Instagramの投稿</h3>
+      {ig_body}
+      <a class="link-more" href="{INSTAGRAM_URL}" target="_blank" rel="noopener">Instagramで見る →</a>
+    </div>'''
+
+    return f'''
+<section class="sec sec--alt" id="sns">
+  <div class="wrap">
+    <span class="eyebrow">SOCIAL</span>
+    <h2 class="sec-title">SNSの投稿</h2>
+    <p class="lead">入庫したおクルマや日々のできごとは、XとInstagramでも発信しています。</p>
+    <div class="sns-grid">{x_block}{ig_block}
+    </div>
+  </div>
+</section>'''
+
+
 def build_blog():
     root = "../"
     items = "".join(
@@ -1071,14 +1122,16 @@ def build_blog():
       <div><a href="{post_url(p, root)}">{p["title"]}</a><span class="post__cat">{p["cat"]}</span>
         <p class="post__excerpt">{p["excerpt"]}</p></div>
     </li>''' for p in POSTS)
-    body = page_head(root, [("index.html", "トップ"), (None, "ブログ")], "ブログ",
-                     "日々の整備のこと、お知らせ、地域の話題など。") + f'''
+    body = page_head(root, [("index.html", "トップ"), (None, "お知らせ")], "お知らせ",
+                     "日々の整備のこと、地域の話題、SNSの投稿など。") + f'''
 <section class="sec"><div class="wrap">
-  <p class="muted" style="margin-bottom:18px"><span class="todo">移行作業：現行サイトの記事をこの一覧に移します（E-01〜E-06）。名称は「ブログ」で仮置き</span></p>
+  <h2 class="sec-title">記事</h2>
+  <p class="muted" style="margin-bottom:18px"><span class="todo">移行作業：現行サイトの記事をこの一覧に移します（E-01〜E-06）</span></p>
   <ul class="post-list">{items}</ul>
   <nav class="pager" aria-label="ページ送り"><span class="is-current">1</span><span class="muted">記事が増えたらページ送りが入ります</span></nav>
-</div></section>'''
-    page("blog/index.html", "ブログ", "岡山市中区のタカヤモーター株式会社のブログ・お知らせ。日々の整備で気づいたこと、車検や点検・タイヤ交換のご案内、新車中古車の入荷、地域の話題などを掲載しています。", body, active="blog")
+</div></section>
+''' + sns_html()
+    page("blog/index.html", "お知らせ", "岡山市中区のタカヤモーター株式会社のお知らせ。日々の整備で気づいたこと、車検や点検・タイヤ交換のご案内、新車中古車の入荷、地域の話題を記事とSNS（X・Instagram）で発信しています。", body, active="blog")
     for i, p in enumerate(POSTS):
         build_post(i)
 
@@ -1093,12 +1146,12 @@ def build_post(i):
         f'<a class="pager__prev" href="{post_url(newer, root)}">← {newer["title"]}</a>' if newer else '<span></span>',
         f'<a class="pager__next" href="{post_url(older, root)}">{older["title"]} →</a>' if older else '<span></span>',
     ])
-    body = page_head(root, [("index.html", "トップ"), ("blog/index.html", "ブログ"), (None, p["title"])],
+    body = page_head(root, [("index.html", "トップ"), ("blog/index.html", "お知らせ"), (None, p["title"])],
                      p["title"], f'<time class="post-meta">{p["date"]}</time><span class="post__cat">{p["cat"]}</span>') + f'''
 <section class="sec"><div class="wrap">
   <article class="prose post-body">{body_html}</article>
   <nav class="post-nav" aria-label="前後の記事">{nav}</nav>
-  <p style="margin-top:28px"><a class="btn btn--ghost" href="{root}blog/index.html">ブログ一覧へ戻る</a></p>
+  <p style="margin-top:28px"><a class="btn btn--ghost" href="{root}blog/index.html">お知らせ一覧へ戻る</a></p>
 </div></section>'''
     art = {"@context": "https://schema.org", "@type": "BlogPosting",
            "headline": p["title"], "description": p["excerpt"],
@@ -1108,7 +1161,7 @@ def build_post(i):
            "author": {"@id": SITE_URL + "/#business"},
            "publisher": {"@id": SITE_URL + "/#business"},
            "articleSection": p["cat"]}
-    desc = f"{p['excerpt']}（{p['cat']}・{p['date']}）岡山市中区のタカヤモーター株式会社のブログです。車検・点検や整備のご相談もお気軽にどうぞ。"
+    desc = f"{p['excerpt']}（{p['cat']}・{p['date']}）岡山市中区のタカヤモーター株式会社のお知らせです。車検・点検や整備のご相談もお気軽にどうぞ。"
     page(f"blog/{p['slug']}.html", p["title"], desc[:140], body, active="blog", schema=art)
 
 
