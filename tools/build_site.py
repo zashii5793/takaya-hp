@@ -50,6 +50,24 @@ INSTAGRAM_URL = "https://www.instagram.com/takayamotor/"
 # 自動で流したい場合は外部サービス（SnapWidget など）の埋め込みコードに差し替えます。
 INSTAGRAM_POSTS = []
 LOTUS_URL = "https://www.lotas.co.jp/"  # ロータスクラブ（2026-09-10 受領）
+# 東京海上日動リペアネットの当社ページ（2026-09-24 受領）。板金・塗装ページから案内する
+REPAIRNET_URL = "https://rs-select.tokiomarine-e.jp/factory/11c826c2-f9c6-4706-9515-fba584c754cf"
+
+# Google の口コミ（2026-09-24 受領）。本文のあるものから3件。
+# 本文は原文のまま（絵文字と「…もっと見る」のUI文字だけ落としている）。
+# 投稿者名は姓のみ表示。フルネーム表示に変える場合はここを直す。
+# ※ 口コミの構造化データ（Review / AggregateRating）は入れていない。
+#    自社サイトに自社の評価を出すマークアップは Google のガイドライン違反になるため。
+VOICES = [
+    ("お世話になって三十有余年、些細な事や、無理な注文にも対応して頂き感謝してます。"
+     "全メーカーの車種に対応しているので安心です。"
+     "懐かしいのは、トイレに（相田みつを）の詩や格言を貼っていた事。",
+     None),                      # 投稿者名は要確認（いただいた一覧では名前が切れていました）
+    ("親父の代から孫に至るまでお世話になってます。決して敷居が高くなく、いつもユーザー目線なのが好きです。"
+     "新車はもちろん、修理も確かで、難しい相談でも乗ってくれるのが有り難いですね。",
+     "渡辺"),
+    ("営業マン、サービスの方が大変親切で丁寧に対応してくれます。", "羽原"),
+]
 
 # 計測（GA4）。測定ID「G-XXXXXXXXXX」を受領したらここに入れる。空のままだとタグは出ない。
 # ページビューに加え、site.js が 電話・フォーム・SNS・地図・サービス・ブログ のクリックをイベント送信する
@@ -443,6 +461,30 @@ def contact_row(root, primary_label, tel=None):
 # ======================================================================
 # トップページ：どんな会社か／何をしているか／どこにあるか の3点に絞る
 # ======================================================================
+def voices_html():
+    """Google の口コミ。実際に付いたものだけを載せる（仮の文章は置かない）"""
+    items = ""
+    for text, name in VOICES:
+        who = f"{name} 様" if name else '<span class="todo">投稿者名 要確認</span>'
+        items += f'''
+      <li class="voice">
+        <blockquote>{text}</blockquote>
+        <p class="voice__who">{who}</p>
+      </li>'''
+    return f'''
+<section class="sec" id="voice">
+  <div class="wrap">
+    <span class="eyebrow">VOICE</span>
+    <h2 class="sec-title">お客様の声</h2>
+    <p class="lead">Google に実際にいただいた口コミです。文面はそのまま載せています。</p>
+    <ul class="voices">{items}
+    </ul>
+    <a class="link-more" href="{MAP_LINK}" target="_blank" rel="noopener">Google の口コミをすべて見る →</a>
+  </div>
+</section>
+'''
+
+
 def build_index():
     root = ""
     news_items = "".join(f'\n      <li><time>{p["date"]}</time><a href="{post_url(p, root)}">{p["title"]}</a></li>' for p in POSTS[:2])
@@ -559,6 +601,7 @@ def build_index():
   </div>
 </section>
 
+{voices_html()}
 <section class="news" data-area="news">
   <div class="wrap">
     <div class="news__head">
@@ -766,9 +809,17 @@ def build_inspection():
 
 
 def build_bodywork():
-    content = '''
+    content = f'''
 <h2>傷・へこみから塗装まで</h2>
 <p class="lead">小さな傷・へこみの修理から、自社の塗装ブースでの塗装まで対応します。東京海上日動のリペアネットサービスを提供しています。なお、弊社に直接ご連絡いただくことも可能です。</p>
+<div class="box box--alt" style="margin-top:22px">
+  <h3>東京海上日動 リペアネット</h3>
+  <p class="sub">東京海上日動の認定を受けた修理工場です</p>
+  <p>東京海上日動のご契約者さまは、リペアネットのページから当社を修理工場としてお選びいただけます。ご契約が他社でも、弊社に直接ご連絡いただければ同じようにお受けします。</p>
+  <div class="btn-row" style="margin-top:18px">
+    <a class="btn btn--outline" href="{REPAIRNET_URL}" target="_blank" rel="noopener">リペアネットで当社のページを見る →</a>
+  </div>
+</div>
 
 <h3 class="sub-title">PGⅢ「親水性」コーティング</h3>
 <p class="lead"><strong>PGⅢは、通常のコーティングと異なり、イオン結合でガラスが塗膜を保護します。</strong>ガラス粒子が塗装に浸透して塗装分子と結合している状態なので、塗装が剥がれない限りガラス粒子が取れることはありません。表面の珪素・セルローズ・フッ素の成分は約2〜3年で弱まりますが、12ヶ月点検ごとのメンテナンスで長く保てます。</p>

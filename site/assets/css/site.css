@@ -453,3 +453,16 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
   .tr-band--now{margin-top:16px}
   .tr-list--plain{gap:0 16px}
 }
+
+/* お客様の声（2026-09-24）
+   Google の口コミをそのまま載せる。評価の星や件数は出さない
+   （自社サイトに自社の評価を出すマークアップは Google のガイドライン違反） */
+.voices{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:32px;align-items:start}
+.voice{display:flex;flex-direction:column;gap:14px;height:100%;
+  padding:24px;background:#fff;border:1px solid var(--line);border-radius:var(--r)}
+.voice blockquote{margin:0;font-size:var(--fs-4);line-height:1.9;color:var(--ink);
+  position:relative;padding-top:18px;flex-grow:1}
+.voice blockquote::before{content:"";position:absolute;left:0;top:0;
+  width:28px;height:2px;background:var(--brand)}
+.voice__who{font-size:var(--fs-5);color:var(--ink-muted)}
+@media (max-width:900px){.voices{grid-template-columns:1fr;gap:16px}}
