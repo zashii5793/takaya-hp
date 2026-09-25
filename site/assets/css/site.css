@@ -488,3 +488,8 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
   .fd__row{grid-template-columns:1fr;gap:4px}
   .fd__row dt{padding-top:10px}
 }
+
+/* ヘッダーのロゴ。assets/photos/logo.* を置くと仮表示の赤い四角と入れ替わる
+   （2026-09-26 追加）。横長のロゴでも縦40pxに収まるようにする */
+.brand__logo{height:40px;width:auto;max-width:210px;flex-shrink:0;object-fit:contain;display:block}
+@media (max-width:480px){.brand__logo{max-width:150px}}

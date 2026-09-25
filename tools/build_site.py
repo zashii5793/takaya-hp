@@ -234,6 +234,45 @@ def image_size(path):
     return None
 
 
+LOGO_H = 40        # ヘッダーのロゴの高さ(px)。仮表示の赤い四角と同じ高さに揃える
+LOGO_FILE = None   # ファイル名。resolve_logo() が決める
+LOGO_W = LOGO_H    # 高さを LOGO_H にしたときの幅。縦横比から出す
+
+
+def resolve_logo():
+    """assets/photos/logo.(svg|png|jpg|webp) を置くと、ヘッダーがそのロゴに差し替わる。
+    無ければ赤い四角に「ロゴ」と出る仮表示のまま。写真枠と同じで、置くだけでよい。
+
+    ロゴは横長のことが多いので、高さを LOGO_H に固定して幅は縦横比から計算する。
+    幅と高さを HTML に書いておかないと、読み込み中にヘッダーがガタつく"""
+    global LOGO_FILE, LOGO_W
+    for ext in ("svg", "png", "jpg", "jpeg", "webp"):
+        src = os.path.join(PHOTO_SRC, f"logo.{ext}")
+        if not os.path.isfile(src):
+            continue
+        out_ext = "jpg" if ext == "jpeg" else ext
+        os.makedirs(os.path.join(OUT, "assets", "img"), exist_ok=True)
+        shutil.copyfile(src, os.path.join(OUT, "assets", "img", f"logo.{out_ext}"))
+        LOGO_FILE = f"logo.{out_ext}"
+        size = image_size(src) if ext != "svg" else None
+        if size and size[1]:
+            LOGO_W = max(1, round(size[0] * LOGO_H / size[1]))
+            print(f"ロゴ: {LOGO_FILE} {size[0]}×{size[1]} → 表示 {LOGO_W}×{LOGO_H}")
+        else:
+            LOGO_W = 0   # SVG は縦横比が読めないので幅を指定しない
+            print(f"ロゴ: {LOGO_FILE}（SVG）")
+        return
+    print("ロゴ: 未提供（赤い四角の仮表示のまま。assets/photos/logo.png などを置く）")
+
+
+def logo_html(root):
+    if not LOGO_FILE:
+        return '<span class="brand__mark">ロゴ</span>'
+    wh = f' width="{LOGO_W}" height="{LOGO_H}"' if LOGO_W else ""
+    return (f'<img class="brand__logo" src="{root}assets/img/{LOGO_FILE}"'
+            f' alt="タカヤモーター株式会社／タカヤリース株式会社"{wh}>')
+
+
 def resolve_photos():
     """各枠に使う写真ファイルを決めて site/assets/img/photos/ にコピーする。"""
     if os.path.isdir(PHOTO_OUT):
@@ -287,7 +326,7 @@ def header(root, active):
     return f'''<header class="site-header" data-area="header">
   <div class="wrap">
     <a class="brand" href="{root}index.html">
-      <span class="brand__mark">ロゴ</span>
+      {logo_html(root)}
       <span><span class="brand__name">TakayaCarGroup</span><br><span class="brand__sub">タカヤモーター株式会社／タカヤリース株式会社</span></span>
     </a>
     <button class="nav-toggle" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
@@ -1464,6 +1503,7 @@ def build_seo_files():
 
 
 if __name__ == "__main__":
+    resolve_logo()
     resolve_photos()
     build_recruit(); build_blog()
     build_index()
