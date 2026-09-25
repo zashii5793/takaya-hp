@@ -8,6 +8,16 @@
 # これは本番 www.takayagroup.co.jp と同じ内容になる。
 # 検索結果に二重に出ないよう、配信するコピーだけ検索拒否にする（下の手順）。
 # リポジトリの site/ は本番用のまま一切書き換えない。
+#
+# 【最初に1回だけ必要な設定】
+# Settings → Pages → Build and deployment → Source を
+# 「GitHub Actions」にする。
+# https://github.com/zashii5793/takaya-hp/settings/pages
+#
+# ここを設定しないと configure-pages が Not Found で止まる。
+# ワークフローのトークンでは Pages の有効化ができない
+# （Create Pages site → Resource not accessible by integration）ため、
+# この1回だけは画面での操作が必要。
 name: Deploy site to GitHub Pages
 
 on:
@@ -64,10 +74,9 @@ jobs:
           # 1ページでも漏れていたら公開しない
           test "$noindex" -eq "$total"
 
-      # Pages がまだ有効になっていなければ、ここで有効にする
+      # Pages の設定を読む。Source が「GitHub Actions」になっていないと
+      # ここで Not Found になる（上の【最初に1回だけ必要な設定】を参照）
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
