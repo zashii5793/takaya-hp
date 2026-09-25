@@ -1,0 +1,77 @@
+# 確認用のプレビューサイトを GitHub Pages で公開する。
+# 公開先: https://zashii5793.github.io/takaya-hp/
+#
+# site/ は tools/build_site.py が生成したものをリポジトリに入れてあるので、
+# ここではビルドしない。リンク・画像はすべて相対指定なので、
+# /takaya-hp/ のようにサブディレクトリに置いても崩れない。
+#
+# これは本番 www.takayagroup.co.jp と同じ内容になる。
+# 検索結果に二重に出ないよう、配信するコピーだけ検索拒否にする（下の手順）。
+# リポジトリの site/ は本番用のまま一切書き換えない。
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - claude/youthful-planck-72dm1v
+    paths:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開は1つずつ。走っている途中のものは止めない
+# （途中で切ると中途半端な状態が公開されてしまう）
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 配信用コピーを作り、検索エンジンに載らないようにする
+        run: |
+          set -eu
+          cp -r site _pages
+
+          # 1. クロールを断る
+          printf 'User-agent: *\nDisallow: /\n' > _pages/robots.txt
+
+          # 2. sitemap.xml は本番のURLを並べたものなので、確認用には置かない
+          rm -f _pages/sitemap.xml
+
+          # 3. リンクをたどって来た場合にも載らないよう、全ページを noindex にする
+          find _pages -name '*.html' -print0 | xargs -0 sed -i \
+            's|<meta name="robots" content="[^"]*">|<meta name="robots" content="noindex,nofollow">|'
+
+          # 意図どおりになったか、ログに残す
+          echo '--- robots.txt ---'
+          cat _pages/robots.txt
+          total=$(find _pages -name '*.html' | wc -l)
+          noindex=$(grep -rl 'content="noindex,nofollow"' _pages --include='*.html' | wc -l)
+          echo "--- noindex: ${noindex} / ${total} ページ ---"
+          # 1ページでも漏れていたら公開しない
+          test "$noindex" -eq "$total"
+
+      # Pages がまだ有効になっていなければ、ここで有効にする
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _pages
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
