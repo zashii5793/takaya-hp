@@ -651,7 +651,9 @@ def build_services_index():
     page("services/index.html", "サービス", "岡山市中区のタカヤモーターが扱う5つのサービス。新車・中古車販売と買取、法人・個人リース、車検・点検・整備、板金塗装とコーティング、自動車保険。クルマに関することを一つの窓口でまとめてお受けします。", body, active="services")
 
 
-def svc_page(slug, title, lead_html, content_html, contact_html, schema=None):
+def svc_page(slug, title, lead_html, content_html, contact_html, schema=None, extra_html=""):
+    """extra_html は写真＋本文の2段組の外（ページ幅いっぱい）に、その下へ置く。
+    FD宣言のような長い文書を2段組の細い側に入れると読めないため"""
     root = "../"
     _, num, name, _, img, tag = next(s for s in SERVICES if s[0] == slug)
     img = f"{slug}-detail" if f"{slug}-detail" in PHOTO_SLOTS else img
@@ -664,7 +666,7 @@ def svc_page(slug, title, lead_html, content_html, contact_html, schema=None):
     {content_html}
     {contact_html}
   </div>
-</div></section>'''
+</div></section>{extra_html}'''
     _, num, name, desc, *_ = next(x for x in SERVICES if x[0] == slug)
     svc = {"@context": "https://schema.org", "@type": "Service", "name": name, "description": desc,
            "serviceType": name, "provider": {"@id": SITE_URL + "/#business"},
@@ -838,6 +840,136 @@ def build_bodywork():
              content, contact_row("../", "板金・コーティングを相談する"))
 
 
+# 顧客本位の業務運営に関する方針（FD宣言）。2026-09-26 に原本（PDF・3ページ）を受領。
+# 保険代理店として公表が求められる文書で、原本にも
+# 「毎年1月に当社ホームページで最新数値を公表し」と書かれている。
+# 原本のとおりに書き写すこと。要約したり言い回しを整えたりしない。
+# ※原本は原則2〜7。原則1（方針の策定・公表等）の項は原本に無いので、こちらでも作らない。
+FD_DATE = "2026年4月25日"
+FD_PDF = "assets/docs/fd-declaration.pdf"   # 原本のPDF（スキャン）
+
+FD_INTRO = ("当社は金融事業者の一員として、お客様第一の取り組みを一層推進するため、"
+            "金融庁が策定した「顧客本位の業務運営に関する原則」を踏まえ、"
+            "顧客本位の業務運営に関する方針を作成いたしました。")
+
+# (原則番号, 見出し, 取組方針, [具体的な取り組み], KPI)
+# 取組方針が None の原則は、原本でも取組方針・KPI が書かれていない
+FD_PRINCIPLES = [
+    ("原則2", "顧客の最善の利益の追求",
+     "お客様に満足して頂くよう、ニーズや意向に沿った最適な商品を提供することにより"
+     "お客様の最善の利益を図ることを目指します。",
+     ["お客様のご要望やリスクを対話を通じてしっかりお伺いし、最適な補償内容を提案する。",
+      "ご契約手続き後、速やかに保険証券をお届けすることで、ご安心頂けるようにする。"],
+     ["お客様アンケート回収率", "満期日7日前までに更新"]),
+
+    ("原則3", "利益相反の適切な管理",
+     "当社は募集プロセスの基本を徹底し、お客様に不利益が生じないように、"
+     "お客様のご意向に沿った募集管理の徹底を図ります。",
+     ["業務知識（商品・サービス・コンプライアンス・周辺知識）の向上を図る為に"
+      "年間を通じた教育研修計画を策定し実施する。",
+      "お客様に不利益になる項目については、特に注意して理解頂ける様に説明します。"],
+     ["お客様アンケート回収率", "研修実施率", "受講率"]),
+
+    ("原則4", "手数料等の明確化",
+     None, ["該当となる商品の取り扱いがない"], []),
+
+    ("原則5", "重要な情報の分かり易い提供",
+     "お客様一人一人の理解度や保険に関する経験に応じて説明を工夫し、すべてのお客様に"
+     "ご理解いただけるように、分かり易い言葉を使い、誤解のない表現を心がけます。",
+     ["お客様に十分ご理解いただけるように分かりやすい表現やパンフレットなどを用いて"
+      "ご理解いただけるまで丁寧な説明を心がけます。",
+      "障がい者やご高齢のお客様には、商品・サービスをご理解いただけるように、"
+      "ご親族の同席、複数回募集、筆談など体調状況に配慮した対応を行います。"],
+     ["お客様アンケート回収率", "研修実施率", "受講率"]),
+
+    ("原則6", "顧客にふさわしいサービスの提供",
+     "当社は、お客様を取り巻く環境・リスクを把握し、お客様の意向や状況に応じた"
+     "保険提案を行ってまいります。契約後も変化に応じた最適な商品の見直しを提案します。",
+     ["年一回以上の電話か訪問で、お客様のライフイベントや様々な生活の変化を丁寧に"
+      "お伺いし最適な商品を提案します。"],
+     ["お客様アンケート回収率", "研修実施率", "受講率"]),
+
+    ("原則7", "従業員に対する適切な動機付けの枠組み等",
+     "当社は、社員ひとり一人が専門性と倫理観を持つよう、教育体制を整備し、"
+     "より専門性の高い質の良いサービスを提供できるよう心掛ける。",
+     ["教育計画に基づき、毎月研修を実施する。全募集人必須とし、"
+      "不参加の募集人や理解していない募集人には個別で研修を行う。"],
+     ["研修実施率", "受講率"]),
+]
+
+# (評価項目, 2025年, 2026年, 目標)。2025年が None の行は、直前の行の値と
+# セルがつながっている（原本では「新たな指標」が2行にまたがっている）
+FD_KPI = [
+    ("更新手続き7日前までに", "90%", "", "95%"),
+    ("お客様アンケート回収率", "新たな指標", "", "8%"),
+    ("社内研修実施率・受講率", None, "", "100%"),
+]
+
+FD_CLOSING = ("ＦＤ宣言及び各ＫＰＩの取組結果・見直し状況は、毎年1月に当社ホームページで"
+              "最新数値を公表し、透明性ある業務運営を徹底します。")
+
+
+def fd_html(root):
+    """顧客本位の業務運営に関する方針（FD宣言）。保険ページの末尾に置く"""
+    items = ""
+    for no, name, policy, actions, kpi in FD_PRINCIPLES:
+        rows = ""
+        if policy:
+            rows += f'\n        <dt>取組方針</dt><dd>{policy}</dd>'
+        if actions and policy:
+            # 原本で ①② と丸番号が振られているので、番号付きで出す
+            lis = "".join(f"<li>{a}</li>" for a in actions)
+            rows += f'\n        <dt>具体的な取り組み</dt><dd><ol>{lis}</ol></dd>'
+        elif actions:
+            # 原則4 のみ。原本は一文だけで丸番号が無いので、番号を付けない
+            body = "".join(f"<p>{a}</p>" for a in actions)
+            rows += f'\n        <dt>取り扱い</dt><dd>{body}</dd>'
+        if kpi:
+            vals = "".join(f"<li>{k}</li>" for k in kpi)
+            rows += f'\n        <dt>KPI</dt><dd><ul class="fd__kpi">{vals}</ul></dd>'
+        items += f'''
+    <article class="fd__item">
+      <h3><span class="fd__no">{no}</span>{name}</h3>
+      <dl class="fd__row">{rows}
+      </dl>
+    </article>'''
+
+    trs = ""
+    for i, (name, y25, y26, goal) in enumerate(FD_KPI):
+        if y25 is None:
+            cell = ""                      # 直前の行とつながっているので出さない
+        elif i + 1 < len(FD_KPI) and FD_KPI[i + 1][1] is None:
+            cell = f'<td rowspan="2">{y25}</td>'
+        else:
+            cell = f'<td>{y25}</td>'
+        trs += (f'\n      <tr><td><span class="name">{name}</span></td>{cell}'
+                f'<td class="muted">{y26 or "—"}</td><td class="num">{goal}</td></tr>')
+
+    return f'''
+<section class="sec sec--alt" id="fd" data-area="fd">
+  <div class="wrap">
+    <span class="eyebrow">FIDUCIARY DUTY</span>
+    <h2 class="sec-title">顧客本位の業務運営に関する方針（FD宣言）</h2>
+    <p class="lead">{FD_INTRO}</p>
+    <div class="fd">{items}
+    </div>
+
+    <h3 class="sub-title">ＫＰＩの実績と目標</h3>
+    <div class="table-box">
+      <div class="table-scroll"><table>
+        <thead><tr><th>ＫＰＩ　評価項目</th><th>2025年</th><th>2026年</th><th>目標</th></tr></thead>
+        <tbody>{trs}
+        </tbody>
+      </table></div>
+    </div>
+
+    <p class="muted" style="margin-top:18px;max-width:44em;line-height:1.9">{FD_CLOSING}</p>
+    <p class="fd__sign">{FD_DATE}<br>タカヤモーター株式会社</p>
+    <a class="link-more" href="{root}{FD_PDF}" target="_blank" rel="noopener">原本（PDF）を見る →</a>
+  </div>
+</section>'''
+
+
 def build_insurance():
     content = '''
 <h2>購入から保険、万が一の修理まで、一つの窓口で</h2>
@@ -859,7 +991,8 @@ def build_insurance():
 </ol>'''
     svc_page("insurance", "自動車保険",
              "岡山市中区のタカヤモーターは東京海上日動・損保ジャパンの代理店です。2社の補償と保険料を比べて選べ、万が一の事故でも保険の手続きから自社工場での板金・塗装まで一つの窓口で対応します。",
-             content, contact_row("../", "保険の見直しを相談する"))
+             content, contact_row("../", "保険の見直しを相談する"),
+             extra_html=fd_html("../"))
 
 
 # ======================================================================
