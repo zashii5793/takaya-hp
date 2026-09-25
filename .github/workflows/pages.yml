@@ -74,13 +74,43 @@ jobs:
           # 1ページでも漏れていたら公開しない
           test "$noindex" -eq "$total"
 
-      # Pages の設定を読む。Source が「GitHub Actions」になっていないと
-      # ここで Not Found になる（上の【最初に1回だけ必要な設定】を参照）
-      - uses: actions/configure-pages@v5
+      # Pages がまだ有効でないだけの状態で、このチェックを赤くしない。
+      # 赤いとサイトのビルドが壊れているように見えてしまうが、実際は
+      # リポジトリ設定が1つ足りないだけで、コードには問題がない。
+      - name: Pages が有効かどうか調べる
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${{ github.repository }}/pages" >/dev/null 2>&1; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+            echo 'Pages は有効。公開に進む。'
+          else
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            {
+              echo '### GitHub Pages がまだ有効になっていません'
+              echo
+              echo 'この公開は飛ばしました。サイトの中身に問題はありません。'
+              echo
+              echo '1回だけ、次の設定が必要です。'
+              echo
+              echo 'Settings → Pages → Build and deployment → **Source** を **GitHub Actions** に'
+              echo
+              echo '<https://github.com/${{ github.repository }}/settings/pages>'
+              echo
+              echo '設定したあと、このワークフローを「Run workflow」で実行すると公開されます。'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo 'Pages が未設定のため、公開は飛ばす（失敗にはしない）。'
+          fi
 
-      - uses: actions/upload-pages-artifact@v3
+      - if: steps.check.outputs.enabled == 'true'
+        uses: actions/configure-pages@v5
+
+      - if: steps.check.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _pages
 
-      - id: deployment
+      - if: steps.check.outputs.enabled == 'true'
+        id: deployment
         uses: actions/deploy-pages@v4
