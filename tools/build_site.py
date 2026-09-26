@@ -69,7 +69,7 @@ VOICES = [
 
 # 計測（GA4）。測定ID「G-XXXXXXXXXX」を受領したらここに入れる。空のままだとタグは出ない。
 # ページビューに加え、site.js が 電話・フォーム・SNS・地図・サービス・ブログ のクリックをイベント送信する
-GA_ID = ""
+GA_ID = "G-C4JD5FKNVN"   # Google アナリティクス4（2026-09-26 受領）。既存のプロパティなので過去データと繋がる
 
 # 公開予定のドメイン。変わる場合はここだけ直す（canonical・OGP・サイトマップに使う）
 SITE_URL = "https://www.takayagroup.co.jp"
