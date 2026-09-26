@@ -213,7 +213,7 @@ SERVICES = [
 PHOTO_SLOTS = {
     "hero":              ("exterior-road",    "hero",       "タカヤモーター 社屋と展示場（岡山市中区高屋）", "トップのメイン写真", (1600, 900)),
     "company":           ("building",         "company",    "タカヤモーター フロント社屋",                   "会社概要", (1200, 750)),
-    "cars":              ("exterior-road",    "cars",       "展示場と社屋",                                   "サービスカード／おクルマを探す（詳細）", (800, 500)),
+    "cars":              ("exterior-road",    "cars",       "納車を待つおクルマ",                             "サービスカード／おクルマを探す（詳細）", (800, 500)),
     "lease":             (None,               "lease",      "リース車両",                                     "サービスカード：法人・個人リース", (800, 500)),
     "lease-detail":      (None,               "drive",      "快適なドライブを",                               "法人・個人リース（詳細）", (1200, 750)),
     "inspection":        ("mechanic-engine",  "inspection", "エンジンルームを点検する整備士",                 "サービスカード：車検・点検・整備", (800, 500)),
@@ -621,15 +621,15 @@ def build_index():
   </div>
 
   <div class="wrap mission">
-    <img class="mission__fig" src="assets/img/mission.svg" alt="タカヤモーターの5つのサービス。中心に「安心・快適なカーライフの実現」というミッションがあり、そのまわりに車販・車検・整備／修理・板金／塗装・保険が並ぶ" width="600" height="600" loading="lazy">
+    <img class="mission__fig" src="assets/img/mission.svg" alt="タカヤモーターの5つのサービス。中心に「安心・快適なカーライフの実現」というミッションがあり、そのまわりに車販／車検／整備・修理／板金・塗装／保険が並ぶ" width="600" height="600" loading="lazy">
     <div>
       <p class="values__title">5つのサービスが、ひとつにつながっています</p>
       <p class="lead" style="margin-top:12px">2025年に創業60周年を迎えました。第3創業期として、これからも「安心・快適なカーライフの実現」と、お客様一人ひとりのニーズに応える ＋α のサービスをお届けします。</p>
       <dl class="mission__points">
         <dt>車販</dt>
         <dd>ご要望をもとに最適なおクルマをご提案。オーダーメイド形式のため、無理なセールスはありません</dd>
-        <dt>車検</dt>
-        <dd>年間4,000台以上の入庫実績。掃除・洗車のサービスプラン、引取・納車の無料サービスも</dd>
+        <dt>車検・整備</dt>
+        <dd>車検・点検から修理まで。掃除・洗車のサービスプラン、引取・納車の無料サービスも</dd>
         <dt>保険</dt>
         <dd>東京海上日動と損保ジャパンの正規代理店。おクルマに関するあらゆるサービスをワンストップで</dd>
       </dl>
