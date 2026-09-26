@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" role="img" aria-label="社用車が並ぶ様子">
+            <rect width="400" height="250" fill="#EEF3F7"></rect>
+            <!-- 事業所の建物 -->
+            <rect x="240" y="70" width="160" height="106" fill="#F6F3EE"></rect>
+            <rect x="240" y="70" width="160" height="8" fill="#2F3E5C"></rect>
+            <g fill="#A9C4D6"><rect x="256" y="92" width="26" height="30"></rect><rect x="292" y="92" width="26" height="30"></rect><rect x="328" y="92" width="26" height="30"></rect><rect x="364" y="92" width="26" height="30"></rect><rect x="256" y="136" width="26" height="40"></rect><rect x="292" y="136" width="26" height="40"></rect></g>
+            <rect y="176" width="400" height="74" fill="#CBC7C1"></rect>
+            <g fill="#F3EFE8"><rect x="10" y="214" width="40" height="4"></rect><rect x="90" y="214" width="40" height="4"></rect><rect x="330" y="214" width="40" height="4"></rect></g>
+            <rect x="223" y="152" width="5" height="25" fill="#8B6B4E"></rect><circle cx="226" cy="148" r="14" fill="#A6C79A"></circle><circle cx="217" cy="156" r="11" fill="#7FA872"></circle>
+            <!-- 奥のシルバー -->
+            <path d="M212 176 L212 162 C212 157 216 153 222 152 L258 146 L282 130 C287 127 293 125 299 125 L350 125 C358 125 364 127 370 131 L391 146 L400 149 L400 176 Z" fill="#C9CDD1"></path>
+            <g fill="#A9C4D6"><path d="M286 135 C290 131 294 130 299 130 L320 130 L320 146 L268 146 Z"></path><path d="M328 130 L350 130 C355 130 359 132 363 135 L376 146 L328 146 Z"></path></g>
+            <circle cx="256" cy="176" r="16" fill="#26241F"></circle><circle cx="372" cy="176" r="16" fill="#26241F"></circle><circle cx="256" cy="176" r="7" fill="#DADAD6"></circle><circle cx="372" cy="176" r="7" fill="#DADAD6"></circle>
+            <!-- 手前の白いバン -->
+            <path d="M30 176 L30 150 C30 142 36 136 44 136 L60 136 L88 110 C93 106 99 104 106 104 L272 104 C282 104 290 112 290 122 L290 176 Z" fill="#F9F9F7"></path>
+            <path d="M30 168 L290 168 L290 176 L30 176 Z" fill="#D9D9D5"></path>
+            <rect x="60" y="150" width="230" height="4" fill="#2F3E5C"></rect>
+            <g fill="#A9C4D6"><path d="M92 114 C96 110 101 108 106 108 L150 108 L150 136 L70 136 Z"></path><rect x="160" y="108" width="52" height="28"></rect><rect x="222" y="108" width="52" height="28"></rect></g>
+            <rect x="30" y="140" width="4" height="10" fill="#FFB3A7"></rect>
+            <circle cx="80" cy="176" r="20" fill="#26241F"></circle><circle cx="246" cy="176" r="20" fill="#26241F"></circle><circle cx="80" cy="176" r="8" fill="#DADAD6"></circle><circle cx="246" cy="176" r="8" fill="#DADAD6"></circle>
+          </svg>

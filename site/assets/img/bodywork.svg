@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" role="img" aria-label="板金塗装ブース">
+            <rect width="400" height="250" fill="#DCE5EC"></rect>
+            <g fill="#FFF3B8"><rect x="30" y="18" width="150" height="8" rx="4"></rect><rect x="220" y="18" width="150" height="8" rx="4"></rect></g>
+            <g fill="#FFFFFF" opacity=".55"><rect x="0" y="30" width="400" height="120"></rect></g>
+            <rect y="186" width="400" height="64" fill="#C6CBD0"></rect>
+            <rect y="182" width="400" height="4" fill="#F3F5F7"></rect>
+            <!-- 塗装中のネイビーの車（艶） -->
+            <path d="M84 186 L84 168 C84 161 90 156 98 154 L150 146 L186 121 C193 116 201 113 211 113 L288 113 C299 113 309 116 317 122 L349 146 L378 154 C388 156 393 162 393 170 L393 186 Z" fill="#2F3E5C"></path>
+            <path d="M84 179 L393 179 L393 186 L84 186 Z" fill="#22304A"></path>
+            <path d="M150 146 L348 146 L352 152 L146 152 Z" fill="#FFFFFF" opacity=".45"></path>
+            <path d="M200 120 L280 120 L274 126 L206 126 Z" fill="#FFFFFF" opacity=".5"></path>
+            <g fill="#A9C4D6"><path d="M192 127 C197 122 203 120 211 120 L238 120 L238 146 L168 146 Z"></path><path d="M248 120 L286 120 C294 120 301 123 306 128 L322 146 L248 146 Z"></path></g>
+            <circle cx="142" cy="186" r="24" fill="#26241F"></circle><circle cx="344" cy="186" r="24" fill="#26241F"></circle><circle cx="142" cy="186" r="10" fill="#DADAD6"></circle><circle cx="344" cy="186" r="10" fill="#DADAD6"></circle>
+            <!-- スプレーガン -->
+            <rect x="30" y="96" width="16" height="44" rx="4" fill="#4A6786"></rect>
+            <rect x="40" y="90" width="26" height="12" rx="3" fill="#4A6786"></rect>
+            <circle cx="38" cy="70" r="9" fill="#E9B949"></circle>
+            <g fill="#FFFFFF" opacity=".9">
+              <circle cx="76" cy="100" r="4"></circle><circle cx="92" cy="92" r="3"></circle><circle cx="88" cy="112" r="3"></circle>
+              <circle cx="106" cy="104" r="2.5"></circle><circle cx="118" cy="96" r="2"></circle><circle cx="112" cy="116" r="2"></circle>
+            </g>
+          </svg>

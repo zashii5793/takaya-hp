@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# AI検索・生成AIのクローラーにも読み取りを許可する
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://www.takayagroup.co.jp/sitemap.xml
