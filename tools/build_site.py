@@ -151,6 +151,35 @@ def ga_html():
     return f'''<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}gtag('js',new Date());gtag('config','{GA_ID}');</script>'''
 
+# トップの「サービス紹介 → 主要な問い合わせ例 → 各ページ」で使う、実際によくいただくご質問。
+# （2026-09-26 タカヤさん指示。車検の3件はいただいた文面のまま）
+#
+# ここに置く質問は、飛んだ先のページが必ず答えを持っていること。
+# 答えの無い質問を並べると、開いたお客様をがっかりさせて逆効果になる。
+# 各質問の答えがページのどこにあるかは、下のコメントに残している。
+SERVICE_FAQ = {
+    # 答え：新車販売（国産全メーカー）／中古車はオーダー形式／買取・下取り
+    "cars": ["スズキ・ダイハツ以外の新車も買えますか？",
+             "中古車はどうやって探すのですか？",
+             "いまのクルマは売れますか？"],
+    # 答え：メンテナンス／ファイナンスの比較表。ページ名のとおり個人も可
+    "lease": ["メンテナンスリースには何が含まれますか？",
+              "ファイナンスリースとの違いは？",
+              "個人でも契約できますか？"],
+    # 答え：車検コース表（洗車サービス・レンタカー無料）／FAQ（引取り・納車）
+    "inspection": ["車検にはどんなサービスがあるのか？",
+                   "引取・納車のサービスがあるって本当？",
+                   "洗車サービスつきですか？"],
+    # 答え：傷・へこみから塗装まで／東京海上日動リペアネット／PGⅢコーティング
+    "bodywork": ["小さな傷やへこみでも見てもらえますか？",
+                 "保険を使って直せますか？",
+                 "コーティングもお願いできますか？"],
+    # 答え：2社から比べて選べます／事故が起きたときの流れ／修理も自社工場で対応
+    "insurance": ["いまの保険は見直せますか？",
+                  "事故のときは何をすればいいですか？",
+                  "修理までお願いできますか？"],
+}
+
 SERVICES = [
     # slug, 番号, 名称, 1行説明, 画像, 写真タグ
     ("cars", "01", "クルマを探す・買い取る", "新車は日本車の全メーカー。中古車はご希望条件で業者オークションから探すオーダー形式。", "cars", ""),
@@ -383,7 +412,6 @@ def footer(root):
         <p class="f-name">TakayaCarGroup<br>タカヤモーター株式会社／タカヤリース株式会社</p>
         <p>〒703-8233 岡山市中区高屋21-1<br>営業時間 {HOURS_OPEN}／定休日 {HOLIDAY}<br>創立 昭和40年5月10日（タカヤモーター）</p>
         <p>{lotus_html()}</p>
-        <p><span class="todo">認証工場番号・古物商許可番号・保険代理店登録 要確認</span></p>
         <ul class="social">{social_html(root)}</ul>
       </div>
       <div><h3>サービス</h3><ul>{svc}</ul></div>
@@ -485,13 +513,16 @@ def svc_nav(root, active):
     return '<ul class="svc-nav">' + items + '</ul>'
 
 
-def contact_row(root, primary_label, tel=None):
+def contact_row(root, primary_label, tel=None, freedial=None):
+    """freedial は (かけ先の数字, 表示) のフリーダイヤル。既定はタカヤモーター。
+    クルマの販売はタカヤリースが主管なので、販売のページだけ差し替える（2026-09-26）"""
+    num, shown = freedial or ("0120100152", "0120-100-152")
     tel_html = f'<a class="btn btn--ghost" href="tel:{tel[1]}">{tel[0]} {tel[2]}</a>' if tel else ""
     return f'''<div class="btn-row">
   <a class="btn btn--outline" href="{FORM}" target="_blank" rel="noopener">{primary_label}</a>
   <a class="btn btn--ghost" href="{FORM}" target="_blank" rel="noopener">お問い合わせフォーム</a>
   {tel_html}
-  <span class="muted">お電話 0120-100-152（{HOURS}）</span>
+  <span class="muted">お電話 {shown}（{HOURS}）</span>
 </div>'''
 
 
@@ -519,16 +550,20 @@ def voices_html():
 def build_index():
     root = ""
     news_items = "".join(f'\n      <li><time>{p["date"]}</time><a href="{post_url(p, root)}">{p["title"]}</a></li>' for p in POSTS[:2])
-    svc_cards = "".join(f'''
-    <a class="card" href="services/{slug}.html">
+    svc_rows = "".join(f'''
+    <article class="svc-row">
       {ph(root, img, tag)}
-      <div class="card__body">
+      <div>
         <span class="card__num">{num}</span>
         <h3>{name}</h3>
-        <p>{desc}</p>
-        <span class="card__more">くわしく見る →</span>
+        <p class="svc-row__desc">{desc}</p>
+        <p class="tr-eg">主なお問い合わせ</p>
+        <ul class="svc-q">{"".join(f"<li>{q}</li>" for q in SERVICE_FAQ[slug])}</ul>
+        <ul class="tr-list">
+          <li><a href="services/{slug}.html">{name}のページを見る<i aria-hidden="true">→</i></a></li>
+        </ul>
       </div>
-    </a>''' for slug, num, name, desc, img, tag in SERVICES)
+    </article>''' for slug, num, name, desc, img, tag in SERVICES)
 
     body = f'''
 <section class="hero" data-area="hero">
@@ -570,78 +605,58 @@ def build_index():
   </div>
 </section>
 
-<section class="sec sec--alt" id="trouble" data-area="trouble">
+<section class="sec sec--alt" id="service" data-area="service">
   <div class="wrap">
-    <span class="eyebrow">TROUBLE</span>
-    <h2 class="sec-title">お困りごとから探す</h2>
-    <p class="lead">「これって、何をお願いすればいいの」という状態でも大丈夫です。近いものを選んでください。</p>
+    <span class="eyebrow">SERVICE</span>
+    <h2 class="sec-title">おクルマのことはすべてワンストップで対応可能です！</h2>
+    <p class="lead">「これって、何をお願いすればいいの」という状態でも大丈夫です。よくいただくご質問を、サービスごとに並べました。</p>
 
-    <div class="tr-band tr-band--now">
-      <p class="tr-when">いますぐ</p>
+    <div class="urgent">
       <div>
+        <p class="urgent__title">おクルマに異常がある</p>
+        <p class="tr-eg">例</p>
         <ul class="tr-list--plain">
           <li>エンジンがかからない・止まった</li>
           <li>バッテリーが上がった</li>
           <li>ぶつけた・こすった</li>
         </ul>
-        <div class="tr-act">
-          <p class="tr-act__label">お電話がいちばん早いです</p>
-          <a class="tr-tel" href="tel:0120100152">0120-100-152</a>
-          <p class="muted">{HOURS_OPEN}／定休日 {HOLIDAY}</p>
-          <p style="margin-top:10px"><span class="todo">要確認：動かせないおクルマのレッカー手配の可否（記載できれば緊急時の決め手になります）</span></p>
-        </div>
+      </div>
+      <div class="tr-act">
+        <p class="tr-act__label">お電話がいちばん早いです</p>
+        <a class="tr-tel" href="tel:0120100152">0120-100-152</a>
+        <p class="muted">{HOURS_OPEN}／定休日 {HOLIDAY}</p>
       </div>
     </div>
 
-    <div class="tr-band">
-      <p class="tr-when">近いうちに</p>
-      <div>
-        <ul class="tr-list">
-          <li><a href="services/inspection.html">車検の時期が近い<i aria-hidden="true">→</i></a></li>
-          <li><a href="services/inspection.html">変な音がする・警告灯がついた<i aria-hidden="true">→</i></a></li>
-          <li><a href="services/inspection.html">オイルやタイヤを換えたい<i aria-hidden="true">→</i></a></li>
-          <li><a href="services/bodywork.html">傷・へこみを直したい<i aria-hidden="true">→</i></a></li>
-        </ul>
-        <p class="tr-note">料金と、ご予約の方法をご案内します。</p>
-      </div>
-    </div>
-
-    <div class="tr-band">
-      <p class="tr-when">考えている</p>
-      <div>
-        <ul class="tr-list">
-          <li><a href="services/cars.html">乗り換えたい・買いたい<i aria-hidden="true">→</i></a></li>
-          <li><a href="services/cars.html">いまの車を売りたい<i aria-hidden="true">→</i></a></li>
-          <li><a href="services/lease.html">維持費を下げたい<i aria-hidden="true">→</i></a></li>
-          <li><a href="services/lease.html">社用車をまとめたい<i aria-hidden="true">→</i></a></li>
-          <li><a href="services/insurance.html">保険を見直したい<i aria-hidden="true">→</i></a></li>
-        </ul>
-        <p class="tr-note">急ぎでなくても、見積もりだけで構いません。</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="service">
-  <div class="wrap">
-    <span class="eyebrow">SERVICE</span>
-    <h2 class="sec-title">おクルマのことはすべてワンストップで対応可能です！</h2>
-    <p class="lead">クルマを探す・買い取る、リース、車検・点検・整備、板金・コーティング、自動車保険。クルマに関することは、この5つのサービスでまとめてお受けします。</p>
-    <div class="cards cards--5">{svc_cards}
+    <div class="svc-rows">{svc_rows}
     </div>
   </div>
 </section>
 
 {voices_html()}
-<section class="news" data-area="news">
+<section class="sec" id="news" data-area="news">
   <div class="wrap">
-    <div class="news__head">
-      <span class="eyebrow">NEWS</span>
-      <p class="news__title">お知らせ・SNS</p>
+    <span class="eyebrow">NEWS &amp; SNS</span>
+    <h2 class="sec-title">お知らせ・SNS</h2>
+    <p class="lead">入庫やキャンペーンのお知らせ、日々の仕事の様子をお届けしています。</p>
+    <div class="ch-grid">
+      <div class="ch ch--news">
+        <p class="ch__title"><span class="sns-badge sns-badge--news" aria-hidden="true">N</span>お知らせ</p>
+        <ul class="news__list">{news_items}
+        </ul>
+        <a class="link-more" href="blog/index.html">お知らせ一覧を見る →</a>
+      </div>
+      <div class="ch">
+        <p class="ch__title"><span class="sns-badge sns-badge--ig" aria-hidden="true"></span>Instagram</p>
+        <p class="ch__lead">新しく入ったおクルマや、工場での仕事の様子を写真で載せています。</p>
+        <a class="link-more" href="{INSTAGRAM_URL}" target="_blank" rel="noopener">Instagramで見る →</a>
+      </div>
+      <div class="ch">
+        <p class="ch__title"><span class="sns-badge sns-badge--x" aria-hidden="true">X</span>X（旧Twitter）</p>
+        <p class="ch__lead">車検の空き状況や、その日のできごとを短くお知らせしています。</p>
+        <a class="link-more" href="https://x.com/{X_HANDLE}" target="_blank" rel="noopener">Xで見る →</a>
+      </div>
     </div>
-    <ul class="news__list">{news_items}
-    </ul>
-    <a class="link-more" href="blog/index.html">お知らせ一覧・SNSの投稿を見る →</a>
   </div>
 </section>
 
@@ -749,11 +764,12 @@ def build_cars():
     <p style="margin-top:6px;font-size:13px">写真・走行距離・価格は掲載ページが最新です。県外の方への販売実績もあります。掲載車以外も、上記のオーダー形式でお探しできます。</p>
   </div>
   <a class="btn btn--dark" href="../contact.html">在庫・お探しのクルマを相談する →</a>
-  <p style="flex-basis:100%;margin:0"><span class="todo">要確認：カーセンサーの掲載店ページURL（受領後、ここを掲載ページへのリンクに差し替え）</span></p>
 </div>'''
     svc_page("cars", "クルマを探す・買い取る",
              "1965年から続く新車・中古車の販売実績。新車は国産車の全メーカー、中古車は展示車と業者オークションからのオーダー形式。カーセンサー掲載車には全国からお問い合わせ。買取・下取り、各種ローンも。",
-             content, contact_row("../", "クルマ探しを相談する", ("営業直通", "0862721021", "086-272-1021")))
+             content, contact_row("../", "クルマ探しを相談する",
+                                  ("タカヤリース 営業直通", "0862733611", "086-273-3611"),
+                                  freedial=("0120556649", "0120-556-649")))
 
 
 def build_lease():
@@ -777,9 +793,8 @@ def build_lease():
     <thead><tr><th>項目</th><th class="col-b">メンテナンスリース</th><th class="col-b">ファイナンスリース</th></tr></thead>
     <tbody>{tr}</tbody>
   </table></div>
-  <p class="table-box__note">○ 含まれる　△ ご希望で追加　－ 含まれない　<span class="todo">※1〜※4 の注記文は要確認</span></p>
-</div>
-<p class="muted" style="margin-top:14px"><span class="todo">要確認</span> 契約期間・最低台数・個人契約の可否・月額の目安</p>'''
+  <p class="table-box__note">○ 含まれる　△ ご希望で追加　－ 含まれない　</p>
+</div>'''
     svc_page("lease", "法人・個人リース",
              "100社以上の法人のお客様に長年ごひいきいただくタカヤリース。税金・保険・車検・整備まで月額に含めたメンテナンスリースと、ファイナンスリース。法人の社用車から個人のマイカーまで。",
              content, contact_row("../", "リースの相談をする", ("タカヤリース", "0120556649", "0120-556-649")))
@@ -948,10 +963,10 @@ FD_CLOSING = ("ＦＤ宣言及び各ＫＰＩの取組結果・見直し状況�
               "最新数値を公表し、透明性ある業務運営を徹底します。")
 
 
-def fd_html(root):
+def fd_html():
     """顧客本位の業務運営に関する方針（FD宣言）。保険ページの末尾に置く"""
     items = ""
-    for no, name, policy, actions, kpi in FD_PRINCIPLES:
+    for no, name, policy, actions, _kpi in FD_PRINCIPLES:
         rows = ""
         if policy:
             rows += f'\n        <dt>取組方針</dt><dd>{policy}</dd>'
@@ -963,26 +978,12 @@ def fd_html(root):
             # 原則4 のみ。原本は一文だけで丸番号が無いので、番号を付けない
             body = "".join(f"<p>{a}</p>" for a in actions)
             rows += f'\n        <dt>取り扱い</dt><dd>{body}</dd>'
-        if kpi:
-            vals = "".join(f"<li>{k}</li>" for k in kpi)
-            rows += f'\n        <dt>KPI</dt><dd><ul class="fd__kpi">{vals}</ul></dd>'
         items += f'''
     <article class="fd__item">
       <h3><span class="fd__no">{no}</span>{name}</h3>
       <dl class="fd__row">{rows}
       </dl>
     </article>'''
-
-    trs = ""
-    for i, (name, y25, y26, goal) in enumerate(FD_KPI):
-        if y25 is None:
-            cell = ""                      # 直前の行とつながっているので出さない
-        elif i + 1 < len(FD_KPI) and FD_KPI[i + 1][1] is None:
-            cell = f'<td rowspan="2">{y25}</td>'
-        else:
-            cell = f'<td>{y25}</td>'
-        trs += (f'\n      <tr><td><span class="name">{name}</span></td>{cell}'
-                f'<td class="muted">{y26 or "—"}</td><td class="num">{goal}</td></tr>')
 
     return f'''
 <section class="sec sec--alt" id="fd" data-area="fd">
@@ -993,18 +994,8 @@ def fd_html(root):
     <div class="fd">{items}
     </div>
 
-    <h3 class="sub-title">ＫＰＩの実績と目標</h3>
-    <div class="table-box">
-      <div class="table-scroll"><table>
-        <thead><tr><th>ＫＰＩ　評価項目</th><th>2025年</th><th>2026年</th><th>目標</th></tr></thead>
-        <tbody>{trs}
-        </tbody>
-      </table></div>
-    </div>
-
     <p class="muted" style="margin-top:18px;max-width:44em;line-height:1.9">{FD_CLOSING}</p>
     <p class="fd__sign">{FD_DATE}<br>タカヤモーター株式会社</p>
-    <a class="link-more" href="{root}{FD_PDF}" target="_blank" rel="noopener">原本（PDF）を見る →</a>
   </div>
 </section>'''
 
@@ -1031,7 +1022,7 @@ def build_insurance():
     svc_page("insurance", "自動車保険",
              "岡山市中区のタカヤモーターは東京海上日動・損保ジャパンの代理店です。2社の補償と保険料を比べて選べ、万が一の事故でも保険の手続きから自社工場での板金・塗装まで一つの窓口で対応します。",
              content, contact_row("../", "保険の見直しを相談する"),
-             extra_html=fd_html("../"))
+             extra_html=fd_html())
 
 
 # ======================================================================
@@ -1060,7 +1051,7 @@ def build_company():
     <tr><th>従業員数</th><td>27名</td></tr>
     <tr><th>事業内容</th><td>タカヤモーター：自動車販売業務／自動車整備業務／自動車損害保険代理店業務<br>タカヤリース：自動車リース業務／レンタカー業務／（株）ロートピア フランチャイズ業務</td></tr>
     <tr><th>取扱メーカー</th><td>スズキ・ダイハツ代理店。新車は日本車全メーカー（トヨタ／ホンダ／日産／ダイハツ／スズキ／マツダ／三菱／スバル／いすゞ／三菱ふそう／日野）</td></tr>
-    <tr><th>認証・許可</th><td>指定自動車整備事業／自動車特定整備事業<br>ISO 14001 認証取得<br><span class="todo">番号は要確認</span></td></tr>
+    <tr><th>認証・許可</th><td>指定自動車整備事業／自動車特定整備事業<br>ISO 14001 認証取得</td></tr>
     <tr><th>加盟団体</th><td><a href="{LOTUS_URL}" target="_blank" rel="noopener">ロータスクラブ（全日本ロータス同友会）</a> 会員</td></tr>
     <tr><th>採用</th><td><a href="recruit.html">採用情報を見る →</a></td></tr>
     <tr><th>営業時間</th><td>{HOURS_OPEN}（定休日：{HOLIDAY}）</td></tr>
@@ -1129,7 +1120,6 @@ def build_contact():
       <h3 style="font-size:16px">お問い合わせフォーム</h3>
       <p class="muted" style="margin-top:6px">下のフォームが表示されない場合は <a href="{FORM}" target="_blank" rel="noopener">こちらから開いてください</a>。</p>
       <div class="form-embed"><iframe src="{FORM_EMBED}" title="お問い合わせフォーム" loading="lazy">読み込んでいます…</iframe></div>
-      <p class="muted" style="margin-top:8px"><span class="todo">要確認：Google フォーム右上「送信」→🔗 の公開URL（/d/e/…/viewform）に差し替え</span></p>
     </div>
   </div>
 </div></section>'''
@@ -1143,7 +1133,12 @@ def build_privacy():
     out, in_list = [], False
     for l in lines[1:]:
         t = l.strip()
-        if t.startswith(">") or t == "---":
+        # 「実装時の申し送り」から下は社内向けのメモ。公開ページには出さない
+        # （2026-09-26 修正。ここを見落として、申し送りの表がページに出ていた）
+        if t.startswith("## ") and "申し送り" in t:
+            break
+        # 表の行も社内メモなので、念のため落とす
+        if t.startswith(">") or t == "---" or t.startswith("|"):
             continue
         if t.startswith("## "):
             if in_list: out.append("</ul>"); in_list = False
@@ -1185,7 +1180,7 @@ def build_recruit():
       <a class="btn btn--primary" href="{FORM}" target="_blank" rel="noopener">お問い合わせフォームから応募・相談する</a>
       <a class="btn btn--ghost" href="tel:0862723065">総務 086-272-3065</a>
       <a class="btn btn--outline" href="{MIIDAS_URL}" target="_blank" rel="noopener">ミイダスから応募する</a>
-      <span class="muted">Indeed にも掲載しています <span class="todo">要確認：Indeed の応募ページURL</span></span>
+      <span class="muted">Indeed にも掲載しています</span>
     </div>
   </div>
   <div>
@@ -1319,7 +1314,6 @@ POSTS = [
      "excerpt": "記事の冒頭1〜2文をここに。", "body": ""},
 ]
 SAMPLE_BODY = '''
-<p><span class="todo">ここに記事本文が入ります（移行時に差し替え）。以下は見た目確認用のサンプルです。</span></p>
 <p>タカヤモーターです。いつもありがとうございます。今回は、日々の整備で気づいたことをお伝えします。</p>
 <h2>見出しの例</h2>
 <p>本文の段落です。写真を入れる場合は下のように横幅いっぱいで表示します。</p>
@@ -1360,7 +1354,7 @@ def sns_html():
       </div>'''
     else:
         ig_body = '''<div class="sns-embed sns-embed--empty">
-        <p><span class="todo">載せたい投稿のURLを tools/build_site.py の INSTAGRAM_POSTS に並べると、ここに投稿が表示されます</span></p>
+        <p>最新の投稿は Instagram でご覧いただけます。</p>
       </div>'''
 
     ig_block = f'''<div class="sns-col">
@@ -1393,7 +1387,6 @@ def build_blog():
                      "日々の整備のこと、地域の話題、SNSの投稿など。") + f'''
 <section class="sec"><div class="wrap">
   <h2 class="sec-title">記事</h2>
-  <p class="muted" style="margin-bottom:18px"><span class="todo">移行作業：現行サイトの記事をこの一覧に移します（E-01〜E-06）</span></p>
   <ul class="post-list">{items}</ul>
   <nav class="pager" aria-label="ページ送り"><span class="is-current">1</span><span class="muted">記事が増えたらページ送りが入ります</span></nav>
 </div></section>
