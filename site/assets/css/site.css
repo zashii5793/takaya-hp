@@ -528,3 +528,20 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
   .urgent{grid-template-columns:1fr}
   .svc-row{grid-template-columns:1fr;gap:14px}
 }
+
+/* トップ：5つのサービスの関係を示す図（2026-09-26 ご依頼）
+   いただいたスライドをそのまま画像で貼ると、拡大で粗くなり、
+   スマホでは文字が読めなくなるので、図はSVG・言葉はHTMLに分けている */
+.mission{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);
+  gap:32px 48px;align-items:center;margin-top:44px;padding-top:36px;
+  border-top:1px solid var(--line)}
+.mission__fig{width:100%;height:auto;display:block}
+.mission__points{margin-top:20px;display:grid;grid-template-columns:4.5em minmax(0,1fr);
+  gap:10px 18px;align-items:baseline}
+.mission__points dt{font-size:var(--fs-6);font-weight:700;color:#fff;
+  background:var(--brand);border-radius:var(--r);padding:4px 0;text-align:center}
+.mission__points dd{margin:0;font-size:var(--fs-5);color:var(--ink-sub);line-height:1.85}
+@media (max-width:900px){
+  .mission{grid-template-columns:1fr;gap:24px}
+  .mission__fig{max-width:420px;margin:0 auto}
+}

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="タカヤモーターの5つのサービス。中心に『安心・快適なカーライフの実現』『お客様1人1人のニーズに応える+αのサービス提供』というミッションがあり、そのまわりに車販・車検・整備/修理・板金/塗装・保険が並ぶ">
+  <style>
+    .n { fill:#fff; font-weight:700; font-size:30px; text-anchor:middle;
+         font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif }
+    .m { fill:#1C1B1A; font-size:20px; text-anchor:middle; font-weight:500;
+         font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',system-ui,sans-serif }
+    .ml{ fill:#E60012; font-size:17px; text-anchor:middle; font-weight:700; letter-spacing:.14em;
+         font-family:'Barlow Semi Condensed','Arial Narrow',system-ui,sans-serif }
+  </style>
+
+  <!-- 中心とサービスをつなぐ線。先に描いて円の下に隠す -->
+  <g stroke="#E4DFD9" stroke-width="3">
+    <line x1="300" y1="300" x2="300" y2="90"/>
+    <line x1="300" y1="300" x2="500" y2="235"/>
+    <line x1="300" y1="300" x2="423" y2="470"/>
+    <line x1="300" y1="300" x2="177" y2="470"/>
+    <line x1="300" y1="300" x2="100" y2="235"/>
+  </g>
+
+  <!-- ミッション（中心） -->
+  <circle cx="300" cy="300" r="122" fill="#FBEDED" stroke="#E60012" stroke-width="2"/>
+  <!-- 文字は円の中に収める。円の半径122に対し、y=340 の位置で入る幅は約200px -->
+  <text class="ml" x="300" y="262">MISSION</text>
+  <text class="m" x="300" y="302">安心・快適な</text>
+  <text class="m" x="300" y="332">カーライフの実現</text>
+
+  <!-- 5つのサービス -->
+  <g fill="#E60012">
+    <circle cx="300" cy="90"  r="74"/>
+    <circle cx="500" cy="235" r="74"/>
+    <circle cx="423" cy="470" r="74"/>
+    <circle cx="177" cy="470" r="74"/>
+    <circle cx="100" cy="235" r="74"/>
+  </g>
+  <text class="n" x="300" y="101">車販</text>
+  <text class="n" x="500" y="246">車検</text>
+  <text class="n" x="423" y="461">整備</text>
+  <text class="n" x="423" y="495">修理</text>
+  <text class="n" x="177" y="461">板金</text>
+  <text class="n" x="177" y="495">塗装</text>
+  <text class="n" x="100" y="246">保険</text>
+</svg>
