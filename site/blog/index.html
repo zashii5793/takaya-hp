@@ -45,20 +45,10 @@
 </div></section>
 <section class="sec"><div class="wrap">
   <h2 class="sec-title">記事</h2>
-  <ul class="post-list"><li class="post">
-      <time>2026.08.20</time>
-      <div><a href="../blog/2026-08-20-sample.html">現行ブログの記事タイトルが入ります（移行後に差し替え）</a><span class="post__cat">お知らせ</span>
-        <p class="post__excerpt">記事の冒頭1〜2文をここに。一覧とトップの「お知らせ」帯に表示されます。</p></div>
-    </li><li class="post">
-      <time>2026.08.06</time>
-      <div><a href="../blog/2026-08-06-sample.html">現行ブログの記事タイトルが入ります（移行後に差し替え）</a><span class="post__cat">整備のこと</span>
-        <p class="post__excerpt">記事の冒頭1〜2文をここに。</p></div>
-    </li><li class="post">
-      <time>2026.07.24</time>
-      <div><a href="../blog/2026-07-24-sample.html">現行ブログの記事タイトルが入ります（移行後に差し替え）</a><span class="post__cat">地域の話題</span>
-        <p class="post__excerpt">記事の冒頭1〜2文をここに。</p></div>
-    </li></ul>
-  <nav class="pager" aria-label="ページ送り"><span class="is-current">1</span><span class="muted">記事が増えたらページ送りが入ります</span></nav>
+  <ul class="post-list" data-blog-feed data-detail data-max="10">
+    <li class="post"><div data-blog-loading>お知らせを読み込んでいます…</div></li>
+  </ul>
+  <a class="link-more" data-blog-link target="_blank" rel="noopener" hidden>ブログですべての記事を見る →</a>
 </div></section>
 
 <section class="sec sec--alt" id="sns">
@@ -120,6 +110,7 @@
   </div>
 </footer>
 <script src="../assets/js/site.js"></script>
+<script src="../assets/js/blog-feed.js"></script>
 <div class="sp-bar" data-area="sp_bar">
   <a href="tel:0120100152">📞 0120-100-152</a>
   <a href="../contact.html">お問い合わせ</a>

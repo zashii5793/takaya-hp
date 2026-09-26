@@ -440,7 +440,8 @@ def footer(root):
     <p class="copy">© 1965– TAKAYA MOTOR CO., LTD. / TAKAYA LEASE CO., LTD.</p>
   </div>
 </footer>
-<script src="{root}assets/js/site.js"></script>'''
+<script src="{root}assets/js/site.js"></script>
+<script src="{root}assets/js/blog-feed.js"></script>'''
 
 
 _CRUMBS = []   # page_head() が直前に作ったパンくずを page() が拾う
@@ -562,7 +563,8 @@ def voices_html():
 
 def build_index():
     root = ""
-    news_items = "".join(f'\n      <li><time>{p["date"]}</time><a href="{post_url(p, root)}">{p["title"]}</a></li>' for p in POSTS[:2])
+    # お知らせは Googleブログ（Blogger）から読む。読めなかったときだけ下の1行が残る
+    news_items = '\n        <li data-blog-loading>お知らせを読み込んでいます…</li>'  
     svc_rows = "".join(f'''
     <article class="svc-row">
       {ph(root, img, tag)}
@@ -585,7 +587,7 @@ def build_index():
     <div>
       <p class="hero__since"><span>岡山市中区高屋　車検・整備・販売・リース・保険</span></p>
       <h1>おクルマのことで、<br>もう店を探さなくていい。</h1>
-      <p class="hero__lead">買うときも、車検のときも、ぶつけたときも、かける電話は1つです。岡山市中区高屋で60年、同じ場所にいます。おクルマの履歴がここに残るので、毎回はじめから説明していただく必要がありません。他社で買ったおクルマも、国産車は全メーカー、輸入車もお受けします。</p>
+      <p class="hero__lead">買うときも、車検のときも、ぶつけたときも、かける電話は1つです。岡山市中区高屋で60年、同じ場所にいます。岡山市を中心に、近隣の市からもお越しいただいています。おクルマの履歴がここに残るので、毎回はじめから説明していただく必要がありません。他社で買ったおクルマも、国産車は全メーカー、輸入車もお受けします。</p>
       <ul class="pills">
         <li><span><em>1965年から</em>、同じ場所で60年</span></li>
         <li><span>これまでに<em>10万台以上</em>のおクルマを見てきました</span></li>
@@ -649,7 +651,10 @@ def build_index():
           <li>エンジンがかからない・止まった</li>
           <li>バッテリーが上がった</li>
           <li>ぶつけた・こすった</li>
+          <li>動かなくなって、自分では運べない</li>
         </ul>
+        <p class="urgent__tow">動かなくなったおクルマの引き取りもできます。
+          ご希望の時間に伺えないこともあるので、まずはお電話ください。</p>
       </div>
       <div class="tr-act">
         <a class="tr-tel" href="tel:0120100152">0120-100-152</a>
@@ -668,7 +673,7 @@ def build_index():
     <span class="eyebrow">NEWS</span>
     <h2 class="sec-title">お知らせ</h2>
     <div class="ch ch--news">
-      <ul class="news__list">{news_items}
+      <ul class="news__list" data-blog-feed data-max="3">{news_items}
       </ul>
       <a class="link-more" href="blog/index.html">お知らせ一覧を見る →</a>
     </div>
@@ -828,6 +833,8 @@ INSPECTION_QA = [
      "コースによって異なります。ニューサービスコースは立ち合い車検で所要時間の目安が60分、スマイルコースは1日お預かり、プレミアムコースは1〜2日お預かりです。"),
     ("車検中の代車はありますか？",
      "スマイルコースとプレミアムコースは、ご来店時のレンタカーが無料です。"),
+    ("動かなくなってしまったのですが、引き取りに来てもらえますか？",
+     "引き取りに伺えます。ただし、いつでもすぐに伺えるとは限りません。まずはお電話でご相談ください。"),
     ("おクルマを持って行けないのですが、引取りに来てもらえますか？",
      "ご希望の場合は引取り・納車サービスを承ります。お電話またはお問い合わせフォームでご相談ください。"),
     ("早めに予約すると安くなりますか？",
@@ -928,6 +935,17 @@ FD_INTRO = ("当社は金融事業者の一員として、お客様第一の取�
 # (原則番号, 見出し, 取組方針, [具体的な取り組み], KPI)
 # 取組方針が None の原則は、原本でも取組方針・KPI が書かれていない
 FD_PRINCIPLES = [
+    # 原則1 は原本に項が無かったため、2026-09-26 のご指示で補った。
+    # 新しい約束を足さないよう、原本の前文（「方針を作成いたしました」）と
+    # 末尾（「毎年1月に当社ホームページで最新数値を公表し」）に書かれている
+    # 内容だけで組み立てている。文面はタカヤさんの確認待ち（A-52）。
+    ("原則1", "顧客本位の業務運営に関する方針の策定・公表等",
+     "当社は、顧客本位の業務運営を実現するための方針を策定し、当社ホームページで公表します。"
+     "また、その取組状況を定期的に公表するとともに、方針についても定期的に見直してまいります。",
+     ["本方針を当社ホームページで公表する。",
+      "本方針および各項目の取組結果・見直し状況を、毎年1月に公表する。"],
+     []),
+
     ("原則2", "顧客の最善の利益の追求",
      "お客様に満足して頂くよう、ニーズや意向に沿った最適な商品を提供することにより"
      "お客様の最善の利益を図ることを目指します。",
@@ -1396,23 +1414,19 @@ def sns_html():
 
 def build_blog():
     root = "../"
-    items = "".join(
-        f'''<li class="post">
-      <time>{p["date"]}</time>
-      <div><a href="{post_url(p, root)}">{p["title"]}</a><span class="post__cat">{p["cat"]}</span>
-        <p class="post__excerpt">{p["excerpt"]}</p></div>
-    </li>''' for p in POSTS)
     body = page_head(root, [("index.html", "トップ"), (None, "お知らせ")], "お知らせ",
                      "タカヤモーターからのお知らせです。") + f'''
 <section class="sec"><div class="wrap">
   <h2 class="sec-title">記事</h2>
-  <ul class="post-list">{items}</ul>
-  <nav class="pager" aria-label="ページ送り"><span class="is-current">1</span><span class="muted">記事が増えたらページ送りが入ります</span></nav>
+  <ul class="post-list" data-blog-feed data-detail data-max="10">
+    <li class="post"><div data-blog-loading>お知らせを読み込んでいます…</div></li>
+  </ul>
+  <a class="link-more" data-blog-link target="_blank" rel="noopener" hidden>ブログですべての記事を見る →</a>
 </div></section>
 ''' + sns_html()
     page("blog/index.html", "お知らせ", "岡山市中区のタカヤモーター株式会社のお知らせ。日々の整備で気づいたこと、車検や点検・タイヤ交換のご案内、新車中古車の入荷、地域の話題を記事とSNS（X・Instagram）で発信しています。", body, active="blog")
-    for i, p in enumerate(POSTS):
-        build_post(i)
+    # 記事そのものは Googleブログ側にある。こちらでは記事ページを作らない
+    # （build_post は、将来こちらに記事を持つことにしたときのために残している）
 
 
 def build_post(i):

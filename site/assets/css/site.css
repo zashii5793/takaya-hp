@@ -547,3 +547,6 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 /* 決め手になる数字。質問の答えの一部を先に見せて、ページを開く動機にする（2026-09-26） */
 .svc-row__fact{margin-top:14px;padding:11px 14px;background:var(--bg-alt);
   border-left:3px solid var(--brand);font-size:var(--fs-5);color:var(--ink);line-height:1.85}
+
+/* 動かないおクルマの引き取り。緊急時の決め手になるので、症状の下にすぐ出す（2026-09-26） */
+.urgent__tow{margin-top:14px;font-size:var(--fs-5);color:var(--ink-sub);line-height:1.85;max-width:34em}
