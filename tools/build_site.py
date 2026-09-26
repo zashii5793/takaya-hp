@@ -651,27 +651,17 @@ def build_index():
 {voices_html()}
 <section class="sec" id="news" data-area="news">
   <div class="wrap">
-    <span class="eyebrow">NEWS &amp; SNS</span>
-    <h2 class="sec-title">お知らせ・SNS</h2>
-    <p class="lead">入庫やキャンペーンのお知らせ、日々の仕事の様子をお届けしています。</p>
-    <div class="ch-grid">
-      <div class="ch ch--news">
-        <p class="ch__title"><span class="sns-badge sns-badge--news" aria-hidden="true">N</span>お知らせ</p>
-        <ul class="news__list">{news_items}
-        </ul>
-        <a class="link-more" href="blog/index.html">お知らせ一覧を見る →</a>
-      </div>
-      <div class="ch">
-        <p class="ch__title"><span class="sns-badge sns-badge--ig" aria-hidden="true"></span>Instagram</p>
-        <p class="ch__lead">新しく入ったおクルマや、工場での仕事の様子を写真で載せています。</p>
-        <a class="link-more" href="{INSTAGRAM_URL}" target="_blank" rel="noopener">Instagramで見る →</a>
-      </div>
-      <div class="ch">
-        <p class="ch__title"><span class="sns-badge sns-badge--x" aria-hidden="true">X</span>X（旧Twitter）</p>
-        <p class="ch__lead">車検の空き状況や、その日のできごとを短くお知らせしています。</p>
-        <a class="link-more" href="https://x.com/{X_HANDLE}" target="_blank" rel="noopener">Xで見る →</a>
-      </div>
+    <span class="eyebrow">NEWS</span>
+    <h2 class="sec-title">お知らせ</h2>
+    <div class="ch ch--news">
+      <ul class="news__list">{news_items}
+      </ul>
+      <a class="link-more" href="blog/index.html">お知らせ一覧を見る →</a>
     </div>
+    <p class="sns-line">SNSでも発信しています
+      <a href="{INSTAGRAM_URL}" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://x.com/{X_HANDLE}" target="_blank" rel="noopener">X</a>
+    </p>
   </div>
 </section>
 
@@ -1383,7 +1373,7 @@ def sns_html():
   <div class="wrap">
     <span class="eyebrow">SOCIAL</span>
     <h2 class="sec-title">SNSの投稿</h2>
-    <p class="lead">入庫したおクルマや日々のできごとは、XとInstagramでも発信しています。</p>
+    <p class="lead">XとInstagramでも発信しています。</p>
     <div class="sns-grid">{x_block}{ig_block}
     </div>
   </div>
@@ -1399,7 +1389,7 @@ def build_blog():
         <p class="post__excerpt">{p["excerpt"]}</p></div>
     </li>''' for p in POSTS)
     body = page_head(root, [("index.html", "トップ"), (None, "お知らせ")], "お知らせ",
-                     "日々の整備のこと、地域の話題、SNSの投稿など。") + f'''
+                     "タカヤモーターからのお知らせです。") + f'''
 <section class="sec"><div class="wrap">
   <h2 class="sec-title">記事</h2>
   <ul class="post-list">{items}</ul>
