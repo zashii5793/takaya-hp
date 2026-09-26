@@ -543,3 +543,7 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .ch--news{margin-top:24px;max-width:720px}
 .sns-line{margin-top:18px;font-size:var(--fs-5);color:var(--ink-muted)}
 .sns-line a{margin-left:14px;font-weight:700;text-decoration:none}
+
+/* 決め手になる数字。質問の答えの一部を先に見せて、ページを開く動機にする（2026-09-26） */
+.svc-row__fact{margin-top:14px;padding:11px 14px;background:var(--bg-alt);
+  border-left:3px solid var(--brand);font-size:var(--fs-5);color:var(--ink);line-height:1.85}
