@@ -440,7 +440,6 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .tr-list--plain li::before{content:"";position:absolute;left:0;top:.9em;
   width:7px;height:1px;background:var(--brand)}
 .tr-act{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 20px}
-.tr-act__label{font-size:var(--fs-5);font-weight:700;color:var(--ink)}
 .tr-tel{display:inline-block;margin:2px 0 4px;font-family:var(--f-num);font-size:var(--fs-1);
   font-weight:700;line-height:1.1;letter-spacing:.01em;color:var(--ink);text-decoration:none}
 .tr-tel:hover{color:var(--brand)}
