@@ -603,28 +603,22 @@ def build_index():
 </section>
 
 <section class="sec" id="about">
-  <div class="wrap split">
-    <div>
-      <span class="eyebrow">ABOUT</span>
-      <h2 class="sec-title">担当が変わっても、<br>おクルマの記録は残ります。</h2>
-      <p class="lead">タカヤモーター（昭和40年創立）とタカヤリース（昭和59年創立）の2社で、販売から車検・整備、板金、保険までを同じ場所でお受けしています。前回どこを修理したか、どのようにお乗りかを把握していますので、そのおクルマに合ったご提案ができます。</p>
-      <a class="link-more" href="company.html">会社情報を見る →</a>
-    </div>
-    <div>
-      <p class="values__title">大切にしていること</p>
-      <ul class="values">
-        <li>お客様にとって、何がベストかを優先して対応します</li>
-        <li>おクルマの代替ありきの提案はしません</li>
-        <li>大切なおクルマをながく乗りたい方には、どんな点検や修理が必要かを丁寧に説明します</li>
-      </ul>
-    </div>
+  <div class="wrap">
+    <span class="eyebrow">ABOUT</span>
+    <h2 class="sec-title">大切にしていること</h2>
+    <ul class="values">
+      <li>お客様にとって、何がベストかを優先して対応します</li>
+      <li>おクルマの代替ありきの提案はしません</li>
+      <li>大切なおクルマをながく乗りたい方には、どんな点検や修理が必要かを丁寧に説明します</li>
+    </ul>
+    <a class="link-more" href="company.html">会社情報を見る →</a>
   </div>
 
   <div class="wrap mission">
     <img class="mission__fig" src="assets/img/mission.svg" alt="タカヤモーターの5つのサービス。中心に「安心・快適なカーライフの実現」というミッションがあり、そのまわりに車販／車検／整備・修理／板金・塗装／保険が並ぶ" width="600" height="600" loading="lazy">
     <div>
-      <p class="values__title">5つのサービスが、ひとつにつながっています</p>
-      <p class="lead" style="margin-top:12px">2025年に創業60周年を迎えました。第3創業期として、これからも「安心・快適なカーライフの実現」と、お客様一人ひとりのニーズに応える ＋α のサービスをお届けします。</p>
+      <h3 class="mission__title">5つのサービスが、ひとつにつながっています</h3>
+      <p class="lead">2025年に創業60周年を迎えました。第3創業期として、これからも「安心・快適なカーライフの実現」と、お客様一人ひとりのニーズに応える ＋α のサービスをお届けします。</p>
       <dl class="mission__points">
         <dt>車販</dt>
         <dd>ご要望をもとに最適なおクルマをご提案。オーダーメイド形式のため、無理なセールスはありません</dd>
