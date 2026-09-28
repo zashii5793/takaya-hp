@@ -211,7 +211,7 @@ SERVICES = [
 #   枠名: (既定の切り出し名 or None, イメージ図SVG, alt, 使う場所, 推奨サイズ(幅,高さ))
 # ======================================================================
 PHOTO_SLOTS = {
-    "hero":              ("exterior-road",    "hero",       "タカヤモーター 社屋と展示場（岡山市中区高屋）", "トップのメイン写真", (1600, 900)),
+    "hero":              ("exterior-road",    "hero",       "タカヤモーター 社屋と展示場（岡山市中区高屋）", "トップのメイン写真（縦長）", (900, 1120)),
     "company":           ("building",         "company",    "タカヤモーター フロント社屋",                   "会社概要", (1200, 750)),
     "cars":              ("exterior-road",    "cars",       "納車を待つおクルマ",                             "サービスカード／おクルマを探す（詳細）", (800, 500)),
     "lease":             (None,               "lease",      "リース車両",                                     "サービスカード：法人・個人リース", (800, 500)),
@@ -307,12 +307,19 @@ def resolve_logo():
     print("ロゴ: 未提供（赤い四角の仮表示のまま。assets/photos/logo.png などを置く）")
 
 
-def logo_html(root):
+def brand_html(root):
+    """ヘッダーの社名まわり。ロゴ画像には社名の文字が入っているので、
+    ロゴを置いたときは隣の「TakayaCarGroup」を出さず、2社の正式名称だけを添える。
+    置いていないときは、赤い四角の仮表示と文字の組み合わせになる。"""
     if not LOGO_FILE:
-        return '<span class="brand__mark">ロゴ</span>'
+        return ('<span class="brand__mark">ロゴ</span>'
+                '<span><span class="brand__name">TakayaCarGroup</span><br>'
+                '<span class="brand__sub">タカヤモーター株式会社／タカヤリース株式会社</span></span>')
+    # ロゴの横に社名を並べるとナビゲーションと詰まるので、ロゴだけを置く。
+    # 2社の正式名称はフッターと会社情報ページに出ている
     wh = f' width="{LOGO_W}" height="{LOGO_H}"' if LOGO_W else ""
     return (f'<img class="brand__logo" src="{root}assets/img/{LOGO_FILE}"'
-            f' alt="タカヤモーター株式会社／タカヤリース株式会社"{wh}>')
+            f' alt="タカヤカーグループ（タカヤモーター株式会社／タカヤリース株式会社）"{wh}>')
 
 
 def resolve_photos():
@@ -368,8 +375,7 @@ def header(root, active):
     return f'''<header class="site-header" data-area="header">
   <div class="wrap">
     <a class="brand" href="{root}index.html">
-      {logo_html(root)}
-      <span><span class="brand__name">TakayaCarGroup</span><br><span class="brand__sub">タカヤモーター株式会社／タカヤリース株式会社</span></span>
+      {brand_html(root)}
     </a>
     <button class="nav-toggle" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav" aria-label="グローバルナビ"><ul>{items}</ul></nav>
@@ -644,6 +650,9 @@ def build_index():
     <div class="urgent">
       <div>
         <p class="urgent__title">おクルマに異常がある</p>
+        <p class="urgent__lead">エンジンがかからない、ぶつけた、動かなくなった。
+          どこに頼めばいいか分からないときも、まずはお電話ください。
+          状況をお伺いして、その場でできることをお伝えします。</p>
         <p class="tr-eg">例</p>
         <ul class="tr-list--plain">
           <li>エンジンがかからない・止まった</li>
@@ -651,12 +660,16 @@ def build_index():
           <li>ぶつけた・こすった</li>
           <li>動かなくなって、自分では運べない</li>
         </ul>
-        <p class="urgent__tow">動かなくなったおクルマは、引き取りにも伺います。
-          ご希望の時間に添えない場合もございますので、まずはお電話でご相談ください。</p>
+        <ul class="urgent__points">
+          <li><b>動かないおクルマは引き取りに伺います</b>ご希望の時間に添えない場合もございますので、まずはお電話でご相談ください。</li>
+          <li><b>他社でご購入のおクルマもお受けします</b>国産車は全メーカー、輸入車にも対応します。</li>
+          <li><b>事故のときも、窓口は一つです</b>保険会社へのご連絡・お手続きから、自社工場での修理までお受けします。</li>
+        </ul>
       </div>
       <div class="tr-act">
+        <p class="tr-act__label">お電話でご相談ください</p>
         <a class="tr-tel" href="tel:0120100152">0120-100-152</a>
-        <p class="muted">{HOURS_OPEN}／定休日 {HOLIDAY}</p>
+        <p class="muted">{HOURS_OPEN}<br>定休日 {HOLIDAY}</p>
       </div>
     </div>
 
@@ -691,8 +704,8 @@ def build_index():
         <div><h3>所在地</h3><p>〒703-8233<br>岡山市中区高屋21-1</p><a class="link-more" style="margin-top:6px" href="{MAP_LINK}" target="_blank" rel="noopener">Google マップで見る →</a></div>
         <div><h3>営業時間</h3><p>{HOURS_OPEN}</p><p class="muted">定休日：{HOLIDAY}</p></div>
         <div><h3>お電話</h3>
-          <p>タカヤモーター <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:20px;text-decoration:none;color:var(--ink)">0120-100-152</a><br>
-             タカヤリース <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:20px;text-decoration:none;color:var(--ink)">0120-556-649</a></p></div>
+          <p>タカヤモーター <a href="tel:0120100152" class="tel-inline">0120-100-152</a><br>
+             タカヤリース <a href="tel:0120556649" class="tel-inline">0120-556-649</a></p></div>
       </div>
       <a class="link-more" href="access.html">部署別の電話番号・くわしいアクセス →</a>
     </div>
@@ -782,8 +795,8 @@ def build_cars():
 </div>
 <div class="box box--alt" style="margin-top:20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
   <div style="flex:1 1 280px">
-    <h3 style="font-size:14px">在庫車はカーセンサーにも掲載。全国からお問い合わせをいただいています</h3>
-    <p style="margin-top:6px;font-size:13px">写真・走行距離・価格は掲載ページが最新です。県外の方への販売実績もあります。掲載車以外も、上記のオーダー形式でお探しできます。</p>
+    <h3 class="fs-5">在庫車はカーセンサーにも掲載。全国からお問い合わせをいただいています</h3>
+    <p class="fs-5" style="margin-top:6px">写真・走行距離・価格は掲載ページが最新です。県外の方への販売実績もあります。掲載車以外も、上記のオーダー形式でお探しできます。</p>
   </div>
   <a class="btn btn--dark" href="../contact.html">在庫・ご希望のおクルマを相談する →</a>
 </div>'''
@@ -805,7 +818,7 @@ def build_lease():
 <h2>100社以上の法人のお客様に、長年ごひいきいただいています</h2>
 <p class="lead"><strong>タカヤリースは昭和59年の設立から、岡山の100社以上の法人のお客様の社用車をお預かりしてきました。</strong>税金・保険・車検・整備・消耗品まで月額に含めた「メンテナンスリース」と、車両代と税金を中心にした「ファイナンスリース」の2種類。法人の社用車から個人のマイカーまで、ご事情に合わせてお選びいただけます。</p>
 <div class="tiles">
-  <div class="tile"><strong>100<small style="font-family:var(--f-jp);font-size:14px;color:var(--ink)">社以上</small></strong><span>長年お取引いただいている法人のお客様</span></div>
+  <div class="tile"><strong>100<small class="tile__unit">社以上</small></strong><span>長年お取引いただいている法人のお客様</span></div>
   <div class="tile"><strong class="jp">2種類</strong><span>メンテナンスリース／ファイナンスリース</span></div>
   <div class="tile"><strong class="jp">整備も同じ窓口</strong><span>車検・整備・保険まで自社で対応</span></div>
 </div>
@@ -1070,7 +1083,7 @@ def build_company():
     {ph(root, "company")}
     <div class="box box--alt" style="margin-top:24px">
       <p class="muted" style="letter-spacing:.06em">経営理念</p>
-      <ol style="padding-left:1.3em;font-size:14px;line-height:2;color:var(--ink-sub);margin-top:10px">
+      <ol class="fd-steps">
         <li>常に豊かさを追求し、優れた人材育成へ努力・研鑽しよう。</li>
         <li>お客様満足度を第一とし、質の良い物・サービスを提供しよう。</li>
         <li>価値ある仕事を通じ、公平な配分と利益をもって地域社会に貢献しよう。</li>
@@ -1121,8 +1134,8 @@ def build_access():
         <p>電車：JR高島駅から徒歩15分<br>お車：国道250号沿い、マルナカ高屋店の角を左折<br>バス：岡電バス「高屋」降り場から徒歩5分</p></div>
       <div><h3>営業時間</h3><p>{HOURS_OPEN}</p><p class="muted">定休日：{HOLIDAY}</p></div>
       <div><h3>フリーダイヤル</h3>
-        <p>タカヤモーター株式会社 <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:22px;text-decoration:none;color:var(--ink)">0120-100-152</a></p>
-        <p>タカヤリース株式会社 <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:22px;text-decoration:none;color:var(--ink)">0120-556-649</a></p></div>
+        <p>タカヤモーター株式会社 <a href="tel:0120100152" class="tel-inline">0120-100-152</a></p>
+        <p>タカヤリース株式会社 <a href="tel:0120556649" class="tel-inline">0120-556-649</a></p></div>
     </div>
     <div class="map"><iframe src="{MAP_EMBED}" title="タカヤモーター株式会社 所在地（Google マップ）" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
   </div>
@@ -1145,14 +1158,14 @@ def build_contact():
   <div class="split" style="margin-top:24px">
     <div class="info-list">
       <div><h3>お電話</h3>
-        <p>タカヤモーター <a href="tel:0120100152" style="font-family:var(--f-num);font-weight:700;font-size:26px;text-decoration:none;color:var(--brand)">0120-100-152</a></p>
-        <p>タカヤリース <a href="tel:0120556649" style="font-family:var(--f-num);font-weight:700;font-size:26px;text-decoration:none;color:var(--brand)">0120-556-649</a></p>
+        <p>タカヤモーター <a href="tel:0120100152" class="tel-inline tel-inline--brand">0120-100-152</a></p>
+        <p>タカヤリース <a href="tel:0120556649" class="tel-inline tel-inline--brand">0120-556-649</a></p>
         <p class="muted">受付 {HOURS_OPEN}／定休日：{HOLIDAY}</p></div>
       <div><h3>メール</h3><p><a href="mailto:takaya-customer-service@takaya-gp.jp">takaya-customer-service@takaya-gp.jp</a></p></div>
       <div><h3>部署直通</h3><p class="tel-lines">サービス <a href="tel:0862721001">086-272-1001</a><br>営業（タカヤモーター） <a href="tel:0862721021">086-272-1021</a><br>営業（タカヤリース） <a href="tel:0862733611">086-273-3611</a><br>総務 <a href="tel:0862723065">086-272-3065</a></p></div>
     </div>
     <div>
-      <h3 style="font-size:16px">お問い合わせフォーム</h3>
+      <h3>お問い合わせフォーム</h3>
       <p class="muted" style="margin-top:6px">下のフォームが表示されない場合は <a href="{FORM}" target="_blank" rel="noopener">こちらから開いてください</a>。</p>
       <div class="form-embed"><iframe src="{FORM_EMBED}" title="お問い合わせフォーム" loading="lazy">読み込んでいます…</iframe></div>
     </div>
