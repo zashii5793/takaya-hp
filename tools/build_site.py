@@ -307,6 +307,18 @@ def resolve_logo():
     print("ロゴ: 未提供（赤い四角の仮表示のまま。assets/photos/logo.png などを置く）")
 
 
+def footer_brand(root):
+    """フッターは背景が濃いので、黒い文字のロゴはそのままだと読めない。
+    白地の小さな面に載せて出す。白抜きのロゴをいただければ、そのまま置ける（A-45）"""
+    if not LOGO_FILE:
+        return ('<p class="f-name">TakayaCarGroup<br>'
+                'タカヤモーター株式会社／タカヤリース株式会社</p>')
+    wh = f' width="{LOGO_W}" height="{LOGO_H}"' if LOGO_W else ""
+    return (f'<span class="f-logo"><img src="{root}assets/img/{LOGO_FILE}"'
+            f' alt="タカヤカーグループ"{wh}></span>'
+            '<p class="f-name">タカヤモーター株式会社／タカヤリース株式会社</p>')
+
+
 def brand_html(root):
     """ヘッダーの社名まわり。ロゴ画像には社名の文字が入っているので、
     ロゴを置いたときは隣の「TakayaCarGroup」を出さず、2社の正式名称だけを添える。
@@ -428,8 +440,8 @@ def footer(root):
   <div class="wrap">
     <div class="footer-grid">
       <div>
-        <p class="f-name">TakayaCarGroup<br>タカヤモーター株式会社／タカヤリース株式会社</p>
-        <p>〒703-8233 岡山市中区高屋21-1<br>営業時間 {HOURS_OPEN}／定休日 {HOLIDAY}<br>創立 昭和40年5月10日（タカヤモーター）</p>
+        {footer_brand(root)}
+        <p>〒703-8233 岡山市中区高屋21-1<br>営業時間 {HOURS_OPEN}／定休日 {HOLIDAY}</p>
         <p>{lotus_html()}</p>
         <ul class="social">{social_html(root)}</ul>
       </div>

@@ -300,6 +300,10 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:32px}
 .site-footer p{font-size:var(--fs-5);line-height:1.9}
 .site-footer .f-name{color:#fff;font-weight:700;font-size:var(--fs-4)}
+/* フッターのロゴ。背景が濃いので白地に載せる（2026-09-28 ご指示） */
+.f-logo{display:inline-block;background:#fff;border-radius:var(--r);
+  padding:8px 12px;margin-bottom:12px}
+.f-logo img{height:30px;width:auto;max-width:170px;display:block;object-fit:contain}
 .site-footer h3{font-size:var(--fs-5);color:#fff;margin-bottom:10px}
 .site-footer ul{list-style:none;display:grid;gap:6px}
 .site-footer li a{color:#A9A29A;text-decoration:none;font-size:var(--fs-5)}
