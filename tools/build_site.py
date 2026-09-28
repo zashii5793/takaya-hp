@@ -211,7 +211,7 @@ SERVICES = [
 #   枠名: (既定の切り出し名 or None, イメージ図SVG, alt, 使う場所, 推奨サイズ(幅,高さ))
 # ======================================================================
 PHOTO_SLOTS = {
-    "hero":              ("exterior-road",    "hero",       "タカヤモーター 社屋と展示場（岡山市中区高屋）", "トップのメイン写真（縦長）", (900, 1120)),
+    "hero":              ("exterior-road",    "hero",       "タカヤモーター 社屋と展示場（岡山市中区高屋）", "トップのメイン写真", (1040, 860)),
     "company":           ("building",         "company",    "タカヤモーター フロント社屋",                   "会社概要", (1200, 750)),
     "cars":              ("exterior-road",    "cars",       "納車を待つおクルマ",                             "サービスカード／おクルマを探す（詳細）", (800, 500)),
     "lease":             (None,               "lease",      "リース車両",                                     "サービスカード：法人・個人リース", (800, 500)),
@@ -589,22 +589,24 @@ def build_index():
 
     body = f'''
 <section class="hero" data-area="hero">
-  <div class="wrap">
+  <div class="wrap hero__main">
     <div>
       <p class="hero__since"><span>岡山市中区高屋　車検・整備・販売・リース・保険</span></p>
       <h1>おクルマのことは、<br>ぜんぶタカヤで。</h1>
       <p class="hero__lead">おクルマに関することは、すべてタカヤへ。ご購入から車検・整備、板金、保険まで、ご連絡先は一つです。1965年の創業以来、岡山市中区高屋の同じ場所で、岡山市を中心に近隣の市のお客様にもご利用いただいています。整備の記録は当社に残りますので、ご来店のたびに経緯をご説明いただく必要はありません。</p>
-      <ul class="pills">
-        <li><span><em>1965年の創業から</em>、同じ場所で60年</span></li>
-        <li><span>これまでにお預かりしたおクルマは<em>延べ10万台以上</em></span></li>
-        <li><span>他社でご購入のおクルマも<em>お受けします</em></span></li>
-      </ul>
       <div class="btn-row">
         <a class="btn btn--primary" href="contact.html">お問い合わせ</a>
         <a class="btn btn--ghost" href="#service">サービスを見る</a>
       </div>
     </div>
     {ph(root, "hero")}
+  </div>
+  <div class="wrap">
+    <ul class="pills">
+      <li><span><em>1965年の創業から</em>、同じ場所で60年</span></li>
+      <li><span>これまでにお預かりしたおクルマは<em>延べ10万台以上</em></span></li>
+      <li><span>他社でご購入のおクルマも<em>お受けします</em></span></li>
+    </ul>
   </div>
 </section>
 
