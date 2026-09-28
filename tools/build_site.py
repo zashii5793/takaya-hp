@@ -197,7 +197,7 @@ SERVICES = [
     # slug, 番号, 名称, 1行説明, 画像, 写真タグ
     ("inspection", "01", "車検・点検・整備", "他社でご購入のおクルマもお受けします。国産車は全メーカー、輸入車にも対応します。", "inspection", ""),
     ("bodywork", "02", "板金・コーティング", "小さなこすり傷から、保険を使った修理まで。塗装もコーティングも自社で仕上げます。", "bodywork", ""),
-    ("cars", "03", "おクルマを探す・買い取る", "欲しい1台を、業者オークションからお探しします。いまのおクルマの買取・下取りも。", "cars", ""),
+    ("cars", "03", "おクルマを探す・買い取る", "欲しい1台を、業者オークションからお探しします。いまのおクルマの買取・下取りも承ります。", "cars", ""),
     ("lease", "04", "法人・個人リース", "税金も車検も整備も、月々の支払いにまとめられます。社用車1台からご相談ください。", "lease", "イメージ図／写真差し替え予定：リース車両"),
     ("insurance", "05", "自動車保険", "事故のときの窓口も、修理も、タカヤで完結します。東京海上日動・損保ジャパンの代理店。", "insurance", ""),
 ]
@@ -211,7 +211,7 @@ SERVICES = [
 #   枠名: (既定の切り出し名 or None, イメージ図SVG, alt, 使う場所, 推奨サイズ(幅,高さ))
 # ======================================================================
 PHOTO_SLOTS = {
-    "hero":              ("exterior-road",    "hero",       "タカヤモーター 社屋と展示場（岡山市中区高屋）", "トップのメイン写真", (1040, 860)),
+    "hero":              ("exterior-road",    "hero",       "タカヤモーター 社屋と展示場（岡山市中区高屋）", "トップのメイン写真", (690, 570)),
     "company":           ("building",         "company",    "タカヤモーター フロント社屋",                   "会社概要", (1200, 750)),
     "cars":              ("exterior-road",    "cars",       "納車を待つおクルマ",                             "サービスカード／おクルマを探す（詳細）", (800, 500)),
     "lease":             (None,               "lease",      "リース車両",                                     "サービスカード：法人・個人リース", (800, 500)),
@@ -276,7 +276,7 @@ def image_size(path):
     return None
 
 
-LOGO_H = 40        # ヘッダーのロゴの高さ(px)。仮表示の赤い四角と同じ高さに揃える
+LOGO_H = 34        # ヘッダーのロゴの高さ(px)。仮表示の赤い四角と同じ高さに揃える
 LOGO_FILE = None   # ファイル名。resolve_logo() が決める
 LOGO_W = LOGO_H    # 高さを LOGO_H にしたときの幅。縦横比から出す
 
@@ -742,11 +742,16 @@ def build_services_index():
     page("services/index.html", "サービス", "岡山市中区のタカヤモーターが扱う5つのサービス。新車・中古車販売と買取、法人・個人リース、車検・点検・整備、板金塗装とコーティング、自動車保険。おクルマに関することを一つの窓口でまとめてお受けします。", body, active="services")
 
 
-def svc_page(slug, title, lead_html, content_html, contact_html, schema=None, extra_html=""):
-    """extra_html は写真＋本文の2段組の外（ページ幅いっぱい）に、その下へ置く。
+def svc_page(slug, title, meta_desc, content_html, contact_html, schema=None, extra_html=""):
+    """meta_desc は検索結果に出る説明文。ページの冒頭文には使わない。
+    冒頭文は SERVICES の一行説明（トップのカードと同じ言葉）を使う。
+    検索用の文をそのまま冒頭に置くと、体言止めが続いて読みにくく、
+    すぐ下の見出しとも内容が重なるため（2026-09-28 ご指摘）。
+
+    extra_html は写真＋本文の2段組の外（ページ幅いっぱい）に、その下へ置く。
     FD宣言のような長い文書を2段組の細い側に入れると読めないため"""
     root = "../"
-    _, num, name, _, img, tag = next(s for s in SERVICES if s[0] == slug)
+    _, num, name, lead_html, img, tag = next(s for s in SERVICES if s[0] == slug)
     img = f"{slug}-detail" if f"{slug}-detail" in PHOTO_SLOTS else img
     body = page_head(root, [("index.html", "トップ"), ("services/index.html", "サービス"), (None, name)],
                      f'<span class="card__num" style="display:block;margin-bottom:4px">{num}</span>{name}', lead_html,
@@ -764,7 +769,7 @@ def svc_page(slug, title, lead_html, content_html, contact_html, schema=None, ex
            "areaServed": {"@type": "City", "name": "岡山市"},
            "url": SITE_URL + f"/services/{slug}.html"}
     blocks = [svc] + ([schema] if schema else [])
-    page(f"services/{slug}.html", title, re.sub(r"<[^>]+>", "", lead_html)[:120], body, active="services", schema=blocks)
+    page(f"services/{slug}.html", title, meta_desc, body, active="services", schema=blocks)
 
 
 def build_cars():
