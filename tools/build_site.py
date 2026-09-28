@@ -533,16 +533,22 @@ def svc_nav(root, active):
     return '<ul class="svc-nav">' + items + '</ul>'
 
 
-def contact_row(root, primary_label, tel=None, freedial=None):
+def contact_row(root, primary_label, tel=None, freedial=None, show_tel=True):
     """freedial は (かけ先の数字, 表示) のフリーダイヤル。既定はタカヤモーター。
     クルマの販売はタカヤリースが主管なので、販売のページだけ差し替える（2026-09-26）"""
-    num, shown = freedial or ("0120100152", "0120-100-152")
+    # どちらの会社の番号か分かるようにする。車販のページは2つとも
+    # タカヤリースの番号なので、フリーダイヤル側にも社名を付ける（2026-09-28）
+    if freedial:
+        num, shown = freedial
+        label = "タカヤリース フリーダイヤル"
+    else:
+        num, shown, label = "0120100152", "0120-100-152", "お電話"
     tel_html = f'<a class="btn btn--ghost" href="tel:{tel[1]}">{tel[0]} {tel[2]}</a>' if tel else ""
     return f'''<div class="btn-row">
   <a class="btn btn--outline" href="{FORM}" target="_blank" rel="noopener">{primary_label}</a>
   <a class="btn btn--ghost" href="{FORM}" target="_blank" rel="noopener">お問い合わせフォーム</a>
   {tel_html}
-  <span class="muted">お電話 {shown}（{HOURS}）</span>
+  {f'<span class="muted">{label} {shown}（{HOURS}）</span>' if show_tel else ''}
 </div>'''
 
 
@@ -865,10 +871,12 @@ INSPECTION_QA = [
 
 
 def build_inspection():
-    def price_row(name, desc, prices, badge=""):
+    def price_row(name, desc, prices, badge="", pick=False):
+        """pick=True の行は色を敷いて目立たせる。desc には <b> を書ける"""
         cells = "".join(f'<td class="num">{p}<small>円〜</small></td>' for p in prices)
         b = f'<span class="badge">{badge}</span>' if badge else ""
-        return f'<tr><td><p class="name">{name}{b}</p><p class="desc">{desc}</p></td>{cells}</tr>'
+        cls = ' class="is-pick"' if pick else ""
+        return f'<tr{cls}><td><p class="name">{name}{b}</p><p class="desc">{desc}</p></td>{cells}</tr>'
     content = f'''
 <h2>国産車は全メーカー、輸入車もお受けします</h2>
 <p class="lead"><strong>スズキ・ダイハツの代理店ですが、国産車は全メーカーの車検・点検・整備に対応しています。</strong>輸入車もお受けします（国産車より日数をいただきます）。約60年の実績と経験をもとに、質の高いサービスをご提供します。</p>
@@ -879,8 +887,8 @@ def build_inspection():
     <thead><tr><th>コース</th><th>軽自動車<br><small>全車</small></th><th>小型自動車<br><small>1.0t迄</small></th><th>中型自動車<br><small>1.5t迄</small></th><th>大型自動車<br><small>2.0t迄</small></th></tr></thead>
     <tbody>
       {price_row("ニューサービスコース", "立ち合い車検／所要時間の目安 60分", ["50,760", "62,660", "71,960", "82,910"])}
-      {price_row("スマイルコース", "1日お預かり／洗車サービス・ご来店時レンタカー無料", ["57,360", "72,560", "81,860", "92,260"], "おすすめ")}
-      {price_row("プレミアムコース", "1〜2日お預かり／洗車・フロントガラス撥水・ボディコート撥水・ご来店時レンタカー無料", ["62,860", "79,160", "89,560", "101,610"])}
+      {price_row("スマイルコース", "1日お預かり／洗車サービス・ご来店時レンタカー無料", ["57,360", "72,560", "81,860", "92,260"], "人気No.1", pick=True)}
+      {price_row("プレミアムコース", "1〜2日お預かり／洗車・<b>フロントガラス撥水</b>・<b>ボディコート撥水</b>・ご来店時レンタカー無料", ["62,860", "79,160", "89,560", "101,610"])}
       <tr class="sub"><td>うち法定諸費用</td><td>38,110円</td><td>47,810円</td><td>56,010円</td><td>64,210円</td></tr>
     </tbody>
   </table></div>
@@ -935,7 +943,9 @@ def build_bodywork():
 </div>'''
     svc_page("bodywork", "板金・塗装・コーティング",
              "傷・へこみの修理から塗装まで。PGⅢ親水性コーティング（新車時 55,000円〜）の施工価格表を掲載。東京海上日動のリペアネットサービスを提供。",
-             content, contact_row("../", "板金・コーティングを相談する"))
+             # 電話番号の行はご指示により出さない（2026-09-28）。
+             # このページは東京海上日動リペアネットの導線とボタンで足りている
+             content, contact_row("../", "板金・コーティングを相談する", show_tel=False))
 
 
 # 顧客本位の業務運営に関する方針（FD宣言）。2026-09-26 に原本（PDF・3ページ）を受領。
