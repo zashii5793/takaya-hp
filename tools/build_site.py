@@ -103,7 +103,7 @@ def business_schema():
         "name": SITE_NAME,
         "alternateName": ["タカヤモーター", "TakayaCarGroup", "タカヤグループ"],
         "url": SITE_URL + "/",
-        "logo": SITE_URL + "/assets/img/favicon.svg",
+        "logo": SITE_URL + "/assets/img/" + FAVICON_FILE,
         "image": SITE_URL + "/assets/img/ogp.jpg",
         "telephone": "+81-120-100-152",
         "contactPoint": [
@@ -289,6 +289,24 @@ def image_size(path):
 LOGO_H = 34        # ヘッダーのロゴの高さ(px)。仮表示の赤い四角と同じ高さに揃える
 LOGO_FILE = None   # ファイル名。resolve_logo() が決める
 LOGO_W = LOGO_H    # 高さを LOGO_H にしたときの幅。縦横比から出す
+
+
+FAVICON_FILE = "favicon.svg"     # 既定は仮のマーク。実物があれば差し替わる
+
+
+def resolve_favicon():
+    """assets/photos/favicon.png（正方形・透過）を置くと、ブラウザのタブに出る
+    マークがそれに差し替わる。無ければ仮の赤い四角のまま"""
+    global FAVICON_FILE
+    src = os.path.join(PHOTO_SRC, "favicon.png")
+    if not os.path.isfile(src):
+        print("ファビコン: 未提供（仮のマークのまま）")
+        return
+    os.makedirs(os.path.join(OUT, "assets", "img"), exist_ok=True)
+    shutil.copyfile(src, os.path.join(OUT, "assets", "img", "favicon.png"))
+    FAVICON_FILE = "favicon.png"
+    size = image_size(src)
+    print(f"ファビコン: favicon.png {size[0]}×{size[1]}" if size else "ファビコン: favicon.png")
 
 
 def resolve_logo():
@@ -510,7 +528,7 @@ def page(path, title, desc, body, active="", schema=None):
 <meta property="og:url" content="{canonical}">
 <meta property="og:image" content="{SITE_URL}/assets/img/ogp.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="{root}assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="{root}assets/img/{FAVICON_FILE}"{' type="image/svg+xml"' if FAVICON_FILE.endswith(".svg") else ''}>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="{root}assets/css/site.css">
@@ -1241,6 +1259,36 @@ def build_contact():
     page("contact.html", "お問い合わせ", "岡山市中区のタカヤモーターへのお問い合わせ。車検・整備の見積り、新車中古車、リース、板金塗装、保険のご相談はフリーダイヤル 0120-100-152、お問い合わせフォーム、メールで受け付けています。ご相談は無料です。", body, active="contact.html")
 
 
+def build_404():
+    """見つからないページ。公開後、古いURLで来た方を行き止まりにしない。
+    サーバー側で 404 のときにこのファイルを返す設定を入れること（.htaccess 等）。
+    検索には載せない（noindex）"""
+    body = page_head("", [("index.html", "トップ"), (None, "ページが見つかりません")],
+                     "ページが見つかりません",
+                     "お探しのページは、移動または削除された可能性があります。"
+                     "お手数ですが、下のいずれかからお探しください。") + f'''
+<section class="sec"><div class="wrap">
+  <ul class="values" style="max-width:40em">
+    <li><a href="index.html" style="text-decoration:none;color:inherit">トップページへ →</a></li>
+    <li><a href="services/index.html" style="text-decoration:none;color:inherit">サービス一覧へ（車検・板金・車販・リース・保険）→</a></li>
+    <li><a href="blog/index.html" style="text-decoration:none;color:inherit">お知らせへ →</a></li>
+  </ul>
+  <p class="lead">お急ぎの場合は、お電話でも承ります。</p>
+  {contact_row("", "お問い合わせフォームを開く")}
+</div></section>'''
+    page("404.html", "ページが見つかりません",
+         "お探しのページは移動または削除された可能性があります。岡山市中区のタカヤモーター株式会社のトップページ、サービス一覧（車検・板金・車販・リース・保険）、お知らせからお探しください。",
+         body)
+    # 404 は検索結果に出さない
+    f = os.path.join(OUT, "404.html")
+    with open(f, encoding="utf-8") as fh:
+        html = fh.read()
+    html = html.replace('<meta name="robots" content="index,follow,max-image-preview:large">',
+                        '<meta name="robots" content="noindex,follow">')
+    with open(f, "w", encoding="utf-8") as fh:
+        fh.write(html)
+
+
 def build_privacy():
     src = open(os.path.join(ROOT, "docs", "content", "privacy-policy.md"), encoding="utf-8").read()
     # 冒頭の管理用メモ（引用ブロック）と見出し行を除き、本文のみを HTML 化
@@ -1543,6 +1591,8 @@ def build_seo_files():
         for fn in fns:
             if fn.endswith(".html"):
                 rel = os.path.relpath(os.path.join(dp, fn), OUT).replace(os.sep, "/")
+                if rel == "404.html":
+                    continue        # 見つからないページは検索に載せない
                 pages.append(rel)
     order = {"index.html": 0, "services/index.html": 1}
     pages.sort(key=lambda r: (order.get(r, 5), r))
@@ -1607,6 +1657,7 @@ def build_seo_files():
 
 
 if __name__ == "__main__":
+    resolve_favicon()
     resolve_logo()
     resolve_photos()
     build_recruit(); build_blog()
@@ -1614,4 +1665,5 @@ if __name__ == "__main__":
     build_services_index()
     build_cars(); build_lease(); build_inspection(); build_bodywork(); build_insurance()
     build_company(); build_access(); build_contact(); build_privacy()
+    build_404()
     build_seo_files()
