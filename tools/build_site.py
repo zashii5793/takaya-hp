@@ -11,7 +11,10 @@ import json
 import os
 import re
 import shutil
+import json
 import struct
+from html import escape as html_escape, unescape as html_unescape
+from html.parser import HTMLParser
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUT = os.path.join(ROOT, "site")
@@ -644,7 +647,16 @@ def reviews_html():
 def build_index():
     root = ""
     # お知らせは Googleブログ（Blogger）から読む。読めなかったときだけ下の1行が残る
-    news_items = '\n        <li data-blog-loading>お知らせを読み込んでいます…</li>'  
+    # 取り込んだ記事があれば、サイト内の記事へ直接並べる。
+    # 無ければ画面で読み込む（その場合は記事本文はブログ側）
+    if POSTS:
+        news_attr = ""
+        news_items = "".join(
+            f'\n        <li><time>{p["date"]}</time>'
+            f'<a href="blog/{p["slug"]}.html">{p["title"]}</a></li>' for p in POSTS[:3])
+    else:
+        news_attr = ' data-blog-feed data-max="3"'
+        news_items = '\n        <li data-blog-loading>お知らせを読み込んでいます…</li>'   
     svc_rows = "".join(f'''
     <article class="svc-row">
       {ph(root, img, tag)}
@@ -760,7 +772,7 @@ def build_index():
     <span class="eyebrow">NEWS</span>
     <h2 class="sec-title">お知らせ</h2>
     <div class="ch ch--news">
-      <ul class="news__list" data-blog-feed data-max="3">{news_items}
+      <ul class="news__list"{news_attr}>{news_items}
       </ul>
       <a class="link-more" href="blog/index.html">お知らせ一覧を見る →</a>
     </div>
@@ -1464,32 +1476,111 @@ def build_recruit():
 
 # 記事データ（移行時は現行ブログ161本をここ、または別ファイルに移す）
 # slug は URL（blog/<slug>.html）。日付の新しい順に並べる
-POSTS = [
-    {"slug": "2026-08-20-sample", "date": "2026.08.20", "cat": "お知らせ",
-     "title": "現行ブログの記事タイトルが入ります（移行後に差し替え）",
-     "excerpt": "記事の冒頭1〜2文をここに。一覧とトップの「お知らせ」帯に表示されます。",
-     "body": SAMPLE_BODY if "SAMPLE_BODY" in globals() else ""},
-    {"slug": "2026-08-06-sample", "date": "2026.08.06", "cat": "整備のこと",
-     "title": "現行ブログの記事タイトルが入ります（移行後に差し替え）",
-     "excerpt": "記事の冒頭1〜2文をここに。", "body": ""},
-    {"slug": "2026-07-24-sample", "date": "2026.07.24", "cat": "地域の話題",
-     "title": "現行ブログの記事タイトルが入ります（移行後に差し替え）",
-     "excerpt": "記事の冒頭1〜2文をここに。", "body": ""},
-]
-SAMPLE_BODY = '''
-<p>タカヤモーターです。いつもありがとうございます。今回は、日々の整備で気づいたことをお伝えします。</p>
-<h2>見出しの例</h2>
-<p>本文の段落です。写真を入れる場合は下のように横幅いっぱいで表示します。</p>
-<figure class="post-figure"><div class="ph" data-slot="blog-sample"><img src="../assets/img/inspection.svg" alt="" loading="lazy"><span class="tag">記事の写真</span></div><figcaption>写真のキャプション</figcaption></figure>
-<h2>もうひとつの見出し</h2>
-<ul>
-  <li>箇条書きの例</li>
-  <li>箇条書きの例</li>
-</ul>
-<p>ご不明な点があれば、お気軽に <a href="../contact.html">お問い合わせ</a> ください。</p>
-'''
-POSTS[0]["body"] = SAMPLE_BODY
+# ----------------------------------------------------------------------
+# Googleブログ（Blogger）から取り込んだ記事
+#   tools/fetch_blog.py が assets/blog/posts.json に保存する。
+#   ここを読んで、タカヤHP側に記事ページを作る。
+#   取り込みぶんが無いときは記事ページを作らず、お知らせ一覧は
+#   画面で読み込む表示（blog-feed.js）のままにする。
+# ----------------------------------------------------------------------
+BLOG_CACHE = os.path.join(ROOT, "assets", "blog", "posts.json")
 
+# 記事本文で残すタグと属性。これ以外は中の文字だけ残して取り除く。
+# ブログの本文には広告や計測の指定が混ざることがあるため、通すものを決めておく
+_KEEP_TAGS = {"p", "br", "h2", "h3", "h4", "ul", "ol", "li", "strong", "b",
+              "em", "i", "a", "img", "blockquote", "figure", "figcaption",
+              "table", "thead", "tbody", "tr", "th", "td", "hr"}
+_DROP_WHOLE = {"script", "style", "iframe", "object", "embed", "form",
+               "input", "button", "noscript", "svg"}
+_KEEP_ATTRS = {"a": {"href", "title"}, "img": {"src", "alt"}}
+_VOID = {"br", "img", "hr"}
+
+
+class _PostCleaner(HTMLParser):
+    """記事本文をサイトの作りに合う形に整える。
+    ページの h1 は記事の題名なので、本文の h1 は h2 に下げる"""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.out = []
+        self._skip = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in _DROP_WHOLE:
+            self._skip += 1
+            return
+        if self._skip:
+            return
+        if tag == "h1":
+            tag = "h2"
+        if tag not in _KEEP_TAGS:
+            return
+        a = {k: v for k, v in attrs if k in _KEEP_ATTRS.get(tag, set()) and v}
+        if tag == "a" and a.get("href", "").startswith(("http://", "https://")):
+            a["target"], a["rel"] = "_blank", "noopener"
+        if tag == "img":
+            a["loading"] = "lazy"
+        attr = "".join(f' {k}="{html_escape(str(v), quote=True)}"' for k, v in a.items())
+        self.out.append(f"<{tag}{attr}>")
+
+    def handle_endtag(self, tag):
+        if tag in _DROP_WHOLE:
+            self._skip = max(0, self._skip - 1)
+            return
+        if self._skip:
+            return
+        if tag == "h1":
+            tag = "h2"
+        if tag in _KEEP_TAGS and tag not in _VOID:
+            self.out.append(f"</{tag}>")
+
+    def handle_data(self, data):
+        if not self._skip:
+            self.out.append(html_escape(data, quote=False))
+
+
+def clean_post_html(raw):
+    c = _PostCleaner()
+    c.feed(raw or "")
+    c.close()
+    out = "".join(c.out)
+    out = re.sub(r"(?:\s*<br>\s*){3,}", "<br><br>", out)   # 空行の入れすぎを詰める
+    return out.strip()
+
+
+def plain_text(raw, n=0):
+    t = re.sub(r"<[^>]*>", " ", raw or "")
+    t = html_unescape(t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return (t[:n] + "…") if n and len(t) > n else t
+
+
+def load_blog_posts():
+    """取り込んだ記事を読む（新しい順）。無ければ空のまま"""
+    try:
+        with open(BLOG_CACHE, encoding="utf-8") as f:
+            raw = json.load(f)
+    except (OSError, ValueError):
+        return []
+    posts = []
+    for r in raw:
+        if not r.get("slug") or not r.get("title"):
+            continue
+        d = (r.get("published") or "")[:10]
+        posts.append({
+            "slug": r["slug"],
+            "title": html_escape(r["title"], quote=False),
+            "date": d.replace("-", "."),
+            "iso": d,
+            "cat": html_escape((r.get("categories") or ["お知らせ"])[0], quote=False),
+            "body": clean_post_html(r.get("content")),
+            "excerpt": html_escape(plain_text(r.get("content"), 90), quote=False),
+            "source": r.get("source", ""),
+        })
+    return posts
+
+
+POSTS = load_blog_posts()
 
 def post_url(post, root):
     return f"{root}blog/{post['slug']}.html"
@@ -1540,19 +1631,47 @@ def sns_html():
 
 def build_blog():
     root = "../"
+    if POSTS:
+        # 取り込んだ記事があるときは、サイト内の記事ページへ並べる。
+        # 画面で読み込む表示は使わない（同じ記事が二重に出てしまうため）
+        items = "".join(
+            f'''
+    <li class="post"><time>{p["date"]}</time>
+      <div><a href="{p["slug"]}.html">{p["title"]}</a> <span class="post__cat">{p["cat"]}</span>
+        <p class="post__excerpt">{p["excerpt"]}</p></div></li>''' for p in POSTS[:30])
+        listing = f'''<ul class="post-list">{items}
+  </ul>'''
+        if len(POSTS) > 30:
+            listing += (f'''<p class="muted" style="margin-top:14px">'''
+                        f'''新しいものから30件を表示しています（全{len(POSTS)}件）。</p>''')
+    else:
+        # まだ取り込んでいないときは、画面で読み込んで並べる（記事本文はブログ側）
+        listing = '''<ul class="post-list" data-blog-feed data-detail data-max="10">
+    <li class="post"><div data-blog-loading>お知らせを読み込んでいます…</div></li>
+  </ul>
+  <a class="link-more" data-blog-link target="_blank" rel="noopener" hidden>ブログですべての記事を見る →</a>'''
     body = page_head(root, [("index.html", "トップ"), (None, "お知らせ")], "お知らせ",
                      "タカヤモーターからのお知らせです。") + f'''
 <section class="sec"><div class="wrap">
   <h2 class="sec-title">記事</h2>
-  <ul class="post-list" data-blog-feed data-detail data-max="10">
-    <li class="post"><div data-blog-loading>お知らせを読み込んでいます…</div></li>
-  </ul>
-  <a class="link-more" data-blog-link target="_blank" rel="noopener" hidden>ブログですべての記事を見る →</a>
+  {listing}
 </div></section>
 ''' + sns_html()
     page("blog/index.html", "お知らせ", "岡山市中区のタカヤモーター株式会社のお知らせ。日々の整備で気づいたこと、車検や点検・タイヤ交換のご案内、新車中古車の入荷、地域の話題を記事とSNS（X・Instagram）で発信しています。", body, active="blog")
-    # 記事そのものは Googleブログ側にある。こちらでは記事ページを作らない
-    # （build_post は、将来こちらに記事を持つことにしたときのために残している）
+    for i in range(len(POSTS)):
+        build_post(i)
+    # ブログ側で消された記事のページを残さない（index.html 以外を照合して片付ける）
+    keep = {"index.html"} | {p["slug"] + ".html" for p in POSTS}
+    blog_dir = os.path.join(OUT, "blog")
+    for fn in os.listdir(blog_dir) if os.path.isdir(blog_dir) else []:
+        if fn.endswith(".html") and fn not in keep:
+            os.remove(os.path.join(blog_dir, fn))
+            print(f"  （ブログ側に無いので消しました: blog/{fn}）")
+    if POSTS:
+        print(f"お知らせ: 取り込んだ記事 {len(POSTS)}件ぶんのページを作りました")
+    else:
+        print("お知らせ: 取り込みぶんが無いので、画面で読み込む表示のままです"
+              "（記事本文はブログ側。tools/fetch_blog.py で取り込めます）")
 
 
 def build_post(i):
@@ -1560,7 +1679,7 @@ def build_post(i):
     p = POSTS[i]
     newer = POSTS[i - 1] if i > 0 else None
     older = POSTS[i + 1] if i + 1 < len(POSTS) else None
-    body_html = p["body"] or SAMPLE_BODY
+    body_html = p["body"] or f'<p>{p["excerpt"]}</p>'
     nav = "".join([
         f'<a class="pager__prev" href="{post_url(newer, root)}">← {newer["title"]}</a>' if newer else '<span></span>',
         f'<a class="pager__next" href="{post_url(older, root)}">{older["title"]} →</a>' if older else '<span></span>',
@@ -1574,7 +1693,7 @@ def build_post(i):
 </div></section>'''
     art = {"@context": "https://schema.org", "@type": "BlogPosting",
            "headline": p["title"], "description": p["excerpt"],
-           "datePublished": p["date"].replace(".", "-"),
+           "datePublished": p["iso"],
            "url": SITE_URL + f"/blog/{p['slug']}.html",
            "mainEntityOfPage": SITE_URL + f"/blog/{p['slug']}.html",
            "author": {"@id": SITE_URL + "/#business"},
