@@ -22,6 +22,16 @@ MAP_EMBED = ("https://maps.google.com/maps?q=%E3%82%BF%E3%82%AB%E3%83%A4%E3%83%A
              "&ll=34.6752208,133.9613749&z=17&hl=ja&output=embed")
 MAP_LINK = ("https://www.google.co.jp/maps/place/%E3%82%BF%E3%82%AB%E3%83%A4%E3%83%A2%E3%83%BC%E3%82%BF%E3%83%BC%E3%88%B1+%E3%82%B5%E3%83%BC%E3%83%93%E3%82%B9/"
             "@34.6752252,133.9588,17z/data=!3m1!4b1!4m6!3m5!1s0x355408b5db6dfb9d:0x653a5f5af1c074f5!8m2!3d34.6752208!4d133.9613749!16s%2Fg%2F1vb99wz9?hl=ja")
+# 口コミ収集サービス（reviews.aiobridge.jp）。
+# 公開済みの口コミを、ビルド時に取り込んで本文に埋め込む方式を採る。
+# 貼り付けスクリプト（埋め込みタグ）だと JavaScript を動かさない AI の巡回には
+# 読まれないため、HTML として書き出しておく。
+# 取り込みは tools/fetch_reviews.py で行い、結果を assets/reviews/embed.html に置く。
+REVIEWS_SLUG = "takaya-group"
+REVIEWS_EMBED_URL = f"https://reviews.aiobridge.jp/embed/{REVIEWS_SLUG}.html"
+REVIEWS_PAGE_URL = f"http://reviews.aiobridge.jp/c/{REVIEWS_SLUG}"
+REVIEWS_CACHE = os.path.join(ROOT, "assets", "reviews", "embed.html")
+
 HOURS_OPEN = "8:30–17:30"
 HOLIDAY = "毎週火曜日・第1日曜日（繁忙期を除く）／年末年始・ゴールデンウィーク・お盆"
 HOURS = f"{HOURS_OPEN}／定休日 {HOLIDAY}"
@@ -585,6 +595,34 @@ def voices_html():
 '''
 
 
+def reviews_html():
+    """口コミ収集サービスから取り込んだHTMLを、お客様の声の下に出す。
+    まだ公開された口コミが無いときは、節ごと出さない（空の枠を見せない）。
+
+    取り込みは tools/fetch_reviews.py で行う。
+    口コミが増えたら、取り込み → ビルド → アップロード の順で反映する。"""
+    try:
+        with open(REVIEWS_CACHE, encoding="utf-8") as f:
+            body = f.read().strip()
+    except OSError:
+        body = ""
+    if not body:
+        print("口コミ: 公開ぶんが無いため、節を出していません（tools/fetch_reviews.py で取り込み）")
+        return ""
+    print(f"口コミ: 取り込みぶんを掲載しました（{len(body)}文字）")
+    return f'''
+<section class="sec sec--alt" id="reviews">
+  <div class="wrap">
+    <span class="eyebrow">REVIEWS</span>
+    <h2 class="sec-title">いただいた口コミ</h2>
+    <p class="lead">ご利用いただいたお客様から直接いただいた声です。</p>
+    <div class="rv">{body}</div>
+    <a class="link-more" href="{REVIEWS_PAGE_URL}" target="_blank" rel="noopener">口コミを投稿する →</a>
+  </div>
+</section>
+'''
+
+
 def build_index():
     root = ""
     # お知らせは Googleブログ（Blogger）から読む。読めなかったときだけ下の1行が残る
@@ -698,7 +736,7 @@ def build_index():
   </div>
 </section>
 
-{voices_html()}
+{voices_html()}{reviews_html()}
 <section class="sec" id="news" data-area="news">
   <div class="wrap">
     <span class="eyebrow">NEWS</span>

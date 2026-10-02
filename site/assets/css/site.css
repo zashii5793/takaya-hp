@@ -594,3 +594,15 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .fs-5{font-size:var(--fs-5)}
 .tile__unit{font-family:var(--f-jp);font-size:var(--fs-5);color:var(--ink)}
 .fd-steps{padding-left:1.3em;font-size:var(--fs-5);line-height:2;color:var(--ink-sub);margin-top:10px}
+
+/* 口コミ収集サービスから取り込んだHTML（2026-10-02）。
+   相手側の作りが分からないので、こちらの見た目に寄せる最低限だけを指定する。
+   当たらない指定があっても、崩れずそのまま出るようにしてある */
+.rv{margin-top:26px;font-size:var(--fs-5);color:var(--ink-sub);line-height:1.9}
+.rv :where(h2,h3,h4){font-size:var(--fs-3);color:var(--ink);line-height:1.5;margin-top:22px}
+.rv ul,.rv ol{padding-left:0;list-style:none;display:grid;gap:14px}
+.rv li{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.rv blockquote{margin:0;color:var(--ink);font-size:var(--fs-4);line-height:1.9}
+.rv a{color:var(--brand)}
+.rv img{max-width:100%;border-radius:var(--r)}
+.rv :where(time,small,.date){font-size:var(--fs-6);color:var(--ink-muted)}
