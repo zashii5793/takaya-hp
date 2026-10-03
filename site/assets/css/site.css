@@ -14,7 +14,7 @@
   --line-soft:#EEE9E3;
   --w-max:1140px;
   --pad-x:24px;
-  --sec-y:80px;
+  --sec-y:64px;
   --f-jp:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
   --f-num:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
   --header-h:68px;
@@ -24,14 +24,14 @@
   --fs-1:clamp(28px,4vw,44px);   /* ページの大見出し・大きな数字（1ページ1回） */
   --fs-2:clamp(24px,2.9vw,28px); /* 章の見出し */
   --fs-3:20px;                   /* 項目の見出し */
-  --fs-4:16px;                   /* 本文 */
+  --fs-4:17px;                   /* 本文 */
   --fs-5:14px;                   /* 補足・表の中身・注記 */
   --fs-6:12px;                   /* ラベル・日付・英字の小見出し */
 
   /* 角の丸みは 0 か 2px のどちらか（2026-09-24 決定） */
   --r:2px;
 }
-@media (max-width:900px){:root{--pad-x:20px;--sec-y:56px;--header-h:60px}}
+@media (max-width:900px){:root{--pad-x:20px;--sec-y:44px;--header-h:60px}}
 
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-h) + 12px)}
@@ -569,14 +569,21 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
   border-top:1px solid var(--line)}
 .mission__fig{width:100%;height:auto;display:block}
 .mission__title{font-size:var(--fs-2);line-height:1.5}
-.mission__points{margin-top:20px;display:grid;grid-template-columns:6em minmax(0,1fr);
-  gap:10px 18px;align-items:baseline}
-.mission__points dt{font-size:var(--fs-6);font-weight:700;color:#fff;
+.mission__points{margin-top:22px;display:grid;grid-template-columns:6.6em minmax(0,1fr);
+  gap:14px 16px;align-items:baseline}
+.mission__points dt{font-size:var(--fs-5);font-weight:700;color:#fff;
   background:var(--brand);border-radius:var(--r);padding:4px 0;text-align:center}
-.mission__points dd{margin:0;font-size:var(--fs-5);color:var(--ink-sub);line-height:1.85}
+.mission__points dd{margin:0;font-size:var(--fs-4);color:var(--ink-sub);line-height:1.75}
 @media (max-width:900px){
   .mission{grid-template-columns:1fr;gap:24px}
   .mission__fig{max-width:420px;margin:0 auto}
+}
+/* スマホでは見出しを上に重ねる。横に並べると本文の幅が足りなくなるため */
+@media (max-width:560px){
+  .mission__points{grid-template-columns:minmax(0,1fr);gap:0}
+  .mission__points dt{justify-self:start;padding:3px 14px;margin-top:16px}
+  .mission__points dd{margin-top:6px}
+  .mission__points dt:first-of-type{margin-top:0}
 }
 
 /* お知らせはひと枠。SNS は控えめに1行で添える（2026-09-26 ご指示） */
