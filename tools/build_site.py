@@ -1607,6 +1607,34 @@ def first_image(raw):
     return None
 
 
+# 記事の分類。Googleブログ側の記事にはラベルが付いていないので、題名の言葉で振り分ける。
+# 上から順に見て、最初に当たったものにする（takaya-web の分類と同じ表。2026-10-04 移植）。
+# どれにも当たらなければ「お知らせ」
+BLOG_CATS = [
+    ("車検・点検", ["車検", "法定点検", "12ヶ月点検", "定期交換が必要な部品"]),
+    ("保険・制度", ["保険", "JAF", "交通違反", "免許", "道路標識", "ETC", "名義変更", "廃車", "ロードサービス", "証券"]),
+    ("買う・借りる", ["購入", "ローン", "リース", "残クレ", "中古車の選び方", "支払い方法", "必要な書類", "オプション装備", "経済的に賢く"]),
+    ("車種・クルマ選び", ["ジムニー", "N-BOX", "ワゴンR", "セレナ", "WRX", "アウディ", "ヤリス", "ルーミー", "リビアン", "ダイハツ", "スズキの人気", "ホンダN-BOX", "VTEC", "5人乗り車", "Youtuber", "ハンターチャンネル", "マニュアル車", "クルマ選び"]),
+    ("トラブル対応", ["トラブル", "故障", "事故", "警告灯", "対処", "紛失", "水没", "オーバーヒート", "ぶつけ", "バッテリーあがり", "危険信号", "犯罪", "災害", "電池切れ", "加速が鈍く"]),
+    ("整備・メンテナンス", ["オイル", "タイヤ", "バッテリー", "洗車", "コーティング", "ワックス", "交換", "メンテナンス", "エアコン", "ブレーキ", "ヘッドライト", "点検", "清掃", "クリーニング", "整備アドバイス", "ホイール", "エンジン洗浄", "空気圧", "放置", "芳香剤", "カスタマイズ", "掃除と整理"]),
+    ("クルマの仕組み", ["仕組み", "構造", "解説", "EV", "電気自動車", "ハイブリッド", "エンジン", "システム", "センサー", "メーター", "性能指標", "電子制御", "鉄鋼", "ナビ", "Wi-Fi", "カーポート", "T-CONNECT", "ホールドパーキング", "ABS", "スマアシ", "アイドリング", "ボディカラー", "アクセサリー", "クルマ事情"]),
+    ("整備士・業界", ["整備士", "業界", "キャリア", "新卒", "メカニック", "クルマ屋", "営業手法", "代理店", "モビリティ", "サステナブル", "経済のダイナミクス", "Claude Code", "迎える姿勢"]),
+    ("安全運転", ["運転", "安全", "ドライブ", "マナー", "高齢", "凍結", "信号", "燃費", "姿勢", "ペット", "子供", "高速道路", "長距離"]),
+    ("地域・岡山", ["岡山"]),
+    ("保険・制度", ["アメリカの自動車制度"]),
+]
+
+
+def classify_post(title, labels):
+    """ブログ側にラベルがあればそれを使い、無ければ題名から決める"""
+    if labels:
+        return labels[0]
+    for cat, words in BLOG_CATS:
+        if any(w in title for w in words):
+            return cat
+    return "お知らせ"
+
+
 def load_blog_posts():
     """取り込んだ記事を読む（新しい順）。無ければ空のまま"""
     try:
@@ -1624,7 +1652,7 @@ def load_blog_posts():
             "title": html_escape(r["title"], quote=False),
             "date": d.replace("-", "."),
             "iso": d,
-            "cat": html_escape((r.get("categories") or ["お知らせ"])[0], quote=False),
+            "cat": html_escape(classify_post(r["title"], r.get("categories")), quote=False),
             "body": clean_post_html(r.get("content")),
             "excerpt": html_escape(plain_text(r.get("content"), 90), quote=False),
             "source": r.get("source", ""),
@@ -1683,25 +1711,52 @@ def post_thumb(post, root):
             f'<img src="{root}assets/img/{FAVICON_FILE}" alt="" aria-hidden="true"></span>')
 
 
+def blog_cats():
+    """一覧の絞り込みボタン。記事の多い順"""
+    n = {}
+    for p in POSTS:
+        n[p["cat"]] = n.get(p["cat"], 0) + 1
+    return sorted(n.items(), key=lambda kv: -kv[1])
+
+
 def build_blog():
     root = "../"
     if POSTS:
         # 取り込んだ記事があるときは、サイト内の記事ページへ並べる。
         # 画面で読み込む表示は使わない（同じ記事が二重に出てしまうため）
+        #
+        # 全件をページに書き出し、一覧の枠の中でスクロールさせる（2026-10-04 ご依頼）。
+        # 以前は新しい30件だけで、古い記事は一覧からたどれなかった。
+        # 分類ボタンとキーワード検索は blog-list.js が受け持つ。
+        # スクリプトが動かなくても、枠の中に全件が並んでいるのでたどれる
         items = "".join(
             f'''
-    <li class="post-card"><a class="post-card__link" href="{p["slug"]}.html">
+    <li class="post-card" data-cat="{p["cat"]}" data-slug="{p["slug"]}"><a class="post-card__link" href="{p["slug"]}.html">
       {post_thumb(p, root)}
       <span class="post-card__body">
         <span class="post-card__meta"><time>{p["date"]}</time><span class="post__cat">{p["cat"]}</span></span>
         <span class="post-card__title">{p["title"]}</span>
         <span class="post__excerpt">{p["excerpt"]}</span>
-      </span></a></li>''' for p in POSTS[:30])
-        listing = f'''<ul class="post-cards">{items}
-  </ul>'''
-        if len(POSTS) > 30:
-            listing += (f'''<p class="muted" style="margin-top:14px">'''
-                        f'''新しいものから30件を表示しています（全{len(POSTS)}件）。</p>''')
+      </span></a></li>''' for p in POSTS)
+        chips = f'<button type="button" class="blog-chip" data-cat="" aria-pressed="true">すべて<i>{len(POSTS)}</i></button>'
+        chips += "".join(
+            f'<button type="button" class="blog-chip" data-cat="{c}" aria-pressed="false">{c}<i>{n}</i></button>'
+            for c, n in blog_cats())
+        listing = f'''<div class="blog-tools" data-blog-list>
+    <div class="blog-search">
+      <label for="blog-q">記事を探す</label>
+      <input id="blog-q" type="search" placeholder="例：車検、タイヤ、バッテリー" autocomplete="off">
+    </div>
+    <div class="blog-chips" role="group" aria-label="分類で絞り込む">{chips}</div>
+    <p class="blog-count" aria-live="polite">全{len(POSTS)}件を新しい順に表示しています。枠の中をスクロールすると、古い記事までご覧いただけます。</p>
+  </div>
+  <div class="post-scroll" tabindex="0" aria-label="記事の一覧">
+  <ul class="post-cards">{items}
+  </ul>
+  <p class="blog-empty" hidden>該当する記事がありませんでした。別の言葉でお試しください。</p>
+  </div>
+  <script src="{root}assets/js/blog-list.js" defer></script>'''
+        write_search_index()
     else:
         # まだ取り込んでいないときは、画面で読み込んで並べる（記事本文はブログ側）
         listing = '''<ul class="post-list" data-blog-feed data-detail data-max="10">
@@ -1730,6 +1785,15 @@ def build_blog():
     else:
         print("お知らせ: 取り込みぶんが無いので、画面で読み込む表示のままです"
               "（記事本文はブログ側。tools/fetch_blog.py で取り込めます）")
+
+
+def write_search_index():
+    """キーワード検索で本文まで探せるよう、記事の文字だけを書き出す。
+    重いので一覧ページには埋め込まず、検索欄を使ったときに blog-list.js が読む"""
+    data = {p["slug"]: plain_text(p["body"]) for p in POSTS}
+    os.makedirs(os.path.join(OUT, "blog"), exist_ok=True)
+    with open(os.path.join(OUT, "blog", "search.json"), "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 
 
 def build_post(i):
