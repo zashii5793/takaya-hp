@@ -1777,7 +1777,13 @@ def build_seo_files():
     # （二重に書くと転送が往復してページが開かなくなることがある）
     with open(os.path.join(OUT, ".htaccess"), "w", encoding="utf-8") as f:
         f.write("# 見つからないページは 404.html を返す\n"
-                "ErrorDocument 404 /404.html\n")
+                "ErrorDocument 404 /404.html\n"
+                "\n"
+                "# ドットで始まるファイルは外から見せない\n"
+                "# （自動公開のときにサーバーへ置かれる控えファイルなど）\n"
+                '<FilesMatch "^\\.">\n'
+                "  Require all denied\n"
+                "</FilesMatch>\n")
     print("wrote sitemap.xml / robots.txt / llms.txt / .htaccess")
 
 

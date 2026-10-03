@@ -1,2 +1,8 @@
 # 見つからないページは 404.html を返す
 ErrorDocument 404 /404.html
+
+# ドットで始まるファイルは外から見せない
+# （自動公開のときにサーバーへ置かれる控えファイルなど）
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
