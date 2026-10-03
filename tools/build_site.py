@@ -58,10 +58,19 @@ SOCIAL = [
 # お知らせページに並べる SNS（2026-09-13 ご依頼）
 X_HANDLE = "takayacargroup"                              # https://x.com/takayacargroup
 INSTAGRAM_URL = "https://www.instagram.com/takayamotor/"
-# Instagram は「アカウントの投稿を自動で並べる」公式ウィジェットが廃止されているため、
-# 載せたい投稿の URL をここに並べます（投稿の […] →「埋め込み」に出る URL）。
-# 自動で流したい場合は外部サービス（SnapWidget など）の埋め込みコードに差し替えます。
-INSTAGRAM_POSTS = []
+# Instagram は「アカウントの投稿を自動で並べる」公式ウィジェットが廃止されており、
+# 投稿ごとの埋め込みも読み込めないことが多い（2026-10-03 実機で空欄を確認）。
+# 空の枠が出るくらいなら、アイコンから本家へ送るほうが見た目も分かりやすいため、
+# リンクだけを置いている。
+INSTAGRAM_HANDLE = "takayamotor"
+
+# Instagram のマーク。リンク用に当方で描いた（四角・丸・点）
+IG_GLYPH = ('<svg viewBox="0 0 24 24" width="34" height="34" fill="none" aria-hidden="true" '
+            'stroke="currentColor" stroke-width="1.7">'
+            '<rect x="2.6" y="2.6" width="18.8" height="18.8" rx="5.4"/>'
+            '<circle cx="12" cy="12" r="4.5"/>'
+            '<circle cx="17.5" cy="6.5" r="1.25" fill="currentColor" stroke="none"/>'
+            '</svg>')
 LOTUS_URL = "https://www.lotas.co.jp/"  # ロータスクラブ（2026-09-10 受領）
 # 東京海上日動リペアネットの当社ページ（2026-09-24 受領）。板金・塗装ページから案内する
 REPAIRNET_URL = "https://rs-select.tokiomarine-e.jp/factory/11c826c2-f9c6-4706-9515-fba584c754cf"
@@ -295,21 +304,38 @@ LOGO_W = LOGO_H    # 高さを LOGO_H にしたときの幅。縦横比から出
 
 
 FAVICON_FILE = "favicon.svg"     # 既定は仮のマーク。実物があれば差し替わる
+APPLE_ICON = None                # iPhone のホーム画面用。あれば head に足す
+
+
+def apple_icon_html(root):
+    if not APPLE_ICON:
+        return ""
+    return f'\n<link rel="apple-touch-icon" href="{root}assets/img/{APPLE_ICON}">'
 
 
 def resolve_favicon():
-    """assets/photos/favicon.png（正方形・透過）を置くと、ブラウザのタブに出る
-    マークがそれに差し替わる。無ければ仮の赤い四角のまま"""
-    global FAVICON_FILE
-    src = os.path.join(PHOTO_SRC, "favicon.png")
-    if not os.path.isfile(src):
-        print("ファビコン: 未提供（仮のマークのまま）")
-        return
+    """assets/photos/favicon.png（正方形・四隅は透過）を置くと、ブラウザの
+    タブに出るマークがそれに差し替わる。無ければ仮の赤い四角のまま。
+    apple-touch-icon.png（白地）があれば、iPhone のホーム画面用にも出す。
+    どちらも tools/make_favicon.py がロゴから作る"""
+    global FAVICON_FILE, APPLE_ICON
     os.makedirs(os.path.join(OUT, "assets", "img"), exist_ok=True)
-    shutil.copyfile(src, os.path.join(OUT, "assets", "img", "favicon.png"))
-    FAVICON_FILE = "favicon.png"
-    size = image_size(src)
-    print(f"ファビコン: favicon.png {size[0]}×{size[1]}" if size else "ファビコン: favicon.png")
+
+    src = os.path.join(PHOTO_SRC, "favicon.png")
+    if os.path.isfile(src):
+        shutil.copyfile(src, os.path.join(OUT, "assets", "img", "favicon.png"))
+        FAVICON_FILE = "favicon.png"
+        size = image_size(src)
+        print(f"ファビコン: favicon.png {size[0]}×{size[1]}" if size else "ファビコン: favicon.png")
+    else:
+        print("ファビコン: 未提供（仮のマークのまま）")
+
+    apple = os.path.join(PHOTO_SRC, "apple-touch-icon.png")
+    if os.path.isfile(apple):
+        shutil.copyfile(apple, os.path.join(OUT, "assets", "img", "apple-touch-icon.png"))
+        APPLE_ICON = "apple-touch-icon.png"
+        size = image_size(apple)
+        print(f"iOS用アイコン: apple-touch-icon.png {size[0]}×{size[1]}" if size else "iOS用アイコン: apple-touch-icon.png")
 
 
 def resolve_logo():
@@ -531,7 +557,7 @@ def page(path, title, desc, body, active="", schema=None):
 <meta property="og:url" content="{canonical}">
 <meta property="og:image" content="{SITE_URL}/assets/img/ogp.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="{root}assets/img/{FAVICON_FILE}"{' type="image/svg+xml"' if FAVICON_FILE.endswith(".svg") else ''}>
+<link rel="icon" href="{root}assets/img/{FAVICON_FILE}"{' type="image/svg+xml"' if FAVICON_FILE.endswith(".svg") else ''}>{apple_icon_html(root)}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="{root}assets/css/site.css">
@@ -1555,6 +1581,19 @@ def plain_text(raw, n=0):
     return (t[:n] + "…") if n and len(t) > n else t
 
 
+_IMG_SRC_RE = re.compile(r'''<img\b[^>]*?\bsrc\s*=\s*["\']([^"\']+)["\']''', re.I)
+
+
+def first_image(raw):
+    """記事の最初の写真。お知らせ一覧のサムネイルに使う。無ければ None。
+    URL は Blogger（googleusercontent）のものをそのまま使う"""
+    for m in _IMG_SRC_RE.finditer(raw or ""):
+        src = m.group(1).strip()
+        if src.startswith(("http://", "https://", "//")):
+            return html_escape(src, quote=True)
+    return None
+
+
 def load_blog_posts():
     """取り込んだ記事を読む（新しい順）。無ければ空のまま"""
     try:
@@ -1576,6 +1615,7 @@ def load_blog_posts():
             "body": clean_post_html(r.get("content")),
             "excerpt": html_escape(plain_text(r.get("content"), 90), quote=False),
             "source": r.get("source", ""),
+            "thumb": first_image(r.get("content")),
         })
     return posts
 
@@ -1599,22 +1639,14 @@ def sns_html():
       <a class="link-more" href="{x_url}" target="_blank" rel="noopener">Xでフォローする →</a>
     </div>'''
 
-    if INSTAGRAM_POSTS:
-        posts = "".join(
-            f'''<blockquote class="instagram-media" data-instgrm-permalink="{u}"
-          data-instgrm-version="14"><a href="{u}">Instagramの投稿を見る</a></blockquote>''' for u in INSTAGRAM_POSTS)
-        ig_body = f'''<div class="sns-embed">{posts}
-        <script async src="https://www.instagram.com/embed.js"></script>
-      </div>'''
-    else:
-        ig_body = '''<div class="sns-embed sns-embed--empty">
-        <p>最新の投稿は Instagram でご覧いただけます。</p>
-      </div>'''
-
     ig_block = f'''<div class="sns-col">
-      <h3 class="sns-col__title"><span class="sns-badge sns-badge--ig">IG</span>Instagramの投稿</h3>
-      {ig_body}
-      <a class="link-more" href="{INSTAGRAM_URL}" target="_blank" rel="noopener">Instagramで見る →</a>
+      <h3 class="sns-col__title"><span class="sns-badge sns-badge--ig">IG</span>Instagram</h3>
+      <a class="sns-card" href="{INSTAGRAM_URL}" target="_blank" rel="noopener">
+        <span class="sns-card__icon">{IG_GLYPH}</span>
+        <span class="sns-card__name">@{INSTAGRAM_HANDLE}</span>
+        <span class="sns-card__note">新車・中古車の入荷や、日々の整備のようすを写真で投稿しています。</span>
+        <span class="sns-card__cta">Instagramで見る →</span>
+      </a>
     </div>'''
 
     return f'''
@@ -1629,6 +1661,15 @@ def sns_html():
 </section>'''
 
 
+def post_thumb(post, root):
+    """お知らせ一覧の写真。記事に写真が無ければ、ロゴのマークを薄く置く"""
+    if post["thumb"]:
+        return (f'<span class="post-card__ph"><img src="{post["thumb"]}" alt="" '
+                f'loading="lazy" decoding="async"></span>')
+    return (f'<span class="post-card__ph post-card__ph--none">'
+            f'<img src="{root}assets/img/{FAVICON_FILE}" alt="" aria-hidden="true"></span>')
+
+
 def build_blog():
     root = "../"
     if POSTS:
@@ -1636,10 +1677,14 @@ def build_blog():
         # 画面で読み込む表示は使わない（同じ記事が二重に出てしまうため）
         items = "".join(
             f'''
-    <li class="post"><time>{p["date"]}</time>
-      <div><a href="{p["slug"]}.html">{p["title"]}</a> <span class="post__cat">{p["cat"]}</span>
-        <p class="post__excerpt">{p["excerpt"]}</p></div></li>''' for p in POSTS[:30])
-        listing = f'''<ul class="post-list">{items}
+    <li class="post-card"><a class="post-card__link" href="{p["slug"]}.html">
+      {post_thumb(p, root)}
+      <span class="post-card__body">
+        <span class="post-card__meta"><time>{p["date"]}</time><span class="post__cat">{p["cat"]}</span></span>
+        <span class="post-card__title">{p["title"]}</span>
+        <span class="post__excerpt">{p["excerpt"]}</span>
+      </span></a></li>''' for p in POSTS[:30])
+        listing = f'''<ul class="post-cards">{items}
   </ul>'''
         if len(POSTS) > 30:
             listing += (f'''<p class="muted" style="margin-top:14px">'''
