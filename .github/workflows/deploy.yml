@@ -67,19 +67,65 @@ jobs:
           echo "ファイル数: $(find site -type f | wc -l)"
 
       - name: 転送の道具を入れる
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp sshpass
+
+      - name: つながるか調べる
+        continue-on-error: true       # 調べるだけ。ここで止めない
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          echo "--- サーバー名の確認 ---"
+          echo "FTP_SERVER の文字数: ${#FTP_SERVER}  FTP_USERNAME の文字数: ${#FTP_USERNAME}  パスワードの文字数: ${#LFTP_PASSWORD}"
+          case "$FTP_SERVER" in
+            *://*) echo "注意: FTP_SERVER に ftp:// などが入っています。ホスト名だけにしてください" ;;
+            */*)   echo "注意: FTP_SERVER に / が入っています。ホスト名だけにしてください" ;;
+            *" "*) echo "注意: FTP_SERVER に空白が入っています" ;;
+          esac
+
+          echo "--- 名前が引けるか ---"
+          getent hosts "$FTP_SERVER" || echo "名前が引けません（サーバー名の打ち間違いの可能性）"
+
+          echo "--- 21番（FTP）につながるか ---"
+          timeout 10 bash -c "exec 3<>/dev/tcp/$FTP_SERVER/21" \
+            && echo "21番 OK" || echo "21番 つながりません"
+
+          echo "--- 22番（SFTP）につながるか ---"
+          timeout 10 bash -c "exec 3<>/dev/tcp/$FTP_SERVER/22" \
+            && echo "22番 OK" || echo "22番 つながりません"
+
+          echo "--- ログインできるか（くわしい記録つき）---"
+          lftp -c "
+            debug 5;
+            set ftp:ssl-allow true;
+            set ftp:ssl-force false;
+            set ssl:verify-certificate no;
+            set ftp:passive-mode true;
+            set net:max-retries 1;
+            set net:timeout 15;
+            open -u \"$FTP_USERNAME\" --env-password \"$FTP_SERVER\";
+            pwd;
+            cls -1
+          " 2>&1 | sed -e "s/$LFTP_PASSWORD/********/g" | head -60 || echo "ログインできませんでした"
 
       - name: さくらへ転送
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          SSHPASS: ${{ secrets.FTP_PASSWORD }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
 
-          # パスワードは LFTP_PASSWORD から読ませる。コマンド行に書くとログに残るため
-          send() {
+          # パスワードはコマンド行に書かない。LFTP_PASSWORD / SSHPASS から読ませる
+
+          MIRROR='mirror --reverse --delete --verbose --parallel=2 ./site/ www/'
+
+          # FTP / FTPS で送る（$1 = true なら暗号化）
+          send_ftp() {
             lftp -c "
+              debug 3;
               set ftp:ssl-allow $1;
               set ftp:ssl-force $1;
               set ftp:ssl-protect-data true;
@@ -88,16 +134,30 @@ jobs:
               set net:max-retries 2;
               set net:timeout 20;
               open -u \"$FTP_USERNAME\" --env-password \"$FTP_SERVER\";
-              mirror --reverse --delete --verbose --parallel=2 ./site/ www/
-            "
+              $MIRROR
+            " 2>&1 | sed -e "s/$LFTP_PASSWORD/********/g"
+            return ${PIPESTATUS[0]}
           }
 
-          # まず暗号化（FTPS）で試し、だめなら平文のFTPで送る。
-          # さくらは FTPS が通らないことがあるため
-          if send true; then
-            echo "FTPS（暗号化）で転送しました"
+          # SFTP（SSH）で送る。さくらは 22番でも受け付ける
+          send_sftp() {
+            lftp -c "
+              set sftp:connect-program \"sshpass -e ssh -a -x -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null\";
+              set net:max-retries 2;
+              set net:timeout 20;
+              open -u \"$FTP_USERNAME\" --env-password sftp://\"$FTP_SERVER\";
+              $MIRROR
+            " 2>&1 | sed -e "s/$LFTP_PASSWORD/********/g"
+            return ${PIPESTATUS[0]}
+          }
+
+          if send_ftp true; then
+            echo "✅ FTPS（暗号化）で転送しました"
+          elif send_sftp; then
+            echo "✅ SFTP（暗号化）で転送しました"
+          elif send_ftp false; then
+            echo "✅ FTP（平文）で転送しました。FTPサブアカウントの利用を検討してください"
           else
-            echo "FTPS が通らなかったので、FTP で送り直します"
-            send false
-            echo "FTP（平文）で転送しました。FTPサブアカウントの利用を検討してください"
+            echo "❌ 3つの方法すべてで転送できませんでした。上の「つながるか調べる」の記録を確認してください"
+            exit 1
           fi
