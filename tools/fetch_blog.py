@@ -9,6 +9,10 @@
 取り込んだ記事は assets/blog/posts.json に入る。
 取り込みに失敗しても前回ぶんが残るので、ビルドは通る。
 
+Blogger は1回のお願いでは全部返さないことがあるため、ブログ側が申告する
+総数（openSearch$totalResults）を見ながら、最後まで順に取りに行く。
+取れた数が総数に足りないときは、その旨を表示する。
+
 なお、画面での自動表示（blog-feed.js）はこれとは別で、こちらを動かさなくても
 新しい記事はお知らせ欄に出る。この取り込みは「記事本文をタカヤHP側に持つ」ためのもの。
 """
@@ -20,10 +24,29 @@ import urllib.request
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 BLOG_ID = "2118329274297060498"
-URL = (f"https://www.blogger.com/feeds/{BLOG_ID}/posts/default"
-       "?alt=json&max-results=500")
+FEED = f"https://www.blogger.com/feeds/{BLOG_ID}/posts/default"
+PAGE = 150          # 1回に取る件数。Blogger は大きすぎると黙って減らして返すことがある
+MAX_PAGES = 40      # 無限ループよけ（150×40 = 6000件まで）
 DEST = os.path.join(ROOT, "assets", "blog", "posts.json")
 TIMEOUT = 30
+
+
+def page_url(start):
+    return f"{FEED}?alt=json&max-results={PAGE}&start-index={start}"
+
+
+def fetch(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "takaya-hp build"})
+    with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+        return json.loads(r.read().decode("utf-8", "replace"))["feed"]
+
+
+def total_of(feed):
+    """ブログ側が申告している記事の総数。取りこぼしの判定に使う"""
+    try:
+        return int((feed.get("openSearch$totalResults") or {}).get("$t"))
+    except (TypeError, ValueError):
+        return None
 
 
 def permalink(links):
@@ -44,18 +67,36 @@ def slug_of(url, post_id):
 
 
 def main():
-    print(f"取り込み元: {URL}")
+    print(f"取り込み元: {FEED}")
+
+    # Blogger は1回のお願いでは全部返さない。最後まで順に取りに行く
+    entries, total, start = [], None, 1
     try:
-        req = urllib.request.Request(URL, headers={"User-Agent": "takaya-hp build"})
-        with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-            feed = json.loads(r.read().decode("utf-8", "replace"))["feed"]
+        for _ in range(MAX_PAGES):
+            feed = fetch(page_url(start))
+            if total is None:
+                total = total_of(feed)
+                print(f"  ブログ側の申告: {total}件" if total is not None
+                      else "  ブログ側の総数は申告されませんでした")
+            got = feed.get("entry") or []
+            print(f"  {start}件目から {len(got)}件 受け取りました")
+            if not got:
+                break
+            entries += got
+            start += len(got)
+            if total is not None and len(entries) >= total:
+                break
     except Exception as e:
         print(f"  取り込めませんでした: {e}")
         print("  前回ぶんをそのまま使います（site/ は作り直せます）")
         return 1
 
+    if total is not None and len(entries) < total:
+        print(f"  ※ {total}件あるはずが {len(entries)}件しか取れていません。"
+              f"取りこぼしの可能性があります")
+
     posts, seen = [], set()
-    for e in feed.get("entry", []):
+    for e in entries:
         url = permalink(e.get("link"))
         if not url:
             continue
@@ -81,6 +122,7 @@ def main():
     print(f"  {len(posts)}件を保存しました → {os.path.relpath(DEST, ROOT)}")
     if posts:
         print(f"  最新: {posts[0]['published'][:10]}  {posts[0]['title']}")
+        print(f"  最古: {posts[-1]['published'][:10]}  {posts[-1]['title']}")
     return 0
 
 
