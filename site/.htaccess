@@ -1,6 +1,15 @@
 # 見つからないページは 404.html を返す
 ErrorDocument 404 /404.html
 
+# ページ（HTML）は毎回サーバーに更新を確かめさせる。
+# 確かめないと、直したあとも前の表示がしばらく残る（2026-10-04）
+# mod_headers が無いサーバーでもエラーにならないよう IfModule で囲む
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|json)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
 # ドットで始まるファイルは外から見せない
 # （自動公開のときにサーバーへ置かれる控えファイルなど）
 <FilesMatch "^\.">

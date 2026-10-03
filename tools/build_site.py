@@ -9,6 +9,7 @@
 """
 import json
 import os
+from urllib.parse import quote
 import re
 import shutil
 import json
@@ -1751,7 +1752,7 @@ def build_blog():
     <p class="blog-count" aria-live="polite">全{len(POSTS)}件を新しい順に表示しています。枠の中をスクロールすると、古い記事までご覧いただけます。</p>
   </div>
   <div class="post-scroll" tabindex="0" aria-label="記事の一覧">
-  <ul class="post-cards">{items}
+  <ul class="post-cards post-cards--rows">{items}
   </ul>
   <p class="blog-empty" hidden>該当する記事がありませんでした。別の言葉でお試しください。</p>
   </div>
@@ -1796,6 +1797,17 @@ def write_search_index():
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 
 
+def related_html(post, n=4):
+    """記事の下に、同じ分類の新しい記事を並べる。分類の一覧へのリンクも置く"""
+    same = [q for q in POSTS if q["cat"] == post["cat"] and q["slug"] != post["slug"]][:n]
+    if not same:
+        return ""
+    lis = "".join(f'<li><a href="{q["slug"]}.html"><time>{q["date"]}</time>{q["title"]}</a></li>' for q in same)
+    href = f'index.html?cat={quote(html_unescape(post["cat"]))}'
+    return (f'\n  <section class="post-related"><h2>「{post["cat"]}」の記事</h2>'
+            f'<ul>{lis}</ul><a class="link-more" href="{href}">「{post["cat"]}」の記事をすべて見る →</a></section>')
+
+
 def build_post(i):
     root = "../"
     p = POSTS[i]
@@ -1807,10 +1819,10 @@ def build_post(i):
         f'<a class="pager__next" href="{post_url(older, root)}">{older["title"]} →</a>' if older else '<span></span>',
     ])
     body = page_head(root, [("index.html", "トップ"), ("blog/index.html", "お知らせ"), (None, p["title"])],
-                     p["title"], f'<time class="post-meta">{p["date"]}</time><span class="post__cat">{p["cat"]}</span>') + f'''
+                     p["title"], f'<time class="post-meta">{p["date"]}</time><a class="post__cat" href="index.html?cat={quote(html_unescape(p["cat"]))}">{p["cat"]}</a>') + f'''
 <section class="sec"><div class="wrap">
   <article class="prose post-body">{body_html}</article>
-  <nav class="post-nav" aria-label="前後の記事">{nav}</nav>
+  <nav class="post-nav" aria-label="前後の記事">{nav}</nav>{related_html(p)}
   <p style="margin-top:28px"><a class="btn btn--ghost" href="{root}blog/index.html">お知らせ一覧へ戻る</a></p>
 </div></section>'''
     art = {"@context": "https://schema.org", "@type": "BlogPosting",
@@ -1900,6 +1912,15 @@ def build_seo_files():
     with open(os.path.join(OUT, ".htaccess"), "w", encoding="utf-8") as f:
         f.write("# 見つからないページは 404.html を返す\n"
                 "ErrorDocument 404 /404.html\n"
+                "\n"
+                "# ページ（HTML）は毎回サーバーに更新を確かめさせる。\n"
+                "# 確かめないと、直したあとも前の表示がしばらく残る（2026-10-04）\n"
+                "# mod_headers が無いサーバーでもエラーにならないよう IfModule で囲む\n"
+                "<IfModule mod_headers.c>\n"
+                '  <FilesMatch "\\.(html|json)$">\n'
+                '    Header set Cache-Control "no-cache"\n'
+                "  </FilesMatch>\n"
+                "</IfModule>\n"
                 "\n"
                 "# ドットで始まるファイルは外から見せない\n"
                 "# （自動公開のときにサーバーへ置かれる控えファイルなど）\n"
