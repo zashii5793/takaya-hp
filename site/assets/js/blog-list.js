@@ -87,6 +87,16 @@
     });
   }
 
+  /* 記事ページの分類リンク（index.html?cat=…）から来たときは、その分類で開く */
+  try {
+    var want = new URLSearchParams(location.search).get('cat');
+    if (want) {
+      for (var m = 0; m < chips.length; m++) {
+        if (chips[m].getAttribute('data-cat') === want) { chips[m].click(); break; }
+      }
+    }
+  } catch (e) { /* 古いブラウザでは「すべて」のまま */ }
+
   if (input) {
     var timer = null;
     input.addEventListener('focus', loadBodies);
