@@ -252,14 +252,13 @@ a.card:hover{border-color:#C9C2BA;box-shadow:0 6px 18px rgba(28,27,26,.08);color
 .page-head .lead{max-width:40em}
 /* サービスのページは写真を見出しの右へ。本文の横に置くと本文が 672px しか
    取れず、料金表が窮屈になるため（2026-10-03 ご指示） */
-.page-head--photo .wrap{display:grid;grid-template-columns:minmax(0,1fr) 380px;
-  gap:28px 40px;align-items:center}
+.page-head--photo .wrap{display:grid;grid-template-columns:minmax(0,1fr) 140px;
+  gap:20px 28px;align-items:center}
 .page-head--photo .page-head__text{min-width:0}
 .page-head--photo .ph{aspect-ratio:16/10;width:100%}
 .page-head--photo .svc-nav{grid-column:1 / -1;margin-top:4px}
-@media (max-width:900px){
-  .page-head--photo .wrap{grid-template-columns:1fr;gap:20px}
-  .page-head--photo .ph{max-width:420px}
+@media (max-width:640px){
+  .page-head--photo .wrap{grid-template-columns:minmax(0,1fr) 104px;gap:16px}
 }
 .crumbs{font-size:var(--fs-6);color:var(--ink-muted);margin-bottom:12px}
 .crumbs a{color:var(--ink-muted);text-decoration:none}
