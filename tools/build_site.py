@@ -582,14 +582,21 @@ def page(path, title, desc, body, active="", schema=None):
     print("wrote", path)
 
 
-def page_head(root, crumbs, title, lead, extra=""):
+def page_head(root, crumbs, title, lead, extra="", photo=""):
+    """photo を渡すと、見出しの右に写真を置く（サービスのページ）。
+    本文の横に置くと本文の幅が 672px しか取れず、料金表が窮屈になるため、
+    写真はここに集約して本文はページ幅いっぱいを使う（2026-10-03 ご指示）"""
     global _CRUMBS
     _CRUMBS = list(crumbs)
     c = " › ".join(f'<a href="{root}{h}">{l}</a>' if h else l for h, l in crumbs)
-    return f'''<section class="page-head"><div class="wrap">
-  <p class="crumbs">{c}</p>
-  <h1>{title}</h1>
-  {f'<p class="lead">{lead}</p>' if lead else ''}
+    cls = "page-head page-head--photo" if photo else "page-head"
+    return f'''<section class="{cls}"><div class="wrap">
+  <div class="page-head__text">
+    <p class="crumbs">{c}</p>
+    <h1>{title}</h1>
+    {f'<p class="lead">{lead}</p>' if lead else ''}
+  </div>
+  {photo}
   {extra}
 </div></section>'''
 
@@ -867,13 +874,10 @@ def svc_page(slug, title, meta_desc, content_html, contact_html, schema=None, ex
     img = f"{slug}-detail" if f"{slug}-detail" in PHOTO_SLOTS else img
     body = page_head(root, [("index.html", "トップ"), ("services/index.html", "サービス"), (None, name)],
                      f'<span class="card__num" style="display:block;margin-bottom:4px">{num}</span>{name}', lead_html,
-                     svc_nav(root, slug)) + f'''
+                     svc_nav(root, slug), photo=ph(root, img, tag)) + f'''
 <section class="sec"><div class="wrap detail">
-  {ph(root, img, tag)}
-  <div>
-    {content_html}
-    {contact_html}
-  </div>
+  {content_html}
+  {contact_html}
 </div></section>{extra_html}'''
     _, num, name, desc, *_ = next(x for x in SERVICES if x[0] == slug)
     svc = {"@context": "https://schema.org", "@type": "Service", "name": name, "description": desc,
