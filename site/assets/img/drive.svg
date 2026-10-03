@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" role="img" aria-label="夕暮れの道を走る運転席からの眺め（イメージ）">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3B3A6B"/>
+      <stop offset="0.45" stop-color="#B85C7A"/>
+      <stop offset="0.72" stop-color="#F3A25A"/>
+      <stop offset="1" stop-color="#FFD98A"/>
+    </linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5A5560"/>
+      <stop offset="1" stop-color="#2E2B33"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFF3C4"/>
+      <stop offset="1" stop-color="#FFB25C" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- 空 -->
+  <rect width="400" height="250" fill="url(#sky)"/>
+  <circle cx="262" cy="118" r="46" fill="url(#sun)"/>
+  <circle cx="262" cy="118" r="11" fill="#FFF1B8"/>
+  <!-- 遠景の山と木立 -->
+  <path d="M0 132 L40 118 L80 126 L120 110 L160 124 L200 114 L240 126 L290 116 L330 124 L370 112 L400 122 L400 140 L0 140 Z" fill="#4A3B5C" opacity=".85"/>
+  <g fill="#2F2640">
+    <path d="M300 140 L306 118 L312 140 Z"/><path d="M318 140 L326 108 L334 140 Z"/><path d="M340 140 L347 120 L354 140 Z"/>
+    <path d="M22 140 L30 116 L38 140 Z"/><path d="M48 140 L54 124 L60 140 Z"/><path d="M6 140 L12 128 L18 140 Z"/>
+  </g>
+  <!-- 路面（遠近） -->
+  <rect x="0" y="138" width="400" height="112" fill="#3E3A44"/>
+  <path d="M120 140 L280 140 L400 250 L0 250 Z" fill="url(#road)"/>
+  <path d="M120 140 L0 250 L0 190 Z" fill="#6E8A5C" opacity=".8"/>
+  <path d="M280 140 L400 190 L400 250 Z" fill="#6E8A5C" opacity=".8"/>
+  <!-- 車線 -->
+  <g fill="#E9E0C9" opacity=".9">
+    <path d="M198 152 L202 152 L203 162 L197 162 Z"/>
+    <path d="M196 172 L204 172 L206 188 L194 188 Z"/>
+    <path d="M193 200 L207 200 L211 224 L189 224 Z"/>
+  </g>
+  <path d="M120 140 L0 250" stroke="#E9E0C9" stroke-width="2" opacity=".6"/>
+  <path d="M280 140 L400 250" stroke="#E9E0C9" stroke-width="2" opacity=".6"/>
+  <!-- 前を走る車のテールランプ -->
+  <rect x="222" y="132" width="14" height="10" rx="2" fill="#5A4A55"/>
+  <circle cx="224" cy="140" r="1.6" fill="#FF5A4A"/><circle cx="234" cy="140" r="1.6" fill="#FF5A4A"/>
+  <!-- ダッシュボードとハンドル -->
+  <path d="M0 250 L0 214 C60 196 140 190 200 190 C260 190 340 196 400 214 L400 250 Z" fill="#1C1B1F"/>
+  <path d="M0 226 C70 210 140 205 200 205 C260 205 330 210 400 226" stroke="#33313A" stroke-width="3" fill="none"/>
+  <ellipse cx="128" cy="250" rx="62" ry="40" fill="none" stroke="#111013" stroke-width="10"/>
+  <ellipse cx="128" cy="250" rx="62" ry="40" fill="none" stroke="#2A282F" stroke-width="4"/>
+  <rect x="120" y="228" width="16" height="10" rx="3" fill="#2A282F"/>
+  <!-- メーター -->
+  <g transform="translate(60 232)">
+    <rect x="0" y="0" width="48" height="16" rx="3" fill="#0E0D11"/>
+    <text x="24" y="12" font-family="Barlow Semi Condensed, Arial Narrow, sans-serif" font-size="10" font-weight="700" fill="#9FE3FF" text-anchor="middle">60 km/h</text>
+  </g>
+  <rect x="296" y="230" width="60" height="12" rx="2" fill="#0E0D11"/>
+  <circle cx="304" cy="236" r="2" fill="#FF7A4A"/>
+  <!-- ウインドウの映り込み -->
+  <path d="M0 0 L400 0 L400 12 C300 6 100 6 0 12 Z" fill="#000" opacity=".28"/>
+</svg>

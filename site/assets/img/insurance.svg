@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" role="img" aria-label="保険の相談">
+            <rect width="400" height="250" fill="#EEF3F7"></rect>
+            <!-- カウンターの天板 -->
+            <rect y="196" width="400" height="54" fill="#D9D0C4"></rect>
+            <rect y="192" width="400" height="4" fill="#EFE8DE"></rect>
+            <!-- 書類 -->
+            <rect x="60" y="56" width="180" height="140" rx="4" fill="#FFFFFF" stroke="#D9D9D5"></rect>
+            <rect x="60" y="56" width="180" height="10" rx="4" fill="#E60012"></rect>
+            <g fill="#D7D2CB">
+              <rect x="84" y="86" width="132" height="8" rx="4"></rect>
+              <rect x="84" y="106" width="106" height="8" rx="4"></rect>
+              <rect x="84" y="126" width="120" height="8" rx="4"></rect>
+              <rect x="84" y="146" width="72" height="8" rx="4"></rect>
+            </g>
+            <rect x="84" y="166" width="60" height="14" rx="3" fill="#2F3E5C"></rect>
+            <!-- 盾 -->
+            <path d="M262 84 L318 62 L374 84 L374 130 C374 164 348 188 318 200 C288 188 262 164 262 130 Z" fill="#E60012"></path>
+            <path d="M318 62 L374 84 L374 130 C374 164 348 188 318 200 Z" fill="#B8000E" opacity=".6"></path>
+            <path d="M292 132 L310 150 L346 110" stroke="#FFFFFF" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+            <!-- 小さな車 -->
+            <path d="M270 196 L270 186 C270 182 273 180 277 179 L300 176 L314 166 C317 164 321 163 325 163 L356 163 C361 163 365 165 368 168 L380 176 L394 179 C398 180 400 183 400 186 L400 196 Z" fill="#2F3E5C"></path>
+            <circle cx="292" cy="196" r="10" fill="#26241F"></circle><circle cx="378" cy="196" r="10" fill="#26241F"></circle><circle cx="292" cy="196" r="4" fill="#DADAD6"></circle><circle cx="378" cy="196" r="4" fill="#DADAD6"></circle>
+          </svg>

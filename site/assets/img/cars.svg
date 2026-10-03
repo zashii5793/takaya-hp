@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" role="img" aria-label="展示中の中古車">
+            <rect width="400" height="250" fill="#EEF3F7"></rect>
+            <rect y="170" width="400" height="80" fill="#CBC7C1"></rect>
+            <g fill="#F3EFE8"><rect x="0" y="200" width="46" height="4"></rect><rect x="80" y="200" width="46" height="4"></rect><rect x="300" y="200" width="46" height="4"></rect></g>
+            <!-- 展示場の旗 -->
+            <rect x="24" y="40" width="3" height="130" fill="#A9AEB4"></rect>
+            <path d="M27 42 L74 52 L27 62 Z" fill="#E60012"></path>
+            <path d="M27 68 L74 78 L27 88 Z" fill="#2F3E5C"></path>
+            <!-- 奥のシルバー -->
+            <path d="M228 170 L228 156 C228 150 233 146 239 145 L280 139 L306 120 C311 116 318 114 325 114 L378 114 C386 114 393 117 398 121 L400 123 L400 170 Z" fill="#C9CDD1"></path>
+            <g fill="#A9C4D6"><path d="M310 125 C314 121 319 119 325 119 L346 119 L346 139 L292 139 Z"></path><path d="M354 119 L378 119 C384 119 389 121 393 125 L400 132 L400 139 L354 139 Z"></path></g>
+            <circle cx="268" cy="170" r="17" fill="#26241F"></circle><circle cx="384" cy="170" r="17" fill="#26241F"></circle><circle cx="268" cy="170" r="7" fill="#DADAD6"></circle><circle cx="384" cy="170" r="7" fill="#DADAD6"></circle>
+            <!-- 手前のネイビー -->
+            <path d="M62 170 L62 152 C62 145 68 140 76 138 L128 130 L164 106 C171 101 179 98 189 98 L266 98 C277 98 287 101 295 107 L327 130 L360 138 C370 140 375 146 375 154 L375 170 Z" fill="#2F3E5C"></path>
+            <path d="M62 163 L375 163 L375 170 L62 170 Z" fill="#22304A"></path>
+            <path d="M128 130 L326 130 L330 135 L124 135 Z" fill="#FFFFFF" opacity=".28"></path>
+            <g fill="#A9C4D6"><path d="M170 112 C175 107 181 105 189 105 L216 105 L216 130 L146 130 Z"></path><path d="M226 105 L263 105 C272 105 280 108 286 113 L303 130 L226 130 Z"></path></g>
+            <rect x="360" y="144" width="15" height="8" rx="2" fill="#FFE8A3"></rect>
+            <!-- プライスボード -->
+            <rect x="196" y="136" width="46" height="26" rx="2" fill="#FFFFFF" stroke="#D9D9D5"></rect>
+            <rect x="202" y="142" width="34" height="5" rx="2" fill="#E60012"></rect>
+            <rect x="202" y="151" width="24" height="4" rx="2" fill="#A9AEB4"></rect>
+            <circle cx="120" cy="170" r="24" fill="#26241F"></circle><circle cx="322" cy="170" r="24" fill="#26241F"></circle><circle cx="120" cy="170" r="10" fill="#DADAD6"></circle><circle cx="322" cy="170" r="10" fill="#DADAD6"></circle>
+          </svg>
