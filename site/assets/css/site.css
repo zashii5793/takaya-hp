@@ -14,7 +14,7 @@
   --line-soft:#EEE9E3;
   --w-max:1140px;
   --pad-x:24px;
-  --sec-y:80px;
+  --sec-y:64px;
   --f-jp:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",system-ui,sans-serif;
   --f-num:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
   --header-h:68px;
@@ -24,14 +24,14 @@
   --fs-1:clamp(28px,4vw,44px);   /* ページの大見出し・大きな数字（1ページ1回） */
   --fs-2:clamp(24px,2.9vw,28px); /* 章の見出し */
   --fs-3:20px;                   /* 項目の見出し */
-  --fs-4:16px;                   /* 本文 */
+  --fs-4:17px;                   /* 本文 */
   --fs-5:14px;                   /* 補足・表の中身・注記 */
   --fs-6:12px;                   /* ラベル・日付・英字の小見出し */
 
   /* 角の丸みは 0 か 2px のどちらか（2026-09-24 決定） */
   --r:2px;
 }
-@media (max-width:900px){:root{--pad-x:20px;--sec-y:56px;--header-h:60px}}
+@media (max-width:900px){:root{--pad-x:20px;--sec-y:44px;--header-h:60px}}
 
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-h) + 12px)}
