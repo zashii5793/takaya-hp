@@ -683,13 +683,26 @@ def build_index():
     # 取り込んだ記事があれば、サイト内の記事へ直接並べる。
     # 無ければ画面で読み込む（その場合は記事本文はブログ側）
     if POSTS:
-        news_attr = ""
-        news_items = "".join(
-            f'\n        <li><time>{p["date"]}</time>'
-            f'<a href="blog/{p["slug"]}.html">{p["title"]}</a></li>' for p in POSTS[:3])
+        # 写真つきのカードで3件。お知らせのページと同じ見た目にそろえる
+        cards = "".join(
+            f'''
+      <li class="post-card"><a class="post-card__link" href="blog/{p["slug"]}.html">
+        {post_thumb(p, root)}
+        <span class="post-card__body">
+          <span class="post-card__meta"><time>{p["date"]}</time><span class="post__cat">{p["cat"]}</span></span>
+          <span class="post-card__title">{p["title"]}</span>
+        </span></a></li>''' for p in POSTS[:3])
+        news_block = f'''<ul class="post-cards">{cards}
+    </ul>
+    <a class="link-more" href="blog/index.html">お知らせ一覧を見る →</a>'''
     else:
-        news_attr = ' data-blog-feed data-max="3"'
-        news_items = '\n        <li data-blog-loading>お知らせを読み込んでいます…</li>'   
+        # 取り込みぶんが無いときは、画面で読み込む（記事本文はブログ側）
+        news_block = '''<div class="ch ch--news">
+      <ul class="news__list" data-blog-feed data-max="3">
+        <li data-blog-loading>お知らせを読み込んでいます…</li>
+      </ul>
+      <a class="link-more" href="blog/index.html">お知らせ一覧を見る →</a>
+    </div>'''
     svc_rows = "".join(f'''
     <article class="svc-row">
       {ph(root, img, tag)}
@@ -804,11 +817,7 @@ def build_index():
   <div class="wrap">
     <span class="eyebrow">NEWS</span>
     <h2 class="sec-title">お知らせ</h2>
-    <div class="ch ch--news">
-      <ul class="news__list"{news_attr}>{news_items}
-      </ul>
-      <a class="link-more" href="blog/index.html">お知らせ一覧を見る →</a>
-    </div>
+    {news_block}
     <p class="sns-line">SNSでも発信しています
       <a href="{INSTAGRAM_URL}" target="_blank" rel="noopener">Instagram</a>
       <a href="https://x.com/{X_HANDLE}" target="_blank" rel="noopener">X</a>
@@ -1210,7 +1219,7 @@ def build_company():
     {ph(root, "company")}
     <div class="box box--alt" style="margin-top:24px">
       <p class="muted" style="letter-spacing:.06em">経営理念</p>
-      <ol class="fd-steps">
+      <ol class="fd-steps fd-steps--bold">
         <li>常に豊かさを追求し、優れた人材育成へ努力・研鑽しよう。</li>
         <li>お客様満足度を第一とし、質の良い物・サービスを提供しよう。</li>
         <li>価値ある仕事を通じ、公平な配分と利益をもって地域社会に貢献しよう。</li>

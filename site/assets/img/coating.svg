@@ -45,7 +45,7 @@
   <rect x="420" y="210" width="300" height="10" fill="#8A837C"/>
   <text x="432" y="231" class="t k">ボディ</text>
   <!-- 結合の説明 -->
-  <text x="420" y="249" class="t b" font-size="12">ガラス粒子は塗装と結合。塗装が剥がれない限り取れません</text>
+  <text x="420" y="249" class="t b" font-size="12">塗装と結合し、塗装が剥がれない限り取れません</text>
   <!-- 親水性の水 -->
   <path d="M440 138 C470 120 520 120 560 128 C600 136 650 134 700 126 L700 138 Z" fill="url(#water)"/>
   <text x="440" y="90" class="t s">親水性：水が膜のように広がって流れる</text>
