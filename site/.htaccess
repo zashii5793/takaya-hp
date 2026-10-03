@@ -1,0 +1,2 @@
+# 見つからないページは 404.html を返す
+ErrorDocument 404 /404.html

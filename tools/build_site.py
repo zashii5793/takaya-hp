@@ -1772,7 +1772,13 @@ def build_seo_files():
 - [採用情報]({SITE_URL}/recruit.html)
 - [お問い合わせ]({SITE_URL}/contact.html)
 """)
-    print("wrote sitemap.xml / robots.txt / llms.txt")
+    # さくらインターネット（Apache）向けの最低限の設定。
+    # https と www への寄せ替えはサーバーの管理画面で行うので、ここには書かない
+    # （二重に書くと転送が往復してページが開かなくなることがある）
+    with open(os.path.join(OUT, ".htaccess"), "w", encoding="utf-8") as f:
+        f.write("# 見つからないページは 404.html を返す\n"
+                "ErrorDocument 404 /404.html\n")
+    print("wrote sitemap.xml / robots.txt / llms.txt / .htaccess")
 
 
 if __name__ == "__main__":
