@@ -1,0 +1,80 @@
+# GitHub に上げたら、さくらのレンタルサーバーへ自動で反映する。
+#
+# 動く条件（最初に1回だけ必要な設定）
+#   GitHub の Settings → Secrets and variables → Actions → New repository secret
+#   で次の3つを登録する。値は画面に出ず、ログにも残らない。
+#
+#     FTP_SERVER     limegopher49.sakura.ne.jp
+#     FTP_USERNAME   limegopher49
+#     FTP_PASSWORD   サーバーパスワード
+#
+#   ※ パスワードはリポジトリに書かないこと。必ず Secrets に入れる。
+#
+# 何をするか
+#   1. Googleブログの記事を取り込む（取り込めなければ前回ぶんのまま）
+#   2. 口コミを取り込む（同上）
+#   3. サイトを作り直す
+#   4. site/ の中身を ~/www へ転送する（変わったファイルだけ送る）
+#
+# いつ動くか
+#   - main に push したとき（site/ tools/ assets/ のどれかが変わったとき）
+#   - 毎日 朝6時（日本時間）… 新しいブログ記事を取り込んで反映するため
+#   - 画面の「Run workflow」を押したとき
+
+name: さくらへ公開
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'tools/**'
+      - 'assets/**'
+      - '.github/workflows/deploy.yml'
+  schedule:
+    - cron: '0 21 * * *'      # UTC 21:00 = 日本時間 翌朝6:00
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-sakura        # 同時に2つ動かさない（転送がぶつかるため）
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Googleブログの記事を取り込む
+        continue-on-error: true      # 取り込めなくても公開は止めない
+        run: python3 tools/fetch_blog.py
+
+      - name: 口コミを取り込む
+        continue-on-error: true
+        run: python3 tools/fetch_reviews.py
+
+      - name: サイトを作る
+        run: python3 tools/build_site.py
+
+      - name: 中身を確かめる
+        run: |
+          test -f site/index.html || { echo "index.html がありません"; exit 1; }
+          test -f site/assets/css/site.css || { echo "site.css がありません"; exit 1; }
+          echo "ファイル数: $(find site -type f | wc -l)"
+
+      - name: さくらへ転送
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps              # 暗号化して送る。つながらない場合は ftp に変える
+          port: 21
+          local-dir: ./site/
+          server-dir: ./www/
+          # 前回との差分だけ送る。この控えはサーバー側に置かれる
+          state-name: .ftp-deploy-state.json
