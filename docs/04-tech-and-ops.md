@@ -125,6 +125,31 @@
 
 > ドメイン・DNS のログイン情報が分からない、が実務で一番詰まる箇所。着手前に確認しておく。
 
+### 公開作業の実績（2026-10-03）
+
+| 工程 | 結果 |
+|---|---|
+| GitHub Secrets 登録（`FTP_SERVER` / `FTP_USERNAME` / `FTP_PASSWORD`） | 完了 |
+| さくら「国外IPアドレスフィルタ」を**無効**に | 完了（これを有効のままだと GitHub Actions からの転送が必ず失敗する。詳細は `docs/content/deploy.md`） |
+| 自動公開（`main` に push → さくら） | 完了。**FTPS（暗号化）** で転送 |
+| さくら側で www 付きサブドメインを使用する設定 | 完了 |
+| `www` の DNS をさくらへ切り替え | 完了 |
+| 無料SSL（Let's Encrypt）の発行 | 申し込み完了。発行完了はさくらからメールで通知される |
+| www転送の有効化 | 【要記入】 |
+| 旧 Google サイトのカスタムドメイン解除 | 【要記入】 |
+
+切り替え前後の DNS（実測値）：
+
+| レコード | 切り替え前 | 切り替え後 |
+|---|---|---|
+| `takayagroup.co.jp` A | `219.94.162.169`（さくら） | 変更なし |
+| `www.takayagroup.co.jp` | `CNAME ghs.googlehosted.com`（Google） | `CNAME takayagroup.co.jp.` → `219.94.162.169` |
+| `MX` | `10 takayagroup.co.jp` | **変更なし**（メールはさくら宛。触っていない） |
+| `TXT` | `google-site-verification=kUEiro…` | **変更なし**（Search Console 用に残す） |
+| ネームサーバー | `ns1.dns.ne.jp` / `ns2.dns.ne.jp`（さくら） | 変更なし |
+
+> 切り戻し方：`www` の CNAME を `ghs.googlehosted.com.` に戻す。TTL 3600 なので最大1時間で戻る。
+
 ---
 
 ## 6. スケジュール
@@ -139,7 +164,7 @@
 | 下層ページ実装 | 【要記入】 | | |
 | ブログ移行 | 【要記入】 | | |
 | 仮URLでの確認 | 【要記入】 | | |
-| ドメイン切り替え | 【要記入】 | | |
+| ドメイン切り替え | 2026-10-03 完了 | | ✅ |
 | 旧サイト停止 | 切り替えの1ヶ月後 | | |
 
 ---
