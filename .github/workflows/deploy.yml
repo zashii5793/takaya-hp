@@ -39,10 +39,18 @@ on:
   schedule:
     - cron: '0 21 * * *'      # UTC 21:00 = 日本時間 翌朝6:00
   workflow_dispatch:
+    inputs:
+      skip_social:
+        description: 'SNSへの投稿を飛ばす（サイトの公開だけ行う）'
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-sakura        # 同時に2つ動かさない（転送がぶつかるため）
   cancel-in-progress: false
+
+permissions:
+  contents: write        # .state/ に「どこまで投稿したか」を書き戻すため
 
 jobs:
   deploy:
@@ -81,6 +89,34 @@ jobs:
           test -f site/index.html || { echo "index.html がありません"; exit 1; }
           test -f site/assets/css/site.css || { echo "site.css がありません"; exit 1; }
           echo "ファイル数: $(find site -type f | wc -l)"
+
+      # ここから SNS。記事が増えていなければ、何もせずに通り過ぎる
+      - name: SNSの道具を入れる
+        if: inputs.skip_social != true
+        continue-on-error: true   # SNSの支度でサイトの公開を止めない
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
+          pip install -q anthropic pydantic playwright requests requests-oauthlib
+
+      - uses: actions/cache@v4
+        if: inputs.skip_social != true
+        continue-on-error: true
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-v1
+
+      - name: 画面を描く道具を入れる
+        if: inputs.skip_social != true
+        continue-on-error: true   # SNSの支度でサイトの公開を止めない
+        run: python3 -m playwright install chromium
+
+      - name: SNSの材料をつくる
+        if: inputs.skip_social != true
+        continue-on-error: true      # 作れなくてもサイトの公開は止めない
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 tools/make_social.py
 
       - name: 転送の道具を入れる
         run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp sshpass
@@ -177,3 +213,38 @@ jobs:
             echo "❌ 3つの方法すべてで転送できませんでした。上の「つながるか調べる」の記録を確認してください"
             exit 1
           fi
+
+      # 投稿は転送のあと。Instagram は公開URLから動画を取りに来るため、
+      # さくらへ上がっていないと取得できない
+      - name: Xへ投稿する
+        if: inputs.skip_social != true
+        continue-on-error: true
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+        run: python3 tools/post_x.py
+
+      - name: Instagramへ投稿する
+        if: inputs.skip_social != true
+        continue-on-error: true
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_API_VERSION: ${{ secrets.IG_API_VERSION }}
+        run: python3 tools/post_instagram.py
+
+      # どこまで投稿したかを残す。これが無いと同じ記事を何度も投稿してしまう
+      - name: 投稿の記録をしまう
+        if: always() && inputs.skip_social != true
+        run: |
+          if [ -z "$(git status --porcelain .state)" ]; then
+            echo "記録に変わりはありません"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .state
+          git commit -m "chore: SNS投稿の記録を更新"
+          git push
