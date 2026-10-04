@@ -1,0 +1,6 @@
+
+# SNSの材料は毎回つくり直すので、リポジトリには持たない
+assets/social/
+site/social/
+__pycache__/
+*.pyc
