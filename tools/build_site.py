@@ -1636,6 +1636,13 @@ def classify_post(title, labels):
     return "お知らせ"
 
 
+def search_title(title):
+    """検索結果やSNSに出すタイトル。末尾の通し番号（.vol169）とその後ろのハッシュタグ・注記を外す。
+    検索結果のタイトルは30字前後で切れるので、番号に社名の表示を押し出させない。
+    記事ページの見出し・一覧の表示はブログの題名のまま"""
+    return re.sub(r"\s*\.?\s*vol\.?\s*\d+.*$", "", title, flags=re.I | re.S).strip() or title
+
+
 def load_blog_posts():
     """取り込んだ記事を読む（新しい順）。無ければ空のまま"""
     try:
@@ -1651,6 +1658,8 @@ def load_blog_posts():
         posts.append({
             "slug": r["slug"],
             "title": html_escape(r["title"], quote=False),
+            "seo_title": html_escape(search_title(r["title"]), quote=False),
+            "updated": (r.get("updated") or r.get("published") or "")[:10],
             "date": d.replace("-", "."),
             "iso": d,
             "cat": html_escape(classify_post(r["title"], r.get("categories")), quote=False),
@@ -1808,6 +1817,57 @@ def related_html(post, n=4):
             f'<ul>{lis}</ul><a class="link-more" href="{href}">「{post["cat"]}」の記事をすべて見る →</a></section>')
 
 
+# 記事の下に出すサービスの案内。題名の言葉を先に見て、当たらなければ分類で決める。
+# 読み終えた人を、料金や申し込みのあるページへ送るため
+POST_SERVICE_WORDS = [
+    ("bodywork", ["板金", "塗装", "傷", "へこみ", "ぶつけ", "コーティング", "洗車", "ワックス"]),
+    ("lease", ["リース", "残クレ", "残価"]),
+    ("insurance", ["保険", "事故", "JAF", "ロードサービス"]),
+    ("cars", ["中古車", "下取り", "買取", "購入", "ローン", "廃車"]),
+    ("inspection", ["車検", "点検", "整備", "タイヤ", "ブレーキ", "オイル", "バッテリー", "ETC", "ドライブレコーダー"]),
+]
+# 保険・制度の分類でも、題名に保険の言葉が無い記事（道路標識・免許など）には案内を出さない。
+# 関係の薄いサービスを並べると、かえって読まれなくなる
+POST_SERVICE_BY_CAT = {
+    "車検・点検": "inspection", "整備・メンテナンス": "inspection", "トラブル対応": "inspection",
+    "クルマの仕組み": "inspection", "安全運転": "inspection",
+    "買う・借りる": "cars", "車種・クルマ選び": "cars",
+}
+POST_SERVICE_LINK = {      # サービスごとのボタンの文言
+    "inspection": "車検の料金表を見る",
+    "bodywork": "板金・コーティングを見る",
+    "lease": "リースのご案内を見る",
+    "insurance": "自動車保険のご案内を見る",
+    "cars": "おクルマ探しのご案内を見る",
+}
+
+
+def post_service(post):
+    """記事に合うサービスの slug。整備士・業界の記事は採用ページへ送る（"recruit"）"""
+    title = html_unescape(post["title"])
+    if post["cat"] == "整備士・業界":
+        return "recruit"
+    for slug, words in POST_SERVICE_WORDS:
+        if any(w in title for w in words):
+            return slug
+    return POST_SERVICE_BY_CAT.get(html_unescape(post["cat"]))
+
+
+def service_html(post, root):
+    slug = post_service(post)
+    if slug == "recruit":
+        name, desc, href, label = ("採用情報", "タカヤモーターでは整備士・スタッフを募集しています。現場見学もできます。",
+                                   f"{root}recruit.html", "採用情報を見る")
+    elif slug:
+        name, desc = next((n, d) for s, _, n, d, *_ in SERVICES if s == slug)
+        href, label = f"{root}services/{slug}.html", POST_SERVICE_LINK[slug]
+    else:
+        return ""
+    return (f'\n  <aside class="box box--alt post-service"><p class="post-service__eyebrow">この記事に関連するサービス</p>'
+            f'<h2>{name}</h2><p>{desc}</p>'
+            f'<a class="btn btn--outline" href="{href}">{label} →</a></aside>')
+
+
 def build_post(i):
     root = "../"
     p = POSTS[i]
@@ -1822,19 +1882,20 @@ def build_post(i):
                      p["title"], f'<time class="post-meta">{p["date"]}</time><a class="post__cat" href="index.html?cat={quote(html_unescape(p["cat"]))}">{p["cat"]}</a>') + f'''
 <section class="sec"><div class="wrap">
   <article class="prose post-body">{body_html}</article>
+{service_html(p, root)}
   <nav class="post-nav" aria-label="前後の記事">{nav}</nav>{related_html(p)}
   <p style="margin-top:28px"><a class="btn btn--ghost" href="{root}blog/index.html">お知らせ一覧へ戻る</a></p>
 </div></section>'''
     art = {"@context": "https://schema.org", "@type": "BlogPosting",
-           "headline": p["title"], "description": p["excerpt"],
-           "datePublished": p["iso"],
+           "headline": p["seo_title"], "description": p["excerpt"],
+           "datePublished": p["iso"], "dateModified": p["updated"],
            "url": SITE_URL + f"/blog/{p['slug']}.html",
            "mainEntityOfPage": SITE_URL + f"/blog/{p['slug']}.html",
            "author": {"@id": SITE_URL + "/#business"},
            "publisher": {"@id": SITE_URL + "/#business"},
            "articleSection": p["cat"]}
     desc = f"{p['excerpt']}（{p['cat']}・{p['date']}）岡山市中区のタカヤモーター株式会社のお知らせです。車検・点検や整備のご相談もお気軽にどうぞ。"
-    page(f"blog/{p['slug']}.html", p["title"], desc[:140], body, active="blog", schema=art)
+    page(f"blog/{p['slug']}.html", p["seo_title"], desc[:140], body, active="blog", schema=art)
 
 
 def build_seo_files():
@@ -1849,12 +1910,17 @@ def build_seo_files():
                 pages.append(rel)
     order = {"index.html": 0, "services/index.html": 1}
     pages.sort(key=lambda r: (order.get(r, 5), r))
-    today = "2026-09-11"
+    today = "2026-09-11"     # 記事以外のページの最終更新日。ページを直したら書き換える
+    # 記事ページは記事ごとの更新日にする。一律の日付だと新しい記事を検索エンジンが拾いにくい
+    post_dates = {f"blog/{p['slug']}.html": p["updated"] for p in POSTS if p["updated"]}
+    if post_dates:
+        post_dates["blog/index.html"] = max(post_dates.values())
     urls = ""
     for rel in pages:
         loc = SITE_URL + "/" + ("" if rel == "index.html" else rel.replace("index.html", ""))
+        lastmod = post_dates.get(rel, today)
         pr = "1.0" if rel == "index.html" else ("0.8" if rel.startswith("services/") else "0.6")
-        urls += f"  <url><loc>{loc}</loc><lastmod>{today}</lastmod><priority>{pr}</priority></url>\n"
+        urls += f"  <url><loc>{loc}</loc><lastmod>{lastmod}</lastmod><priority>{pr}</priority></url>\n"
     with open(os.path.join(OUT, "sitemap.xml"), "w", encoding="utf-8") as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n'
                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n")
