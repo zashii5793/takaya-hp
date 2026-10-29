@@ -426,12 +426,19 @@ def resolve_photos():
         print(f"  {slot:18s} {origin} {os.path.basename(src)} {size[0]}×{size[1]}{note}" if size else f"  {slot:18s} {origin} {os.path.basename(src)}")
 
 
+# 画面に最初から映る写真。後回し（lazy）にすると表示が目に見えて遅れるため、
+# これだけは先に読み込ませる（2026-10-29）
+EAGER_SLOTS = {"hero"}
+
+
 def ph(root, slot, tag="", extra_class=""):
     """写真枠。差し替え写真 → パンフレット切り出し → イメージ図 の順で表示する。"""
     default, svg, alt, _usage, _size = PHOTO_SLOTS[slot]
     if slot in PHOTO_FILES:
+        load = ('loading="eager" fetchpriority="high" decoding="async"'
+                if slot in EAGER_SLOTS else 'loading="lazy"')
         return (f'<div class="ph ph--photo {extra_class}" data-slot="{slot}">'
-                f'<img src="{root}assets/img/photos/{PHOTO_FILES[slot]}" alt="{alt}" loading="lazy"></div>')
+                f'<img src="{root}assets/img/photos/{PHOTO_FILES[slot]}" alt="{alt}" {load}></div>')
     tag = tag or PLACEHOLDER_TAG.get(slot, "イメージ図（写真差し替え予定）")
     return (f'<div class="ph {extra_class}" data-slot="{slot}"><img src="{root}assets/img/{svg}.svg" alt="" loading="lazy">'
             f'<span class="tag">{tag}</span></div>')
@@ -1062,7 +1069,7 @@ def build_bodywork():
   <p class="table-box__note">上記金額は消費税込みです。おクルマのクラスはお問い合わせください。被膜の硬化期間のため、施工日から約1ヶ月間は機械洗車等を行わないでください。以降は施工時にお渡しするお手入れ方法を参考にしてください。</p>
 </div>'''
     svc_page("bodywork", "板金・塗装・コーティング",
-             "傷・へこみの修理から塗装まで。PGⅢ親水性コーティング（新車時 55,000円〜）の施工価格表を掲載。東京海上日動のリペアネットサービスを提供。",
+             "岡山市中区のタカヤモーターの板金・塗装。小さなこすり傷から保険を使った修理まで、自社の塗装ブースで仕上げます。東京海上日動のリペアネットサービスに対応。PGⅢ親水性コーティングは新車時 55,000円〜、12ヶ月点検ごとのメンテナンスで長く保てます。",
              # 電話番号の行はご指示により出さない（2026-09-28）。
              # このページは東京海上日動リペアネットの導線とボタンで足りている
              content, contact_row("../", "板金・コーティングを相談する", show_tel=False))
@@ -1560,6 +1567,12 @@ class _PostCleaner(HTMLParser):
             a["target"], a["rel"] = "_blank", "noopener"
         if tag == "img":
             a["loading"] = "lazy"
+            a["decoding"] = "async"
+            # Blogger 側の写真には alt が付いていないことが多い。
+            # 無いまま出すと読み上げソフトがファイル名を読んでしまうので、
+            # 「飾りの画像」として空の alt を補う。何の写真かはこちらでは
+            # 分からないため、もっともらしい説明を作らない（2026-10-29）
+            a.setdefault("alt", "")
         attr = "".join(f' {k}="{html_escape(str(v), quote=True)}"' for k, v in a.items())
         self.out.append(f"<{tag}{attr}>")
 
