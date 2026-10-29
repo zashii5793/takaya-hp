@@ -523,7 +523,7 @@ def footer(root):
 _CRUMBS = []   # page_head() が直前に作ったパンくずを page() が拾う
 
 
-def page(path, title, desc, body, active="", schema=None):
+def page(path, title, desc, body, active="", schema=None, image=None):
     global _CRUMBS
     root = "../" if "/" in path else ""
     if path == "index.html":
@@ -556,7 +556,7 @@ def page(path, title, desc, body, active="", schema=None):
 <meta property="og:title" content="{full_title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="{canonical}">
-<meta property="og:image" content="{SITE_URL}/assets/img/ogp.jpg">
+<meta property="og:image" content="{image or SITE_URL + '/assets/img/ogp.jpg'}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="{root}assets/img/{FAVICON_FILE}"{' type="image/svg+xml"' if FAVICON_FILE.endswith(".svg") else ''}>{apple_icon_html(root)}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -871,6 +871,17 @@ def build_services_index():
     page("services/index.html", "サービス", "岡山市中区のタカヤモーターが扱う5つのサービス。新車・中古車販売と買取、法人・個人リース、車検・点検・整備、板金塗装とコーティング、自動車保険。おクルマに関することを一つの窓口でまとめてお受けします。", body, active="services")
 
 
+def service_posts_html(slug, root, n=4):
+    """サービスページの下に、そのサービスに案内している記事の新しいものを並べる。
+    記事 → サービス（記事下の案内）と逆向きの道を作り、記事が増えるほどページの中身を厚くする"""
+    posts = [q for q in POSTS if post_service(q) == slug][:n]
+    if not posts:
+        return ""
+    lis = "".join(f'<li><a href="{post_url(q, root)}"><time>{q["date"]}</time>{q["title"]}</a></li>' for q in posts)
+    return (f'\n  <section class="post-related"><h2>関連する記事</h2><ul>{lis}</ul>'
+            f'<a class="link-more" href="{root}blog/index.html">お知らせ・コラムをすべて見る →</a></section>')
+
+
 def svc_page(slug, title, meta_desc, content_html, contact_html, schema=None, extra_html=""):
     """meta_desc は検索結果に出る説明文。ページの冒頭文には使わない。
     冒頭文は SERVICES の一行説明（トップのカードと同じ言葉）を使う。
@@ -886,7 +897,7 @@ def svc_page(slug, title, meta_desc, content_html, contact_html, schema=None, ex
                      f'<span class="card__num" style="display:block;margin-bottom:4px">{num}</span>{name}', lead_html,
                      svc_nav(root, slug), photo=ph(root, img, tag)) + f'''
 <section class="sec"><div class="wrap detail">
-  {content_html}
+  {content_html}{service_posts_html(slug, root)}
   {contact_html}
 </div></section>{extra_html}'''
     _, num, name, desc, *_ = next(x for x in SERVICES if x[0] == slug)
@@ -1598,6 +1609,18 @@ def plain_text(raw, n=0):
 _IMG_SRC_RE = re.compile(r'''<img\b[^>]*?\bsrc\s*=\s*["\']([^"\']+)["\']''', re.I)
 
 
+def large_image(src):
+    """SNS・検索用に、記事の写真を大きいサイズで指す URL にする。
+    Blogger の画像は URL の途中の /s320/ や /w400-h225/ が大きさの指定なので、/s1600/ に置き換える"""
+    if not src:
+        return None
+    src = html_unescape(src)
+    if src.startswith("//"):
+        src = "https:" + src
+    src = re.sub(r"/(s\d+|w\d+-h\d+[^/]*)/", "/s1600/", src, count=1)
+    return html_escape(src, quote=True)
+
+
 def first_image(raw):
     """記事の最初の写真。お知らせ一覧のサムネイルに使う。無ければ None。
     URL は Blogger（googleusercontent）のものをそのまま使う"""
@@ -1894,8 +1917,11 @@ def build_post(i):
            "author": {"@id": SITE_URL + "/#business"},
            "publisher": {"@id": SITE_URL + "/#business"},
            "articleSection": p["cat"]}
+    image = large_image(p["thumb"])
+    if image:
+        art["image"] = [html_unescape(image)]
     desc = f"{p['excerpt']}（{p['cat']}・{p['date']}）岡山市中区のタカヤモーター株式会社のお知らせです。車検・点検や整備のご相談もお気軽にどうぞ。"
-    page(f"blog/{p['slug']}.html", p["seo_title"], desc[:140], body, active="blog", schema=art)
+    page(f"blog/{p['slug']}.html", p["seo_title"], desc[:140], body, active="blog", schema=art, image=image)
 
 
 def build_seo_files():
