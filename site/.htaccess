@@ -10,6 +10,34 @@ ErrorDocument 404 /404.html
   </FilesMatch>
 </IfModule>
 
+# 文字でできたファイルは圧縮して送る。7割ほど小さくなるので
+# スマホの回線で目に見えて速くなる（2026-10-29 実測 71〜75%削減）
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/xml image/svg+xml
+</IfModule>
+
+# 一度読んだものを使い回させる（2回目以降の表示が速くなる）
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # CSS と JS は ?v=（中身から作った版番号）が付くので、
+  # 中身を変えたときだけ確実に読み直される。だから長くできる
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  # 写真は名前が変わらないので、長すぎると差し替えが届かない
+  ExpiresByType image/jpeg "access plus 7 days"
+  ExpiresByType image/png "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 7 days"
+  ExpiresByType video/mp4 "access plus 7 days"
+</IfModule>
+
+# 中身の取り違えと、外部サイトへの参照元の漏れを防ぐ
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
 # ドットで始まるファイルは外から見せない
 # （自動公開のときにサーバーへ置かれる控えファイルなど）
 <FilesMatch "^\.">

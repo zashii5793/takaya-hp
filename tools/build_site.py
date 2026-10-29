@@ -7,6 +7,7 @@
 - 写真は assets/photos/<枠名>.jpg（png/webp も可）を置くだけで差し替わる。
   無ければ assets/photos/pamphlet/crops/ のパンフレット切り出し → それも無ければイメージ図（SVG）
 """
+import hashlib
 import json
 import os
 from urllib.parse import quote
@@ -304,6 +305,24 @@ LOGO_FILE = None   # ファイル名。resolve_logo() が決める
 LOGO_W = LOGO_H    # 高さを LOGO_H にしたときの幅。縦横比から出す
 
 
+# CSS と JS は名前が変わらないので、ブラウザが古いものを使い続けてしまう。
+# 中身から作った短い版番号を付けると、変えたときだけ確実に読み直される。
+# これがあるので、.htaccess 側で長期キャッシュを指定できる（2026-10-29）
+_ASSET_V = {}
+
+
+def asset(root, rel):
+    """rel は site/ からの相対パス。例 assets/css/site.css"""
+    if rel not in _ASSET_V:
+        try:
+            with open(os.path.join(OUT, rel), "rb") as f:
+                _ASSET_V[rel] = hashlib.sha1(f.read()).hexdigest()[:8]
+        except OSError:
+            _ASSET_V[rel] = ""
+    v = _ASSET_V[rel]
+    return f"{root}{rel}?v={v}" if v else f"{root}{rel}"
+
+
 FAVICON_FILE = "favicon.svg"     # 既定は仮のマーク。実物があれば差し替わる
 APPLE_ICON = None                # iPhone のホーム画面用。あれば head に足す
 
@@ -426,12 +445,19 @@ def resolve_photos():
         print(f"  {slot:18s} {origin} {os.path.basename(src)} {size[0]}×{size[1]}{note}" if size else f"  {slot:18s} {origin} {os.path.basename(src)}")
 
 
+# 画面に最初から映る写真。後回し（lazy）にすると表示が目に見えて遅れるため、
+# これだけは先に読み込ませる（2026-10-29）
+EAGER_SLOTS = {"hero"}
+
+
 def ph(root, slot, tag="", extra_class=""):
     """写真枠。差し替え写真 → パンフレット切り出し → イメージ図 の順で表示する。"""
     default, svg, alt, _usage, _size = PHOTO_SLOTS[slot]
     if slot in PHOTO_FILES:
+        load = ('loading="eager" fetchpriority="high" decoding="async"'
+                if slot in EAGER_SLOTS else 'loading="lazy"')
         return (f'<div class="ph ph--photo {extra_class}" data-slot="{slot}">'
-                f'<img src="{root}assets/img/photos/{PHOTO_FILES[slot]}" alt="{alt}" loading="lazy"></div>')
+                f'<img src="{root}assets/img/photos/{PHOTO_FILES[slot]}" alt="{alt}" {load}></div>')
     tag = tag or PLACEHOLDER_TAG.get(slot, "イメージ図（写真差し替え予定）")
     return (f'<div class="ph {extra_class}" data-slot="{slot}"><img src="{root}assets/img/{svg}.svg" alt="" loading="lazy">'
             f'<span class="tag">{tag}</span></div>')
@@ -516,8 +542,8 @@ def footer(root):
     <p class="copy">© 1965– TAKAYA MOTOR CO., LTD. / TAKAYA LEASE CO., LTD.</p>
   </div>
 </footer>
-<script src="{root}assets/js/site.js"></script>
-<script src="{root}assets/js/blog-feed.js"></script>'''
+<script src="{asset(root, 'assets/js/site.js')}"></script>
+<script src="{asset(root, 'assets/js/blog-feed.js')}"></script>'''
 
 
 _CRUMBS = []   # page_head() が直前に作ったパンくずを page() が拾う
@@ -561,7 +587,7 @@ def page(path, title, desc, body, active="", schema=None):
 <link rel="icon" href="{root}assets/img/{FAVICON_FILE}"{' type="image/svg+xml"' if FAVICON_FILE.endswith(".svg") else ''}>{apple_icon_html(root)}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="{root}assets/css/site.css">
+<link rel="stylesheet" href="{asset(root, 'assets/css/site.css')}">
 {ld}
 {ga_html()}
 </head>
@@ -1062,7 +1088,7 @@ def build_bodywork():
   <p class="table-box__note">上記金額は消費税込みです。おクルマのクラスはお問い合わせください。被膜の硬化期間のため、施工日から約1ヶ月間は機械洗車等を行わないでください。以降は施工時にお渡しするお手入れ方法を参考にしてください。</p>
 </div>'''
     svc_page("bodywork", "板金・塗装・コーティング",
-             "傷・へこみの修理から塗装まで。PGⅢ親水性コーティング（新車時 55,000円〜）の施工価格表を掲載。東京海上日動のリペアネットサービスを提供。",
+             "岡山市中区のタカヤモーターの板金・塗装。小さなこすり傷から保険を使った修理まで、自社の塗装ブースで仕上げます。東京海上日動のリペアネットサービスに対応。PGⅢ親水性コーティングは新車時 55,000円〜、12ヶ月点検ごとのメンテナンスで長く保てます。",
              # 電話番号の行はご指示により出さない（2026-09-28）。
              # このページは東京海上日動リペアネットの導線とボタンで足りている
              content, contact_row("../", "板金・コーティングを相談する", show_tel=False))
@@ -1560,6 +1586,12 @@ class _PostCleaner(HTMLParser):
             a["target"], a["rel"] = "_blank", "noopener"
         if tag == "img":
             a["loading"] = "lazy"
+            a["decoding"] = "async"
+            # Blogger 側の写真には alt が付いていないことが多い。
+            # 無いまま出すと読み上げソフトがファイル名を読んでしまうので、
+            # 「飾りの画像」として空の alt を補う。何の写真かはこちらでは
+            # 分からないため、もっともらしい説明を作らない（2026-10-29）
+            a.setdefault("alt", "")
         attr = "".join(f' {k}="{html_escape(str(v), quote=True)}"' for k, v in a.items())
         self.out.append(f"<{tag}{attr}>")
 
@@ -1765,7 +1797,7 @@ def build_blog():
   </ul>
   <p class="blog-empty" hidden>該当する記事がありませんでした。別の言葉でお試しください。</p>
   </div>
-  <script src="{root}assets/js/blog-list.js" defer></script>'''
+  <script src="{asset(root, 'assets/js/blog-list.js')}" defer></script>'''
         write_search_index()
     else:
         # まだ取り込んでいないときは、画面で読み込んで並べる（記事本文はブログ側）
@@ -1986,6 +2018,34 @@ def build_seo_files():
                 '  <FilesMatch "\\.(html|json)$">\n'
                 '    Header set Cache-Control "no-cache"\n'
                 "  </FilesMatch>\n"
+                "</IfModule>\n"
+                "\n"
+                "# 文字でできたファイルは圧縮して送る。7割ほど小さくなるので\n"
+                "# スマホの回線で目に見えて速くなる（2026-10-29 実測 71〜75%削減）\n"
+                "<IfModule mod_deflate.c>\n"
+                "  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml\n"
+                "  AddOutputFilterByType DEFLATE application/javascript application/json\n"
+                "  AddOutputFilterByType DEFLATE application/xml image/svg+xml\n"
+                "</IfModule>\n"
+                "\n"
+                "# 一度読んだものを使い回させる（2回目以降の表示が速くなる）\n"
+                "<IfModule mod_expires.c>\n"
+                "  ExpiresActive On\n"
+                "  # CSS と JS は ?v=（中身から作った版番号）が付くので、\n"
+                "  # 中身を変えたときだけ確実に読み直される。だから長くできる\n"
+                '  ExpiresByType text/css "access plus 1 year"\n'
+                '  ExpiresByType application/javascript "access plus 1 year"\n'
+                "  # 写真は名前が変わらないので、長すぎると差し替えが届かない\n"
+                '  ExpiresByType image/jpeg "access plus 7 days"\n'
+                '  ExpiresByType image/png "access plus 7 days"\n'
+                '  ExpiresByType image/svg+xml "access plus 7 days"\n'
+                '  ExpiresByType video/mp4 "access plus 7 days"\n'
+                "</IfModule>\n"
+                "\n"
+                "# 中身の取り違えと、外部サイトへの参照元の漏れを防ぐ\n"
+                "<IfModule mod_headers.c>\n"
+                '  Header set X-Content-Type-Options "nosniff"\n'
+                '  Header set Referrer-Policy "strict-origin-when-cross-origin"\n'
                 "</IfModule>\n"
                 "\n"
                 "# ドットで始まるファイルは外から見せない\n"
