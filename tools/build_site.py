@@ -523,11 +523,19 @@ def footer(root):
 _CRUMBS = []   # page_head() が直前に作ったパンくずを page() が拾う
 
 
-def page(path, title, desc, body, active="", schema=None):
+def is_post_path(path):
+    """blog/<記事名>.html なら True（一覧・分類ページは False）"""
+    return path.startswith("blog/") and path.count("/") == 1 and path != "blog/index.html"
+
+
+def page(path, title, desc, body, active="", schema=None, image=None):
     global _CRUMBS
-    root = "../" if "/" in path else ""
+    root = "../" * path.count("/")
     if path == "index.html":
         full_title = "タカヤモーター株式会社｜岡山市中区の車検・整備・新車中古車販売・リース・保険"
+    elif is_post_path(path):
+        # 記事は題名そのもので検索されるので、後ろの社名は短くして題名が切れないようにする（2026-10-30）
+        full_title = f"{title}｜岡山のタカヤモーター"
     elif "岡山" in title:
         full_title = f"{title}｜タカヤモーター株式会社"
     else:
@@ -556,7 +564,7 @@ def page(path, title, desc, body, active="", schema=None):
 <meta property="og:title" content="{full_title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="{canonical}">
-<meta property="og:image" content="{SITE_URL}/assets/img/ogp.jpg">
+<meta property="og:image" content="{image or SITE_URL + '/assets/img/ogp.jpg'}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="{root}assets/img/{FAVICON_FILE}"{' type="image/svg+xml"' if FAVICON_FILE.endswith(".svg") else ''}>{apple_icon_html(root)}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -871,6 +879,17 @@ def build_services_index():
     page("services/index.html", "サービス", "岡山市中区のタカヤモーターが扱う5つのサービス。新車・中古車販売と買取、法人・個人リース、車検・点検・整備、板金塗装とコーティング、自動車保険。おクルマに関することを一つの窓口でまとめてお受けします。", body, active="services")
 
 
+def service_posts_html(slug, root, n=4):
+    """サービスページの下に、そのサービスに案内している記事の新しいものを並べる。
+    記事 → サービス（記事下の案内）と逆向きの道を作り、記事が増えるほどページの中身を厚くする"""
+    posts = [q for q in POSTS if post_service(q) == slug][:n]
+    if not posts:
+        return ""
+    lis = "".join(f'<li><a href="{post_url(q, root)}"><time>{q["date"]}</time>{q["title"]}</a></li>' for q in posts)
+    return (f'\n  <section class="post-related"><h2>関連する記事</h2><ul>{lis}</ul>'
+            f'<a class="link-more" href="{root}blog/index.html">お知らせ・コラムをすべて見る →</a></section>')
+
+
 def svc_page(slug, title, meta_desc, content_html, contact_html, schema=None, extra_html=""):
     """meta_desc は検索結果に出る説明文。ページの冒頭文には使わない。
     冒頭文は SERVICES の一行説明（トップのカードと同じ言葉）を使う。
@@ -886,7 +905,7 @@ def svc_page(slug, title, meta_desc, content_html, contact_html, schema=None, ex
                      f'<span class="card__num" style="display:block;margin-bottom:4px">{num}</span>{name}', lead_html,
                      svc_nav(root, slug), photo=ph(root, img, tag)) + f'''
 <section class="sec"><div class="wrap detail">
-  {content_html}
+  {content_html}{service_posts_html(slug, root)}
   {contact_html}
 </div></section>{extra_html}'''
     _, num, name, desc, *_ = next(x for x in SERVICES if x[0] == slug)
@@ -1598,6 +1617,18 @@ def plain_text(raw, n=0):
 _IMG_SRC_RE = re.compile(r'''<img\b[^>]*?\bsrc\s*=\s*["\']([^"\']+)["\']''', re.I)
 
 
+def large_image(src):
+    """SNS・検索用に、記事の写真を大きいサイズで指す URL にする。
+    Blogger の画像は URL の途中の /s320/ や /w400-h225/ が大きさの指定なので、/s1600/ に置き換える"""
+    if not src:
+        return None
+    src = html_unescape(src)
+    if src.startswith("//"):
+        src = "https:" + src
+    src = re.sub(r"/(s\d+|w\d+-h\d+[^/]*)/", "/s1600/", src, count=1)
+    return html_escape(src, quote=True)
+
+
 def first_image(raw):
     """記事の最初の写真。お知らせ一覧のサムネイルに使う。無ければ None。
     URL は Blogger（googleusercontent）のものをそのまま使う"""
@@ -1729,6 +1760,82 @@ def blog_cats():
     return sorted(n.items(), key=lambda kv: -kv[1])
 
 
+# 分類ごとの記事一覧ページ（blog/category/<英字名>.html）。
+# 一覧の ?cat= 絞り込みは画面の中だけで、検索には載らない。分類ごとに検索の入口を作るため（2026-10-30）
+CAT_PAGES = {
+    "車検・点検": ("inspection", "車検と法定点検について、受ける時期・見積もりの見方・費用の内訳など、受ける前に知っておきたいことをまとめています。"),
+    "整備・メンテナンス": ("maintenance", "オイル・タイヤ・バッテリー・ブレーキなど、日ごろの整備と長く乗るための手入れについてまとめています。"),
+    "クルマの仕組み": ("mechanism", "エンジン・ハイブリッド・EV・安全装備など、クルマの仕組みを整備士の目線でわかりやすく解説しています。"),
+    "保険・制度": ("insurance", "自動車保険の選び方や見直し、事故のときの使い方、クルマにかかわる制度や手続きについてまとめています。"),
+    "トラブル対応": ("trouble", "警告灯・異音・バッテリー上がり・事故・水没など、困ったときに最初にやることと、やってはいけないことをまとめています。"),
+    "車種・クルマ選び": ("cars", "人気の車種の特徴や選び方、乗り換えの考え方など、クルマ選びの参考になる記事をまとめています。"),
+    "買う・借りる": ("buying", "新車・中古車の買い方、ローン・残価設定クレジット・リースの違いなど、クルマの手に入れ方についてまとめています。"),
+    "安全運転": ("safety", "季節ごとの運転の注意点や、家族・高齢の方と安全に乗るためのポイントをまとめています。"),
+    "整備士・業界": ("industry", "整備士の仕事や育成、クルマ屋のこれからなど、業界と働き方についての記事です。"),
+    "地域・岡山": ("okayama", "岡山の自動車事情や地域の話題についての記事です。"),
+    "お知らせ": ("news", "タカヤモーターからのお知らせです。"),
+}
+
+
+def cat_url(cat, root):
+    """分類ページへのリンク。分類ページが無い分類は、一覧の絞り込みへ"""
+    c = html_unescape(cat)
+    if c in CAT_PAGES:
+        return f"{root}blog/category/{CAT_PAGES[c][0]}.html"
+    return f"{root}blog/index.html?cat={quote(c)}"
+
+
+def post_card(p, root):
+    return f'''
+    <li class="post-card"><a class="post-card__link" href="{post_url(p, root)}">
+      {post_thumb(p, root)}
+      <span class="post-card__body">
+        <span class="post-card__meta"><time>{p["date"]}</time><span class="post__cat">{p["cat"]}</span></span>
+        <span class="post-card__title">{p["title"]}</span>
+        <span class="post__excerpt">{p["excerpt"]}</span>
+      </span></a></li>'''
+
+
+def build_blog_categories():
+    root = "../../"
+    out_dir = os.path.join(OUT, "blog", "category")
+    os.makedirs(out_dir, exist_ok=True)
+    made = set()
+    for cat, n in blog_cats():
+        c = html_unescape(cat)
+        if c not in CAT_PAGES:
+            continue
+        slug, intro = CAT_PAGES[c]
+        posts = [p for p in POSTS if p["cat"] == cat]
+        svc = POST_SERVICE_BY_CAT.get(c) or ("recruit" if c == "整備士・業界" else None)
+        guide = ""
+        if svc == "recruit":
+            guide = f'<p style="margin-top:12px"><a class="link-more" href="{root}recruit.html">採用情報を見る →</a></p>'
+        elif svc:
+            sname = next(x[2] for x in SERVICES if x[0] == svc)
+            guide = f'<p style="margin-top:12px"><a class="link-more" href="{root}services/{svc}.html">{sname}のご案内を見る →</a></p>'
+        others = "".join(f'<a class="blog-chip" href="{CAT_PAGES[html_unescape(k)][0]}.html">{k}<i>{m}</i></a>'
+                         for k, m in blog_cats() if html_unescape(k) in CAT_PAGES and k != cat)
+        body = page_head(root, [("index.html", "トップ"), ("blog/index.html", "お知らせ"), (None, f"{cat}の記事")],
+                         f"{cat}の記事", intro) + f'''
+<section class="sec"><div class="wrap">
+  <h2 class="sec-title">{cat}の記事（{n}件）</h2>{guide}
+  <ul class="post-cards post-cards--rows" style="margin-top:18px">{"".join(post_card(p, root) for p in posts)}
+  </ul>
+  <h2 class="sec-title" style="margin-top:48px">ほかの分類</h2>
+  <div class="blog-chips">{others}</div>
+  <p style="margin-top:20px"><a class="btn btn--ghost" href="{root}blog/index.html">お知らせ一覧へ戻る</a></p>
+</div></section>
+'''
+        desc = f"{intro}岡山市中区のタカヤモーター株式会社が、{cat}の記事{n}件を新しい順に並べています。"
+        page(f"blog/category/{slug}.html", f"{cat}の記事", desc[:140], body, active="blog")
+        made.add(slug + ".html")
+    for fn in os.listdir(out_dir):
+        if fn.endswith(".html") and fn not in made:
+            os.remove(os.path.join(out_dir, fn))
+    print(f"お知らせ: 分類ページを {len(made)}件作りました")
+
+
 def build_blog():
     root = "../"
     if POSTS:
@@ -1783,6 +1890,8 @@ def build_blog():
     page("blog/index.html", "お知らせ", "岡山市中区のタカヤモーター株式会社のお知らせ。日々の整備で気づいたこと、車検や点検・タイヤ交換のご案内、新車中古車の入荷、地域の話題を記事とSNS（X・Instagram）で発信しています。", body, active="blog")
     for i in range(len(POSTS)):
         build_post(i)
+    if POSTS:
+        build_blog_categories()
     # ブログ側で消された記事のページを残さない（index.html 以外を照合して片付ける）
     keep = {"index.html"} | {p["slug"] + ".html" for p in POSTS}
     blog_dir = os.path.join(OUT, "blog")
@@ -1812,7 +1921,7 @@ def related_html(post, n=4):
     if not same:
         return ""
     lis = "".join(f'<li><a href="{q["slug"]}.html"><time>{q["date"]}</time>{q["title"]}</a></li>' for q in same)
-    href = f'index.html?cat={quote(html_unescape(post["cat"]))}'
+    href = cat_url(post["cat"], "../")
     return (f'\n  <section class="post-related"><h2>「{post["cat"]}」の記事</h2>'
             f'<ul>{lis}</ul><a class="link-more" href="{href}">「{post["cat"]}」の記事をすべて見る →</a></section>')
 
@@ -1879,7 +1988,7 @@ def build_post(i):
         f'<a class="pager__next" href="{post_url(older, root)}">{older["title"]} →</a>' if older else '<span></span>',
     ])
     body = page_head(root, [("index.html", "トップ"), ("blog/index.html", "お知らせ"), (None, p["title"])],
-                     p["title"], f'<time class="post-meta">{p["date"]}</time><a class="post__cat" href="index.html?cat={quote(html_unescape(p["cat"]))}">{p["cat"]}</a>') + f'''
+                     p["title"], f'<time class="post-meta">{p["date"]}</time><a class="post__cat" href="{cat_url(p["cat"], root)}">{p["cat"]}</a>') + f'''
 <section class="sec"><div class="wrap">
   <article class="prose post-body">{body_html}</article>
 {service_html(p, root)}
@@ -1894,8 +2003,11 @@ def build_post(i):
            "author": {"@id": SITE_URL + "/#business"},
            "publisher": {"@id": SITE_URL + "/#business"},
            "articleSection": p["cat"]}
+    image = large_image(p["thumb"])
+    if image:
+        art["image"] = [html_unescape(image)]
     desc = f"{p['excerpt']}（{p['cat']}・{p['date']}）岡山市中区のタカヤモーター株式会社のお知らせです。車検・点検や整備のご相談もお気軽にどうぞ。"
-    page(f"blog/{p['slug']}.html", p["seo_title"], desc[:140], body, active="blog", schema=art)
+    page(f"blog/{p['slug']}.html", p["seo_title"], desc[:140], body, active="blog", schema=art, image=image)
 
 
 def build_seo_files():
@@ -1915,6 +2027,11 @@ def build_seo_files():
     post_dates = {f"blog/{p['slug']}.html": p["updated"] for p in POSTS if p["updated"]}
     if post_dates:
         post_dates["blog/index.html"] = max(post_dates.values())
+        for p in POSTS:
+            c = html_unescape(p["cat"])
+            if c in CAT_PAGES and p["updated"]:
+                key = f"blog/category/{CAT_PAGES[c][0]}.html"
+                post_dates[key] = max(post_dates.get(key, ""), p["updated"])
     urls = ""
     for rel in pages:
         loc = SITE_URL + "/" + ("" if rel == "index.html" else rel.replace("index.html", ""))
